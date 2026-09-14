@@ -258,7 +258,8 @@ static FoldedLocale FOLDED[NLOCALES];
 
 // Resolve a 'Locale' string to an index into LOCALES, mirroring the
 // normalization in dtLocaleNames: empty or 'system' means English, and a
-// regional suffix ('fr_FR') is ignored.  Returns -1 for an unknown language.
+// regional suffix ('fr_FR' or 'fr-FR') is ignored.  Returns -1 for an unknown
+// language.
 static int
 locale_index (const string& locale)
 {
@@ -266,7 +267,7 @@ locale_index (const string& locale)
   for (size_t i = 0; i < locale.size (); i++)
   {
     char c = locale[i];
-    if (c == '_')
+    if (c == '_' || c == '-')
     {
       break;
     }
@@ -459,15 +460,203 @@ days_in_month (double Y, double M)
   return dpm[m-1];
 }
 
+// Time zone abbreviations the 'z' field reads, with their offsets from UTC in
+// seconds: every name MATLAB R2024a reads in any of the thirteen locales
+// probed, at the one offset it has wherever it is read, and MSK, TRT, AZT and
+// GET, which it reads in none.  A name with two meanings is never here but in
+// ZONE_ABBR_LOCALE.
+struct ZoneAbbr
+{
+  const char *name;
+  int off;
+};
+
+static const ZoneAbbr ZONE_ABBR[] = {
+  {"ACDT", 37800}, {"ADT", -10800}, {"AEDT", 39600}, {"AEST", 36000},
+  {"AFT", 16200}, {"AKDT", -28800}, {"AKST", -32400}, {"AMST", -10800},
+  {"AST", -14400}, {"AWDT", 32400}, {"AWST", 28800}, {"AZOST", 0},
+  {"AZOT", -3600}, {"AZT", 14400}, {"BRST", -7200}, {"BRT", -10800},
+  {"CDT", -18000}, {"CEST", 7200}, {"CET", 3600}, {"CST", -21600},
+  {"CXT", 25200}, {"EAST", -21600}, {"ECT", -18000}, {"EDT", -14400},
+  {"EEST", 10800}, {"EET", 7200}, {"EST", -18000}, {"FKST", -7200},
+  {"GALT", -21600}, {"GET", 14400}, {"GMT", 0}, {"GST", 14400},
+  {"HDT", -32400}, {"HST", -36000}, {"ICT", 25200}, {"IRDT", 16200},
+  {"IRST", 12600}, {"MDT", -21600}, {"MESZ", 7200}, {"MEZ", 3600},
+  {"MSK", 10800}, {"MST", -25200}, {"MVT", 18000}, {"MYT", 28800},
+  {"NDT", -9000}, {"NPT", 20700}, {"NST", -12600}, {"NZDT", 46800},
+  {"NZST", 43200}, {"OESZ", 10800}, {"OEZ", 7200}, {"PDT", -25200},
+  {"PKT", 18000}, {"PMDT", -7200}, {"PMST", -10800}, {"PST", -28800},
+  {"TRT", 10800}, {"UT", 0}, {"UTC", 0}, {"UYT", -10800}, {"VET", -14400},
+  {"WESZ", 3600}, {"WEST", 3600}, {"WET", 0}, {"WEZ", 0}, {"WIB", 25200},
+  {"WIT", 32400}, {"WITA", 28800}, {"Z", 0}
+};
+
+static const int NZONE_ABBR = sizeof (ZONE_ABBR) / sizeof (ZONE_ABBR[0]);
+
+// The abbreviations with two meanings, read only under a locale that settles
+// them, at the offset MATLAB reads there, and refused under every other.
+struct ZoneAbbrLocale
+{
+  const char *name;
+  const char *locale;
+  int off;
+};
+
+static const ZoneAbbrLocale ZONE_ABBR_LOCALE[] = {
+  {"ACST", "en_au", 34200}, {"ACST", "pt_br", -14400},
+  {"AMT", "pt_br", -14400}, {"BST", "en_ca", 21600},
+  {"BST", "en_gb", 3600}, {"IST", "en_ca", 19800},
+  {"IST", "en_ie", 3600}, {"IST", "en_in", 19800}
+};
+
+static const int NZONE_ABBR_LOCALE = sizeof (ZONE_ABBR_LOCALE)
+                                     / sizeof (ZONE_ABBR_LOCALE[0]);
+
+static inline bool
+is_zone_sym (char c)
+{
+  return (c == 'z' || c == 'Z' || c == 'X' || c == 'x');
+}
+
+// Two digits at POS, moving POS past them.
+static bool
+read_2digits (const string& s, size_t& pos, int& val)
+{
+  if (pos + 1 < s.size () && isdigit (static_cast<unsigned char> (s[pos]))
+      && isdigit (static_cast<unsigned char> (s[pos+1])))
+  {
+    val = (s[pos] - '0') * 10 + (s[pos+1] - '0');
+    pos += 2;
+    return true;
+  }
+  return false;
+}
+
+// A signed offset at POS, as every offset field reads one: an hour of one or
+// two digits, then optionally minutes and then seconds of two digits each,
+// with or without a colon.  The hour runs to 23.  POS moves past what was read
+// only on success.
+static bool
+read_signed_offset (const string& s, size_t& pos, double& off)
+{
+  const size_t L = s.size ();
+  size_t j = pos;
+  if (j >= L || (s[j] != '+' && s[j] != '-'))
+  {
+    return false;
+  }
+  const double sgn = (s[j] == '-' ? -1 : 1);
+  j++;
+  if (j >= L || ! isdigit (static_cast<unsigned char> (s[j])))
+  {
+    return false;
+  }
+  int hh = s[j++] - '0';
+  if (j < L && isdigit (static_cast<unsigned char> (s[j])))
+  {
+    hh = hh * 10 + (s[j++] - '0');
+  }
+  int mm = 0, ss = 0;
+  size_t k = (j < L && s[j] == ':') ? j + 1 : j;
+  if (read_2digits (s, k, mm))
+  {
+    j = k;
+    k = (j < L && s[j] == ':') ? j + 1 : j;
+    if (read_2digits (s, k, ss))
+    {
+      j = k;
+    }
+  }
+  if (hh > 23 || mm > 59 || ss > 59)
+  {
+    return false;
+  }
+  off = sgn * (hh * 3600.0 + mm * 60.0 + ss);
+  pos = j;
+  return true;
+}
+
+// The field of an offset symbol at POS.  Every width of 'Z', 'X' and 'x' reads
+// the same forms, as MATLAB does: 'Z' for zero in either letter case, a signed
+// offset, and a signed offset after 'GMT' or 'UTC' in any letter case, which
+// alone is zero too.  'z' reads the same and the abbreviations in ZONE_ABBR,
+// and those in ZONE_ABBR_LOCALE under their own LOCALE, whose separator may be
+// '_' or '-'.
+static bool
+read_zone_field (const string& s, size_t& pos, char sym, const string& locale,
+                 double& off)
+{
+  const size_t L = s.size ();
+  size_t j = pos;
+  string word;
+  while (j < L && isalpha (static_cast<unsigned char> (s[j])))
+  {
+    word += static_cast<char> (toupper (static_cast<unsigned char> (s[j])));
+    j++;
+  }
+  if (word.empty ())
+  {
+    return read_signed_offset (s, pos, off);
+  }
+  if (word == "GMT" || word == "UTC")
+  {
+    if (! read_signed_offset (s, j, off))
+    {
+      off = 0;
+    }
+    pos = j;
+    return true;
+  }
+  if (sym != 'z')
+  {
+    if (word != "Z")
+    {
+      return false;
+    }
+    off = 0;
+    pos = j;
+    return true;
+  }
+  string loc;
+  for (size_t i = 0; i < locale.size (); i++)
+  {
+    char c = static_cast<char> (tolower (static_cast<unsigned char>
+                                         (locale[i])));
+    loc += (c == '-' ? '_' : c);
+  }
+  for (int k = 0; k < NZONE_ABBR_LOCALE; k++)
+  {
+    if (word == ZONE_ABBR_LOCALE[k].name && loc == ZONE_ABBR_LOCALE[k].locale)
+    {
+      off = ZONE_ABBR_LOCALE[k].off;
+      pos = j;
+      return true;
+    }
+  }
+  for (int k = 0; k < NZONE_ABBR; k++)
+  {
+    if (word == ZONE_ABBR[k].name)
+    {
+      off = ZONE_ABBR[k].off;
+      pos = j;
+      return true;
+    }
+  }
+  return false;
+}
+
 // Parse a cell array of date/time strings under an LDML 'InputFormat',
-// returning an N-by-6 date-vector matrix.  This is a direct port of
-// dtParseInput in datetime.m and must stay behaviourally identical to it.
-// LEAPOK admits a 60th second, which only exists in the 'UTCLeapSeconds' zone;
-// whether the second named was actually inserted is settled in m-code, which
-// owns the leap-second table.
+// returning an N-by-6 date-vector matrix, and in OFF the UTC offset in seconds
+// that each string carries in an offset field, NaN where it carries none or
+// cannot be read.  This is a direct port of dtParseInput in datetime.m and must
+// stay behaviourally identical to it.  LEAPOK admits a 60th second, which only
+// exists in the 'UTCLeapSeconds' zone; whether the second named was actually
+// inserted is settled in m-code, which owns the leap-second table.  LOCALE is
+// the full tag, which the 'z' field needs where the language alone is not
+// enough.
 static Matrix
 ldml_parse (const Cell& strs, const string& fmt, double pivot, int lidx,
-            bool leapok, bool lone)
+            bool leapok, bool lone, const string& locale, ColumnVector& OFF)
 {
   vector<Token> toks;
   tokenize (fmt, toks);
@@ -519,6 +708,7 @@ ldml_parse (const Cell& strs, const string& fmt, double pivot, int lidx,
 
   const octave_idx_type n = strs.numel ();
   Matrix DV (n, 6);
+  OFF = ColumnVector (n, numeric_limits<double>::quiet_NaN ());
 
   for (octave_idx_type r = 0; r < n; r++)
   {
@@ -530,6 +720,7 @@ ldml_parse (const Cell& strs, const string& fmt, double pivot, int lidx,
     double Dv = hasDate ? 1 : nowD;
     double Hv = 0, MIv = 0, Sv = 0;
     int ampm = 0;
+    double offv = numeric_limits<double>::quiet_NaN ();
     bool ok = true;
 
     for (int t = 0; t < nt && ok; t++)
@@ -545,6 +736,13 @@ ldml_parse (const Cell& strs, const string& fmt, double pivot, int lidx,
           pos += m;
         }
         else
+        {
+          ok = false;
+        }
+      }
+      else if (is_zone_sym (tk.sym))
+      {
+        if (! read_zone_field (s, pos, tk.sym, locale, offv))
         {
           ok = false;
         }
@@ -659,7 +857,8 @@ ldml_parse (const Cell& strs, const string& fmt, double pivot, int lidx,
         // and is what this renderer emits for it under 'uuuuuuuu'.
         bool nextNum = (t < nt - 1) && toks[t+1].sym != '\0'
           && ! (((toks[t+1].sym == 'M' || toks[t+1].sym == 'e')
-                 && toks[t+1].n >= 3) || toks[t+1].sym == 'a');
+                 && toks[t+1].n >= 3) || toks[t+1].sym == 'a'
+                || is_zone_sym (toks[t+1].sym));
         bool isYear = (tk.sym == 'y' || tk.sym == 'u');
         int w;
         if (nextNum)
@@ -826,6 +1025,7 @@ ldml_parse (const Cell& strs, const string& fmt, double pivot, int lidx,
       }
       continue;
     }
+    OFF(r) = offv;
     DV(r,0) = Yv;
     DV(r,1) = Mv;
     DV(r,2) = Dv;
@@ -1349,7 +1549,7 @@ ldml_format (const NDArray& Y, const NDArray& M, const NDArray& D,
 
 DEFUN_DLD (__ldml__, args, ,
            "-*- texinfo -*-\n\
- @deftypefn {} {@var{DV} =} __ldml__ (\"parse\", @var{strs}, @var{fmt}, \
+ @deftypefn {} {[@var{DV}, @var{OFF}] =} __ldml__ (\"parse\", @var{strs}, @var{fmt}, \
 @var{pivot}, @var{locale})\n\
 \n\
 \n\
@@ -1358,7 +1558,9 @@ Parse date/time strings under an LDML @qcode{'InputFormat'} pattern. \n\
 @var{strs} is a cell array of character vectors, @var{fmt} an LDML pattern, \
 @var{pivot} the two-digit year pivot, and @var{locale} a language tag such as \
 @qcode{'fr_FR'} (empty or @qcode{'system'} for English).  The return value is \
-an N-by-6 date-vector matrix. \n\
+an N-by-6 date-vector matrix, and the second output @var{OFF} the UTC offset \
+in seconds each string carries in an offset field, NaN where it carries \
+none. \n\
 \n\
 @code{@var{syms} = __ldml__ (\"symbols\", @var{fmt})} returns the field \
 symbols of @var{fmt}, in order and one character per field run, with literal \
@@ -1403,7 +1605,9 @@ package.  Do NOT use this function directly. \n\
     bool leapok = (args.length () >= 6 && args(5).bool_value ());
     bool lone = (args.length () == 7 ? args(6).bool_value ()
                                      : strs.numel () == 1);
-    return ovl (ldml_parse (strs, fmt, pivot, lidx, leapok, lone));
+    ColumnVector OFF;
+    Matrix DV = ldml_parse (strs, fmt, pivot, lidx, leapok, lone, locale, OFF);
+    return ovl (DV, OFF);
   }
 
   if (action == "symbols")

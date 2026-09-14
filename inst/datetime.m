@@ -482,6 +482,27 @@ classdef datetime
     ## an array only that element is lost and becomes @code{NaT}, so that one
     ## unreadable entry does not cost the rest of the array.
     ##
+    ## An @var{INFMT} with a time zone offset field, @qcode{'z'}, @qcode{'Z'},
+    ## @qcode{'X'} or @qcode{'x'}, reads each string as an instant, its wall
+    ## clock less the offset it carries, and expresses it in the zone given by
+    ## @qcode{'TimeZone'}, which is then required.  The offset settles a
+    ## repeated or skipped wall clock, so such text is never rejected for
+    ## naming one.  Every width of @qcode{'Z'}, @qcode{'X'} and @qcode{'x'}
+    ## reads the same forms: @qcode{'Z'} for zero, a signed offset such as
+    ## @qcode{'-5'}, @qcode{'-05'}, @qcode{'-0500'}, @qcode{'-05:00'} or
+    ## @qcode{'-05:00:30'}, and either of those after @qcode{'GMT'} or
+    ## @qcode{'UTC'}, which alone is zero.  @qcode{'z'} reads the same, and a
+    ## time zone abbreviation such as @qcode{'EST'}, @qcode{'CET'} or
+    ## @qcode{'MSK'}, in any letter case.  An abbreviation with two meanings is
+    ## read only under a @var{LOCALE} that settles it: @qcode{'BST'} is +01:00
+    ## under @qcode{'en_GB'} and +06:00 under @qcode{'en_CA'}, @qcode{'IST'} is
+    ## +01:00 under @qcode{'en_IE'} and +05:30 under @qcode{'en_IN'} and
+    ## @qcode{'en_CA'}, @qcode{'ACST'} is +09:30 under @qcode{'en_AU'} and
+    ## -04:00 under @qcode{'pt_BR'}, and @qcode{'AMT'} is -04:00 under
+    ## @qcode{'pt_BR'}.  Under any other @var{LOCALE} they are refused, where
+    ## MATLAB reads @qcode{'BST'} as +06:00 and @qcode{'IST'} as +05:30 by
+    ## default.
+    ##
     ## @code{@var{T} = datetime (@var{DateStrings}, @qcode{'InputFormat'},
     ## @var{INFMT}, @qcode{'PivotYear'}, @var{PIVOT})} also allows to specify a
     ## pivot year, which refers to the year at the start of the century to which
@@ -500,7 +521,8 @@ classdef datetime
     ## case-insensitively; for Greek, matching is also accent-insensitive, so
     ## the accentless all-caps spelling is accepted, and the genitive month
     ## forms (@qcode{'Μαρτίου'}) are used.  A weekday name is validated but does
-    ## not otherwise affect the result.
+    ## not otherwise affect the result.  A hyphen may stand for the underscore,
+    ## as in @qcode{'fr-FR'}.
     ##
     ## @code{@var{T} = datetime (@var{DateVectors})} creates a column vector of
     ## datetime values from the date vectors in @var{DateVectors}.
@@ -610,9 +632,9 @@ classdef datetime
     ## @code{@var{T} = datetime (@dots{}, @qcode{'Format'}, @var{FMT})}
     ## specifies the display format of the values in the output datetime array.
     ## @var{FMT} uses the same Unicode LDML date field symbols as
-    ## @qcode{'InputFormat'}, with @qcode{'z'}, @qcode{'Z'}, @qcode{'X'}, and
-    ## @qcode{'x'} additionally naming the time zone, and text between single
-    ## quotes taken literally.  The default format renders a date alone when
+    ## @qcode{'InputFormat'}, @qcode{'z'}, @qcode{'Z'}, @qcode{'X'}, and
+    ## @qcode{'x'} naming the time zone, and text between single quotes taken
+    ## literally.  The default format renders a date alone when
     ## every element sits at midnight and a date with a time otherwise; a
     ## @code{NaT} carries no time of day and does not affect that choice.
     ##
@@ -938,6 +960,22 @@ classdef datetime
         isRelDay = ischar (args{1}) && isrow (args{1}) ...
                    && any (strcmpi (args{1}, {'now', 'today', 'yesterday', ...
                                               'tomorrow'}));
+        ## A format that reads an offset names an instant, which only a zone
+        ## can hold, so it is refused without one before any text is read, as
+        ## MATLAB refuses it.  A leap-second array reads only the one pattern
+        ## it can write.
+        hasOff = false;
+        if (! isempty (inputFormat) && ! isRelDay)
+          dtValidateFormat (inputFormat);
+          hasOff = any (ismember (__ldml__ ('symbols', inputFormat), 'zZXx'));
+          if (dtIsLeapZone (TimeZone))
+            dtValidateLeapFormat (inputFormat, 'datetime', "'InputFormat'");
+          elseif (hasOff && isempty (TimeZone))
+            error (strcat ("datetime: 'InputFormat' '%s' has a time zone", ...
+                           " offset field, which requires 'TimeZone' to", ...
+                           " name a time zone."), inputFormat);
+          endif
+        endif
         if (ischar (args{1}) && ndims (args{1}) > 2)
           error ("datetime: invalid type for 'DateStrings'.");
         elseif (! isRelDay)
@@ -971,12 +1009,12 @@ classdef datetime
           strs = DateStrings(:);
           blank = cellfun (@isempty, strs);
           DATEVEC = nan (numel (strs), 6);
+          OFFSET = nan (numel (strs), 1);
           if (! all (blank))
             live = strs(! blank);
             if (! isempty (inputFormat))
               ## LDML-aware parse under the supplied 'InputFormat'.  MATLAB's
               ## default pivot for two-digit years is the current year minus 50.
-              dtValidateFormat (inputFormat);
               if (! isempty (PivotYear))
                 pivot = PivotYear;
               else
@@ -989,8 +1027,9 @@ classdef datetime
               ## old count, since MATLAB refuses one with an unreadable row.
               lone = numel (DateStrings) == 1 ...
                      || (ischar (args{1}) && numel (live) == 1);
-              DV = dtParseInput (live, inputFormat, pivot, Locale, ...
-                                 dtIsLeapZone (TimeZone), lone);
+              [DV, OFF] = dtParseInput (live, inputFormat, pivot, Locale, ...
+                                        dtIsLeapZone (TimeZone), lone);
+              OFFSET(! blank) = OFF;
             elseif (dtIsLeapZone (TimeZone))
               ## A leap-second array reads text in the one shape it can also
               ## write, so nothing is auto-detected here: the string must be
@@ -1047,6 +1086,16 @@ classdef datetime
           this.Hour = reshape (DATEVEC(:,4), size (DateStrings));
           this.Minute = reshape (DATEVEC(:,5), size (DateStrings));
           this.Second = reshape (DATEVEC(:,6), size (DateStrings));
+          if (hasOff)
+            ## The text names an instant: its wall clock less the offset it
+            ## carries, read in 'TimeZone'.  The offset settles a repeated or
+            ## skipped wall clock, so nothing is resolved and nothing refused.
+            [this.Year, this.Month, this.Day, this.Hour, this.Minute, ...
+             this.Second, this.Offset] = dtRezone (this.Year, this.Month, ...
+             this.Day, this.Hour, this.Minute, this.Second, ...
+             reshape (OFFSET, size (DateStrings)), '', this.TimeZone);
+            return;
+          endif
           if (! isempty (TimeZone))
             ## Text naming a wall clock its zone never shows -- one inside the
             ## interval the clock skips going forward -- is rejected, matching
@@ -7235,7 +7284,7 @@ function [mFull, mAbbr, wFull, wAbbr, dpMark] = dtLocaleNames (locale)
   if (isempty (locale))
     lang = 'en';
   else
-    lang = strtok (tolower (locale), '_');
+    lang = strtok (tolower (locale), '_-');
   endif
   if (strcmp (lang, 'system'))
     lang = 'en';
@@ -7439,13 +7488,13 @@ endfunction
 ## accent-insensitively against the locale tables.  Two-digit years are
 ## resolved against PIVOT.  Fields absent from the format default to the
 ## current date (year/month/day) or to zero (time), matching MATLAB.
-function DV = dtParseInput (strs, fmt, pivot, locale, leapok = false, ...
-                            lone = numel (strs) == 1)
+function [DV, OFF] = dtParseInput (strs, fmt, pivot, locale, leapok = false, ...
+                                   lone = numel (strs) == 1)
   ## An unset 'Locale' arrives as [], which the helper reads as English.
   if (isempty (locale))
     locale = '';
   endif
-  DV = __ldml__ ('parse', strs, fmt, pivot, locale, leapok, lone);
+  [DV, OFF] = __ldml__ ('parse', strs, fmt, pivot, locale, leapok, lone);
 endfunction
 
 ## Render each element of a datetime array to a display string under a
@@ -7536,15 +7585,16 @@ endfunction
 ## Validate a Format for a leap-second array.  Only the ISO 8601 UTC pattern is
 ## allowed, optionally with one to nine fractional-second digits; MATLAB rejects
 ## everything else, the sentinels included.  OP names the caller.
-function dtValidateLeapFormat (fmt, op)
+function dtValidateLeapFormat (fmt, op, what = 'display format')
   ok = ischar (fmt) && isrow (fmt) ...
        && ! isempty (regexp (fmt, "^uuuu-MM-dd'T'HH:mm:ss(\\.S{1,9})?'Z'$", ...
                              'once'));
   if (! ok)
-    error (strcat ("%s: the display format of a 'UTCLeapSeconds' datetime", ...
+    error (strcat ("%s: the %s of a 'UTCLeapSeconds' datetime", ...
                    " array must be \"uuuu-MM-dd'T'HH:mm:ss'Z'\",", ...
                    " optionally with one to nine fractional second digits,", ...
-                   " as in \"uuuu-MM-dd'T'HH:mm:ss.SSSSSSSSS'Z'\"."), op);
+                   " as in \"uuuu-MM-dd'T'HH:mm:ss.SSSSSSSSS'Z'\"."), ...
+           op, what);
   endif
 endfunction
 
