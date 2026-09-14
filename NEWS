@@ -28,6 +28,17 @@ Summary of important user-visible changes for datatypes 1.4.1:
 
  ** A `'Locale'` may be written with a hyphen, as in `'en-GB'`.
 
+ ** `repelem` on a table or timetable accepts a vector of counts, one per row
+    or per variable, as in `repelem (T, [1; 2; 0], 1)`.
+
+ ** `writetable` adding or replacing a sheet in a file written by `table2ods`
+    keeps the metadata sheet in step, so every sheet reads back, where reading
+    such a file could fail.
+
  ** `ods2table`, `ods2struct` and `table2ods` raise a clear error on a sheet
     whose cells contradict the types its metadata declares, where they used
     to fail with "nonconformant arguments".
+
+ ** Displaying a cell array, or the `summary` of a variable holding one, no
+    longer raises an out-of-bound error when a long text sits beside a short
+    one.
