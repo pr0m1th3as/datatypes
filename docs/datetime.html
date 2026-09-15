@@ -421,41 +421,10 @@
   <a href="duration.html">duration</a>
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/0ecbf17/inst/datetime.m">datetime</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/datetime.m">datetime</a>
 </p>
 </div>
         <p class="lead my-3">The <code>datetime</code> class contains the following properties:</p>
-
-        <div class="container-xl my-1">
-          <div class="row">
-            <button class="btn btn-light btn-sm w-100 text-start" type="button"
-              data-bs-toggle="collapse" data-bs-target="#datetime_SystemTimeZone"
-              aria-expanded="false" aria-controls="datetime_SystemTimeZone">
-              <div class="row align-items-center">
-                <div class="col-4">
-                  <h4 class="d-inline-block mr-4">
-                    <b><code>SystemTimeZone</code></b>
-                  </h4>
-                </div>
-                <div class="col-8">
-System time zone setting
-                </div>
-              </div>
-          </div>
-          <div class="collapse multi-collapse" id="datetime_SystemTimeZone">
-            <div class="border-bottom py-2">
-
-<p> </p>
-<p> A read-only property specifying the local time zone of the system, where
- Octave is running, as the name of a zone in the IANA Time Zone Database,
- such as <code>'Europe/Athens'</code>.  It is <code>'UTC'</code> when the system
- time zone cannot be determined.
-</p>
-
-
-            </div>
-          </div>
-        </div>
 
         <div class="container-xl my-1">
           <div class="row">
@@ -546,7 +515,9 @@ Time zone
  a character vector.
 </p>
 <p> Setting it to <code>'local'</code>, in any letter case, stores the system time
- zone given by <code>datetime.SystemTimeZone</code>.
+ zone given by <code>datetime.SystemTimeZone</code>, exactly as setting that
+ zone by name would store it, so a system zone of <code>'Etc/UTC'</code> is
+ stored as <code>'+00:00'</code>.
 </p>
 <p> A fixed offset from UTC, which never observes daylight saving time, is
  stored as <code>'+HH:MM'</code> or <code>'-HH:MM'</code>, or as
@@ -1201,6 +1172,10 @@ Time zone
                       <tr>
                         <td><b><code><a href="datetime.empty.html">empty</a></code></b></td>
                         <td>Create an empty datetime array.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="datetime.SystemTimeZone.html">SystemTimeZone</a></code></b></td>
+                        <td>System time zone setting.</td>
                       </tr>
                       <tr>
                         <td><b><code><a href="datetime.zoneNameStyle.html">zoneNameStyle</a></code></b></td>

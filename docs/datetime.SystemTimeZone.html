@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>Data Types for GNU Octave: datetime.yyyymmdd</title>
+    <title>Data Types for GNU Octave: datetime.SystemTimeZone</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer">
@@ -241,7 +241,7 @@
 				</div>
 			</div>
 			<div class="row">
-				<input id="togList3" type="checkbox" checked>
+				<input id="togList3" type="checkbox">
 				<label for="togList3">
 					<span><h6>Convert to other Numeric Representations</h6></span>
 					<span><h6>Convert to other Numeric Representations</h6></span>
@@ -252,7 +252,7 @@
 					<li><a href="datetime.datevec.html" class="text-decoration-none font-monospace"><small>datevec</small></a></li>
 					<li><a href="datetime.datestr.html" class="text-decoration-none font-monospace"><small>datestr</small></a></li>
 					<li><a href="datetime.string.html" class="text-decoration-none font-monospace"><small>string</small></a></li>
-					<li><a href="datetime.yyyymmdd.html" class="text-decoration-none font-monospace fw-bolder"><small>yyyymmdd</small></a></li>
+					<li><a href="datetime.yyyymmdd.html" class="text-decoration-none font-monospace"><small>yyyymmdd</small></a></li>
 					<li><a href="datetime.datenum.html" class="text-decoration-none font-monospace"><small>datenum</small></a></li>
 					<li><a href="datetime.exceltime.html" class="text-decoration-none font-monospace"><small>exceltime</small></a></li>
 					<li><a href="datetime.juliandate.html" class="text-decoration-none font-monospace"><small>juliandate</small></a></li>
@@ -402,7 +402,7 @@
 				</div>
 			</div>
 			<div class="row">
-				<input id="togList11" type="checkbox">
+				<input id="togList11" type="checkbox" checked>
 				<label for="togList11">
 					<span><h6>Other</h6></span>
 					<span><h6>Other</h6></span>
@@ -410,7 +410,7 @@
 				<div class="list">
 				<ul style="list-style-type: none; padding-left: 20px;">
 					<li><a href="datetime.empty.html" class="text-decoration-none font-monospace"><small>empty</small></a></li>
-					<li><a href="datetime.SystemTimeZone.html" class="text-decoration-none font-monospace"><small>SystemTimeZone</small></a></li>
+					<li><a href="datetime.SystemTimeZone.html" class="text-decoration-none font-monospace fw-bolder"><small>SystemTimeZone</small></a></li>
 					<li><a href="datetime.zoneNameStyle.html" class="text-decoration-none font-monospace"><small>zoneNameStyle</small></a></li>
 					<li><a href="datetime.setDefaultFormats.html" class="text-decoration-none font-monospace"><small>setDefaultFormats</small></a></li>
 				</ul>
@@ -423,7 +423,7 @@
             <div class="card-header card-header-mod">
               <div class="row d-flex flex-wrap align-items-center">
                 <h3 class="d-inline-block mr-2">
-                Method&nbsp;Reference: <b><code>datetime.yyyymmdd</code></b>
+                Method&nbsp;Reference: <b><code>datetime.SystemTimeZone</code></b>
                 </h3>
               </div>
             </div>
@@ -432,53 +432,26 @@
                 <ol class="breadcrumb">
                   <li class="breadcrumb-item"><a href="index.html">datatypes</a></li>
                   <li class="breadcrumb-item"><a href="datetime.html">datetime</a></li>
-                  <li class="breadcrumb-item active" aria-current="page">yyyymmdd</li>
+                  <li class="breadcrumb-item active" aria-current="page">SystemTimeZone</li>
                 </ol>
               </nav>
 
 <dl>
-<dt><code><h5 class="fs">datetime: <var>D</var> = <b>yyyymmdd</b> (<var>T</var>)</code></h5></dt>
+<dt><code><h5 class="fs">datetime: <var>tz</var> = <b>datetime.SystemTimeZone</b> ()</code></h5></dt>
 </dl>
-<p> Convert datetime array to <code>YYYYMMDD</code> numeric form.
+<p> System time zone setting.
 </p>
 <div class="ms-5">
-<p> <code><var>D</var> = yyyymmdd (<var>T</var>)</code> returns a <code>double</code> array
- <var>D</var> of the same size as <var>T</var> in which each element encodes the
- date of the corresponding datetime as <code><var>year</var> * 10000 +
- <var>month</var> * 100 + <var>day</var></code>.  The time of day is ignored.  Not-A-Time
- (<code>NaT</code>) values are returned as <code>NaN</code>.
+<p> <code><var>tz</var> = datetime.SystemTimeZone ()</code> returns the time zone of the
+ system where Octave is running, as the name of a zone in the IANA Time
+ Zone Database, such as <code>'Europe/Athens'</code>.  It is <code>'UTC'</code> when
+ the system time zone cannot be determined.  The parentheses may be
+ omitted, and the same value is read from any datetime array <var>d</var> as
+ <code><var>d</var>.SystemTimeZone</code>.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/datetime.m#L2025">datetime</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/datetime.m#L241">datetime</a>
 </div>
-        <div class="card rounded my-4">
-          <div class="card-header card-header-mod">
-            <div class="row d-flex flex-wrap align-items-center">
-              <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
-                <button class="btn btn-link fs-4 fw-normal d-inline-block mr-2 p-0 text-reset text-decoration-none"
-                  type="button" data-bs-toggle="collapse"
-                  data-bs-target="#datetime_yyyymmdd-example1" aria-expanded="true"
-                  aria-controls="datetime_yyyymmdd-example1">
-                Example: 1
-                </button>
-              </div>
-            </div>
-          </div>
-          <div class="collapse show" id="datetime_yyyymmdd-example1">
-            <div class="card-body">
-                <p><code>yyyymmdd</code> packs the date into one number as <code>year*10000 + month*100 + day</code>; the time of day is ignored.</p>
-                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> t = datetime (2024, 3, 9, 6, 0, 0)</pre>
-                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">t =
-  datetime
-
-   09-Mar-2024 06:00:00</pre>
-                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> yyyymmdd (t)</pre>
-                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans = 2.0240e+07</pre>
-
-            </div>
-          </div>
-        </div>
-
 
             </div>
           </div>

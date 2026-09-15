@@ -410,6 +410,7 @@
 				<div class="list">
 				<ul style="list-style-type: none; padding-left: 20px;">
 					<li><a href="datetime.empty.html" class="text-decoration-none font-monospace"><small>empty</small></a></li>
+					<li><a href="datetime.SystemTimeZone.html" class="text-decoration-none font-monospace"><small>SystemTimeZone</small></a></li>
 					<li><a href="datetime.zoneNameStyle.html" class="text-decoration-none font-monospace"><small>zoneNameStyle</small></a></li>
 					<li><a href="datetime.setDefaultFormats.html" class="text-decoration-none font-monospace"><small>setDefaultFormats</small></a></li>
 				</ul>
@@ -496,7 +497,7 @@
 <tr><td width="34%"><code>'HH:mm:ss'</code></td><td width="66%">a time alone, taking today&rsquo;s date.</td></tr>
 </table>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/0ecbf17/inst/datetime.m#L733">datetime</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/datetime.m#L741">datetime</a>
 </div>
 
 <p> Three further shapes are read that MATLAB does not detect, and are
@@ -704,9 +705,9 @@
  name no absolute instant, and no daylight saving rule applies to them.
  Supported time zones are those of the IANA Time Zone Database, and
  <code>'local'</code>, in any letter case, names the system time zone given by
- <code>datetime.SystemTimeZone</code>, which is what the property stores.  A
- fixed offset from UTC such as <code>'+05:30'</code> is accepted too; see the
- <code>TimeZone</code> property for its spellings.  A zone may also be
+ <code>datetime.SystemTimeZone</code>, stored as naming that zone would store
+ it.  A fixed offset from UTC such as <code>'+05:30'</code> is accepted too;
+ see the <code>TimeZone</code> property for its spellings.  A zone may also be
  attached, changed, or dropped afterwards through the
  <code>'TimeZone'</code> property; attaching one reinterprets the wall-clock
  values in that zone, whereas changing between two zones preserves the
@@ -751,7 +752,11 @@
  agrees period for period, up to its own limit of about year 144684,
  beyond which it raises where this class continues to answer.  A date
  before any zone had a transition takes that zone&rsquo;s local mean time,
- again as MATLAB does within its range.
+ again as MATLAB does within its range.  In such a zone MATLAB also
+ refuses a day component beyond the range of a 32-bit integer, whether
+ given to the constructor or assigned, with an error calling it not an
+ integer; this class accepts it and answers with the date and time it
+ gives without a zone.
 </p>
 <p> <strong>Deviation from MATLAB</strong> in the components of an <strong>infinite</strong>
  datetime.  Building one is documented behaviour and is followed exactly:
@@ -804,7 +809,7 @@
   <a href="duration.html">duration</a>
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/0ecbf17/inst/datetime.m#L733">datetime</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/datetime.m#L741">datetime</a>
 </div>
         <div class="card rounded my-4">
           <div class="card-header card-header-mod">

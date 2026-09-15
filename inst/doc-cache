@@ -24777,7 +24777,7 @@ Variables are serialized as follows:
 
 Numeric and logical variables are written as numbers (logicals as
 0 / 1 ). Missing and infinite values are written as the
-tokens NaN , NA , inf , and -inf .
+tokens NaN , NA , Inf , and -Inf .
 
 Character, cellstr, and string variables are written as quoted
 text. A char matrix is one column of text, each row written
