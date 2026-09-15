@@ -1,44 +1,32 @@
-Summary of important user-visible changes for datatypes 1.4.1:
+Summary of important user-visible changes for datatypes 1.4.2:
 --------------------------------------------------------------
 
- This patch release completes the time zone support of `datetime`: the
- `'local'` zone, fixed offsets from UTC, and text carrying an offset or a zone
- abbreviation.  It ships release 2026d of the Time Zone Database.
+ This patch release installs on Octave 11.1.0 again, and fixes how infinite
+ and missing values are written to and read from CSV, ODS and XLSX files.
 
- ** `'TimeZone'` accepts `'local'`, and a fixed offset such as `'+05:30'` in
-    every spelling MATLAB accepts, `'Etc/GMT-3'` included.
-    `datetime.SystemTimeZone` returns the IANA name of the system zone, not
-    an abbreviation.
+ ** Version 1.4.1 could not be installed on Octave 11.1.0.
+    `datetime.SystemTimeZone` is now a static method, as in MATLAB, so
+    `methods ('datetime')` lists it and `properties ('datetime')` does not.
 
- ** An `'InputFormat'` with a `z`, `Z`, `X` or `x` field reads the offset or
-    zone abbreviation each string carries, and requires `'TimeZone'`.  ISO
-    8601 text ending in `Z` or an offset is also read without an
-    `'InputFormat'`.
+ ** `table2ods`, `timetable2ods`, `struct2ods`, `struct2xlsx`, `writetable`
+    and `writetimetable` write `Inf` and `-Inf` to ODS and XLSX as text, where
+    LibreOffice Calc loaded them as 0 and XLSX held an invalid value.  CSV
+    files carry `Inf` and `-Inf` instead of `inf` and `-inf`.
 
- ** `csv2table`, `ods2table` and timetable row subscripts keep the offset such
-    text carries, where they used to drop it.
+ ** `readtable`, `ods2table` and `ods2timetable` read a numeric column holding
+    text or error cells as MATLAB does: the text `Inf`, `-Inf` and `NaN` as
+    those numbers, any other text and every error cell as NaN.  Such a column
+    stopped with "nonconformant arguments", and XLSX error cells read as 0.
 
- ** `tzoffset` returns the daylight saving part of each offset as a second
-    output, and `isdst` no longer reports the winter of `Europe/Dublin` or
-    `Africa/Casablanca` as daylight saving time.
+ ** `writetable`, `writetimetable` and `table2csv` end CSV rows in LF on every
+    platform, where Windows wrote CRLF.
 
- ** Unreadable text: a string beside a blank element becomes NaT instead of
-    raising an error, while an array with no readable text and no blank
-    element, or detected text whose first string cannot be read, raises one.
+ ** `datetime`: on Windows, a date more than about 5.88 million years from
+    1970 no longer wraps to a wrong date (#53).  In a time zone other than
+    `UTC`, components carrying the date past year 32767 give the right date,
+    and a day component beyond the 32-bit integer range is accepted, where
+    MATLAB refuses it.
 
- ** A `'Locale'` may be written with a hyphen, as in `'en-GB'`.
-
- ** `repelem` on a table or timetable accepts a vector of counts, one per row
-    or per variable, as in `repelem (T, [1; 2; 0], 1)`.
-
- ** `writetable` adding or replacing a sheet in a file written by `table2ods`
-    keeps the metadata sheet in step, so every sheet reads back, where reading
-    such a file could fail.
-
- ** `ods2table`, `ods2struct` and `table2ods` raise a clear error on a sheet
-    whose cells contradict the types its metadata declares, where they used
-    to fail with "nonconformant arguments".
-
- ** Displaying a cell array, or the `summary` of a variable holding one, no
-    longer raises an out-of-bound error when a long text sits beside a short
-    one.
+ ** `'TimeZone', 'local'` on a system whose zone is `Etc/UTC` or another
+    fixed-offset name stores the zone as naming it directly does, `'+00:00'`
+    for `Etc/UTC`.
