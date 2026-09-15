@@ -94,8 +94,10 @@ This is a helper IO function for the @qcode{table2csv} method of the \
     append = args(4).bool_value ();
   }
 
-  // Open CSV file
-  ofstream fd(file.c_str (), append ? (ios::out | ios::app) : ios::out);
+  // Open CSV file in binary mode, so that rows end in '\n' on every platform
+  // rather than '\r\n' on Windows
+  ofstream fd(file.c_str (), append ? (ios::out | ios::app | ios::binary)
+                                    : (ios::out | ios::binary));
   if (! fd.is_open ())
   {
     retval(0) = "cannot open file '" + file + "' for writing.";
