@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>What time is 09:00 IST? Offsets, abbreviations and the choices behind them</title>
+  <meta name="description" content="How datetime in the datatypes package reads a UTC offset or a zone abbreviation from text, and why it refuses the ones that could mean more than one place.">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
+  <style>
+    article p, article li { line-height: 1.65; }
+    article pre { background: #f6f8fa; border: 1px solid #e1e4e8; border-radius: .375rem;
+                  padding: 1rem; overflow-x: auto; }
+    article code { color: #24292e; }
+    article pre code { color: inherit; }
+    article h2 { margin-top: 2.25rem; }
+    .lead-rule { border-left: .25rem solid #6c757d; padding-left: 1rem; color: #495057; }
+  </style>
+</head>
+<body>
+  <div class="bg-dark">
+    <div class="container-xl">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+          <a class="navbar-brand" href="https://gnu-octave.github.io/packages/datatypes">
+            <img src="../assets/datatypes.png" alt="datatypes" class="d-inline-block align-top" width="25" height="25">
+            Data Types for GNU Octave
+          </a>
+          <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+              <li class="nav-item">
+                <a class="nav-link" href="../index.html"><i class="fas fa-book"></i> Documentation</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="index.html"><i class="fas fa-pen"></i> Notes</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+    </div>
+  </div>
+
+  <div class="container-xl my-4">
+    <div class="row">
+      <div class="col-md-9">
+        <article>
+          <h1>What time is 09:00 IST? Offsets, abbreviations and the choices behind them</h1>
+          <p class="text-muted">15 September 2026</p>
+
+          <p class="lead-rule">A timestamp in a log file often carries its time zone
+          as a few characters at the end: <code>Z</code>, <code>+05:30</code>,
+          <code>GMT-3</code>, <code>CEST</code>, <code>IST</code>. Some of those are
+          exact. Some are guesses. One of them names three different countries. This
+          is about how <code>datetime</code> in datatypes 1.4.1 reads them, and about
+          why it refuses some of them outright.</p>
+
+          <h2>An offset is a fact, a zone is a rule</h2>
+
+          <p>An offset such as <code>+05:30</code> says how far a clock was from UTC
+          at one moment. A zone such as <code>Asia/Kolkata</code> is a rule: a history
+          of offsets that a government has set, and may set again. Most of the time
+          the two agree. They do not have to:</p>
+
+<pre><code>t = datetime (1943, 6, 1, 12, 0, 0, 'TimeZone', 'Asia/Kolkata');
+tzoffset (t)      % 06:30, India's wartime time
+
+t = datetime (1943, 6, 1, 12, 0, 0, 'TimeZone', '+05:30');
+tzoffset (t)      % 05:30, whatever the date
+</code></pre>
+
+          <p>Fixed-offset zones are new in 1.4.1. They are the right choice when your
+          data recorded an offset and nothing about a place, which is what most log
+          formats and web APIs give you, and when a timestamp must keep meaning the
+          same instant however the rules for a region change later. If you know where
+          the clock was, use the named zone instead: it knows about daylight saving
+          and about history like the above, and a fixed offset never will.</p>
+
+          <p>One spelling deserves a warning. The time zone database's
+          <code>Etc/GMT-3</code> means three hours <em>ahead</em> of UTC, not behind.
+          The sign is reversed, a convention inherited from POSIX, and datatypes reads
+          the name as the database defines it:</p>
+
+<pre><code>t = datetime (2024, 1, 1, 'TimeZone', 'Etc/GMT-3');
+t.TimeZone        % +03:00
+</code></pre>
+
+          <p>An offset written in text, like <code>GMT-3</code> at the end of a log
+          line, does not share that quirk, which is where the next part starts.</p>
+
+          <h2>Reading an offset out of text</h2>
+
+          <p>When the text carries the offset, name its field in
+          <code>'InputFormat'</code>. The fields <code>x</code>, <code>X</code> and
+          <code>Z</code> read a numeric offset, a bare <code>Z</code> for UTC, or an
+          offset after <code>GMT</code> or <code>UTC</code>. The field <code>z</code>
+          reads all of that and a zone abbreviation as well, which comes up
+          below.</p>
+
+<pre><code>t = datetime ('2024-03-10 09:00 +05:30', 'InputFormat', 'yyyy-MM-dd HH:mm xxx', ...
+              'TimeZone', 'UTC')
+% 10-Mar-2024 03:30:00
+
+t = datetime ('2024-03-10 09:00 GMT-3', 'InputFormat', 'yyyy-MM-dd HH:mm z', ...
+              'TimeZone', 'UTC')
+% 10-Mar-2024 12:00:00
+</code></pre>
+
+          <p>Here <code>GMT-3</code> is three hours behind UTC, which is what anyone
+          writing it means. Only the database's <code>Etc/</code> names reverse the
+          sign.</p>
+
+          <p>The reader is lenient where real text is untidy and strict where
+          leniency would mean guessing. It takes a one- or two-digit hour
+          (<code>-5</code>), minutes and seconds with or without colons
+          (<code>+0530</code>, <code>+05:30:00</code>), and a <code>GMT</code> or
+          <code>UTC</code> prefix. It refuses a one-digit minute (<code>-05:3</code>),
+          because nothing says whether that is three minutes or thirty, and it refuses
+          an hour of 24 or more. Those are the forms MATLAB accepts too.</p>
+
+          <p>ISO 8601 text needs no <code>'InputFormat'</code> at all, offset
+          included:</p>
+
+<pre><code>t = datetime ('2024-03-10T09:00:00Z', 'TimeZone', 'Asia/Kolkata', ...
+              'Format', 'yyyy-MM-dd HH:mm xxx')
+% 2024-03-10 14:30 +05:30
+</code></pre>
+
+          <h2>Why an offset needs a TimeZone</h2>
+
+          <p>An offset tells you the instant. It does not tell you how to show it.
+          <code>09:00+05:30</code> is 03:30 in London in early March, 05:30 in Athens and
+          09:00 in Kolkata, and a <code>datetime</code> array displays its times in one
+          zone. So datatypes asks which:</p>
+
+<pre><code>t = datetime ('2024-03-10T09:00:00+05:30')
+% error: datetime: the text '2024-03-10T09:00:00+05:30' carries a time zone
+% offset, which requires 'TimeZone' to name a time zone.
+</code></pre>
+
+          <p>The alternative was to assume UTC. Every value would then be the right
+          instant, shown as UTC wall-clock time, with nothing attached to say so. A
+          table of readings taken in Kolkata would look exactly like a table of
+          readings that are five and a half hours wrong. An error you fix once, by
+          writing <code>'TimeZone', 'UTC'</code> if UTC is what you want, is cheaper
+          than a table that is quietly misread.</p>
+
+          <h2>Three countries called IST</h2>
+
+          <p>Abbreviations are where text stops being exact. <code>CEST</code> is
+          +02:00 wherever you read it. <code>IST</code> is not: it is India (+05:30), Ireland (+01:00) and Israel (+02:00).
+          <code>BST</code> is British Summer Time (+01:00) and Bangladesh Standard
+          Time (+06:00). <code>ACST</code> is Australian Central Standard Time
+          (+09:30) under an Australian locale and four hours behind UTC under
+          Brazilian Portuguese. <code>AMT</code> is Amazon Time, and to some people
+          Armenia.</p>
+
+          <p>Two obvious designs fail. A separate table for each locale reads every
+          name in the sense of the user's language, which breaks the first time
+          someone in France reads a log written in Dublin: what the file means does
+          not depend on who opens it. Refusing every abbreviation is safe and
+          useless, because real logs are full of <code>EST</code> and
+          <code>CET</code>.</p>
+
+          <p>What datatypes does instead:</p>
+
+          <ul>
+            <li><strong>One shared table, for every locale.</strong> It holds each
+                abbreviation that MATLAB reads at a single offset in every locale
+                that reads it, across the 13 locales we checked, plus
+                <code>MSK</code>, <code>TRT</code>, <code>AZT</code> and
+                <code>GET</code> for Europe and West Asia. That is a rule about
+                readings, not about the world: <code>CST</code> is read as North
+                American Central time, -06:00, although China Standard Time uses
+                the same letters.</li>
+            <li><strong>The ambiguous names need a locale.</strong>
+                <code>BST</code>, <code>IST</code>, <code>ACST</code> and
+                <code>AMT</code> are read only under a locale that settles them, at
+                the offset that locale gives them, and refused everywhere else,
+                including when no <code>'Locale'</code> is given.</li>
+            <li><strong>A name MATLAB reads at two offsets never enters the
+                shared table</strong>, and nothing added to it later may change a
+                reading MATLAB already makes.</li>
+          </ul>
+
+<pre><code>fmt = 'yyyy-MM-dd HH:mm z';
+
+datetime ('2024-03-10 09:00 IST', 'InputFormat', fmt, 'TimeZone', 'UTC', ...
+          'Locale', 'en_IN')
+% 10-Mar-2024 03:30:00
+
+datetime ('2024-03-10 09:00 IST', 'InputFormat', fmt, 'TimeZone', 'UTC', ...
+          'Locale', 'en_IE')
+% 10-Mar-2024 08:00:00
+
+datetime ('2024-03-10 09:00 IST', 'InputFormat', fmt, 'TimeZone', 'UTC')
+% error: datetime: could not parse the date/time string '2024-03-10 09:00 IST'
+% with 'InputFormat' 'yyyy-MM-dd HH:mm z'.
+</code></pre>
+
+          <p>The refusal is the ordinary parse error; it does not say that the name
+          was the problem. What it does not do is hand you a time that is right in
+          Delhi and wrong in Dublin.</p>
+
+          <p>So much is settled. The shared table may grow, and a name added to it
+          will have one reading. The four locale-bound names stay bound to their
+          locales.</p>
+
+          <h2>Winter time that counts as summer time</h2>
+
+          <p>Irish clocks show +01:00 in summer and +00:00 in winter, like British
+          ones. The time zone database records Irish law as it is written, though:
+          +01:00 is Irish <em>Standard</em> Time, and winter is a saving of minus one
+          hour. Read naively, that makes the Irish winter the daylight saving part of
+          the year. Morocco is written the same way: +01:00 is standard time, and
+          Ramadan is a saving of minus one hour that brings clocks to +00:00.</p>
+
+          <p>datatypes counts the way the database's own rearguard form does, which is
+          also what MATLAB reports. A negative saving is standard time:</p>
+
+<pre><code>t = datetime ([2024 2024], [1 7], [15 15], 12, 0, 0, 'TimeZone', 'Europe/Dublin');
+isdst (t)             % 0  1
+[off, dst] = tzoffset (t)
+% off: 00:00  01:00
+% dst: 00:00  01:00
+</code></pre>
+
+          <p>The second output of <code>tzoffset</code>, also new in 1.4.1, is the
+          daylight saving part of each offset. For <code>Africa/Casablanca</code>,
+          <code>isdst</code> is true in January, at +01:00, and false on 1 March 2026,
+          during Ramadan, at +00:00.</p>
+
+          <h2>Where this matches MATLAB, and where it does not</h2>
+
+          <p>Every rule above was measured against MATLAB R2024a before it was
+          written: which offset spellings are accepted and refused, which abbreviations
+          are read under which locale, and the daylight saving counts for Dublin and
+          Casablanca. Three differences are deliberate:</p>
+
+          <ul>
+            <li><strong>No locale, no ambiguous name.</strong> With no
+                <code>'Locale'</code>, MATLAB reads <code>BST</code> as +06:00 and
+                <code>IST</code> as +05:30. datatypes refuses both, for the reasons
+                above. Where datatypes does read a name, it reads it at the offset
+                MATLAB gives it.</li>
+            <li><strong>Zone names stay as you wrote them.</strong> MATLAB rewrites
+                some names to other spellings: <code>Asia/Kolkata</code> becomes
+                <code>Asia/Calcutta</code>, and <code>GMT</code> becomes
+                <code>UTC</code>. datatypes keeps the name you gave. The exception is
+                a fixed offset, which is stored as one: <code>Etc/GMT-3</code> and
+                <code>UTC+03:00</code> both become <code>+03:00</code>, as they do in
+                MATLAB.</li>
+            <li><strong>ISO 8601 offsets without a format.</strong> MATLAB refuses
+                ISO 8601 text ending in <code>Z</code> or an offset unless you give
+                an <code>'InputFormat'</code>, even when a
+                <code>'TimeZone'</code> is given. datatypes reads it, because the
+                form cannot mean anything else.</li>
+          </ul>
+
+          <h2>The short version</h2>
+
+          <ul>
+            <li>You know where the clock was: <strong>use a named zone</strong>,
+                <code>Asia/Kolkata</code> rather than <code>+05:30</code>.</li>
+            <li>You only have an offset: <strong>use a fixed-offset zone</strong>,
+                <code>+05:30</code>.</li>
+            <li>Text carrying an offset: <strong>give a
+                <code>'TimeZone'</code></strong>. It is the zone your times will be
+                shown in.</li>
+            <li>Text carrying abbreviations: <strong>give the
+                <code>'Locale'</code> the text was written in</strong>, and expect
+                <code>IST</code>, <code>BST</code>, <code>ACST</code> and
+                <code>AMT</code> to be refused without one.</li>
+          </ul>
+
+          <p>The reference pages for
+          <a href="../datetime.datetime.html">the <code>datetime</code> constructor</a>
+          and <a href="../datetime.tzoffset.html"><code>tzoffset</code></a> list every
+          field and option.</p>
+
+          <hr class="my-4">
+          <p class="text-muted">The <code>datatypes</code> package for GNU Octave is
+          developed by Andreas Bertsatos and funded by
+          <a href="https://nlnet.nl/">NLnet</a> through the NGI Zero Commons Fund.
+          Questions and corrections:
+          <a href="https://github.com/pr0m1th3as/datatypes/issues">the issue
+          tracker</a>.</p>
+        </article>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
