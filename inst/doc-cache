@@ -6348,22 +6348,24 @@ datetime.SystemTimeZone
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 292
-datetime: property SystemTimeZone
+# length: 410
+datetime: tz = datetime.SystemTimeZone ()
 
-System time zone setting
+System time zone setting.
 
-A read-only property specifying the local time zone of the system, where
-Octave is running, as the name of a zone in the IANA Time Zone Database,
-such as 'Europe/Athens' . It is 'UTC' when the system
-time zone cannot be determined.
+tz = datetime.SystemTimeZone () returns the time zone of the
+system where Octave is running, as the name of a zone in the IANA Time
+Zone Database, such as 'Europe/Athens' . It is 'UTC' when
+the system time zone cannot be determined. The parentheses may be
+omitted, and the same value is read from any datetime array d as
+d .SystemTimeZone .
 
 
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 24
-System time zone setting
+# length: 25
+System time zone setting.
 
 
 
@@ -6377,7 +6379,7 @@ datetime.TimeZone
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 1851
+# length: 1958
 datetime: property TimeZone
 
 Time zone
@@ -6387,7 +6389,9 @@ specified as a string scalar, it is converted and stored internally as
 a character vector.
 
 Setting it to 'local' , in any letter case, stores the system time
-zone given by datetime.SystemTimeZone .
+zone given by datetime.SystemTimeZone , exactly as setting that
+zone by name would store it, so a system zone of 'Etc/UTC' is
+stored as '+00:00' .
 
 A fixed offset from UTC, which never observes daylight saving time, is
 stored as '+HH:MM' or '-HH:MM' , or as
@@ -6986,7 +6990,7 @@ datetime.datetime
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 18040
+# length: 18306
 datetime: T = datetime ( 'now' )
 datetime: T = datetime ( 'today' )
 datetime: T = datetime ( 'tomorrow' )
@@ -7246,9 +7250,9 @@ specified, the array is unzoned: its values are wall-clock readings that
 name no absolute instant, and no daylight saving rule applies to them.
 Supported time zones are those of the IANA Time Zone Database, and
 'local' , in any letter case, names the system time zone given by
-datetime.SystemTimeZone , which is what the property stores. A
-fixed offset from UTC such as '+05:30' is accepted too; see the
-TimeZone property for its spellings. A zone may also be
+datetime.SystemTimeZone , stored as naming that zone would store
+it. A fixed offset from UTC such as '+05:30' is accepted too;
+see the TimeZone property for its spellings. A zone may also be
 attached, changed, or dropped afterwards through the
 'TimeZone' property; attaching one reinterprets the wall-clock
 values in that zone, whereas changing between two zones preserves the
@@ -7293,7 +7297,11 @@ inside the database&rsquo;s range. MATLAB extrapolates in the same way and
 agrees period for period, up to its own limit of about year 144684,
 beyond which it raises where this class continues to answer. A date
 before any zone had a transition takes that zone&rsquo;s local mean time,
-again as MATLAB does within its range.
+again as MATLAB does within its range. In such a zone MATLAB also
+refuses a day component beyond the range of a 32-bit integer, whether
+given to the constructor or assigned, with an error calling it not an
+integer; this class accepts it and answers with the date and time it
+gives without a zone.
 
 Deviation from MATLAB in the components of an infinite
 datetime. Building one is documented behaviour and is followed exactly:
