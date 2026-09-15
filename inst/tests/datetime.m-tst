@@ -342,6 +342,32 @@
 %!              'TimeZone', 'America/New_York')), 32768)
 %!assert_equal (year (datetime (32000, 1, 1, 'TimeZone', 'America/New_York') ...
 %!                    + calyears (768)), 32768)
+%!assert_equal (datevec (datetime (2020, 480000, 1, ...
+%!              'TimeZone', 'Europe/Athens')), [42019, 12, 1, 0, 0, 0])
+%!assert_equal (datevec (datetime (2020, -480000, 1, ...
+%!              'TimeZone', 'Europe/Athens')), [-37981, 12, 1, 0, 0, 0])
+%!assert_equal (datevec (datetime (100000, -1176000, 1, ...
+%!              'TimeZone', 'Europe/Athens')), [1999, 12, 1, 0, 0, 0])
+%!assert_equal (datevec (datetime (2020, 480006, 15, 12, 0, 0, ...
+%!              'TimeZone', 'Europe/Athens')), [42020, 6, 15, 12, 0, 0])
+%!assert_equal (hours (tzoffset (datetime (2020, 480006, 15, 12, 0, 0, ...
+%!              'TimeZone', 'Europe/Athens'))), 3)
+%!test
+%! [~, dst] = tzoffset (datetime (2020, 480006, 15, 12, 0, 0, ...
+%!                                'TimeZone', 'Europe/Athens'));
+%! assert_equal (hours (dst), 1);
+%!assert_equal (isdst (datetime (2020, 480006, 15, 12, 0, 0, ...
+%!              'TimeZone', 'Europe/Athens')), true)
+%!assert_equal (posixtime (datetime (2020, 480006, 15, 12, 0, 0, ...
+%!              'TimeZone', 'Europe/Athens')), 1263870291600)
+%!test
+%! t = datetime (2020, 1, 1, 'TimeZone', 'Europe/Athens');
+%! t.Month = 480000;
+%! assert_equal (datevec (t), [42019, 12, 1, 0, 0, 0]);
+%!test
+%! t = datetime (2020, 480006, 15, 12, 0, 0, 'TimeZone', 'Europe/Athens');
+%! t.TimeZone = 'America/New_York';
+%! assert_equal (datevec (t), [42020, 6, 15, 5, 0, 0]);
 %!test
 %! t = datetime (1e6, 3, 15);
 %! t.TimeZone = 'America/New_York';

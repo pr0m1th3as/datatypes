@@ -441,66 +441,6 @@ set_civil (int64_t days, const RowVector& hms, int i, Vec& Y, Vec& M,
   s(i) = hms(5);
 }
 
-auto
-components2localtime (double Yv, double Mv, double Dv, double hv, double mv,
-                      double sv, double xv, string precision)
-{
-  // Aggregate hours, minutes, seconds, and milliseconds into seconds,
-  // calculate extra days to add later and map remaining hours, minutes, and
-  // seconds to a local_time variable.
-  double time_sec = hv * 3600 + mv * 60 + sv + xv / 1000;
-  int64_t extra_days = time_extra_days (time_sec);
-  time_sec = remainder (time_sec, 86400);
-  RowVector HMS = seconds2vector (time_sec, precision);
-  int tmp_h = (int)HMS(3);
-  int tmp_m = (int)HMS(4);
-  int tmp_s = (int)HMS(5);
-  double pr = 1000000;
-  if (precision == "milliseconds")
-  {
-    pr = 1000;
-  }
-  double tmp_frac_sec = HMS(5) - tmp_s;
-  int tmp_micro = (int)(round (tmp_frac_sec * pr));
-  // Fix years / months
-  int tmp_Y = (int)Yv + ((int)Mv / 12);
-  int tmp_M = (int)Mv % 12;
-  int tmp_D = (int)Dv + (int)extra_days;
-  // Add/subtract months and days accordingly
-  year_month_day ymd = year(tmp_Y)/(int)0/(int)0;
-  if (tmp_M < 0)
-  {
-    ymd -= months{-tmp_M};
-  }
-  else
-  {
-    ymd += months{tmp_M};
-  }
-  if (tmp_D < 0)
-  {
-    ymd = sys_days{ymd} - days{-tmp_D};
-  }
-  else
-  {
-    ymd = sys_days{ymd} + days{tmp_D};
-  }
-  // Add time to date and interpret the wall-clock value in 'timezone'
-  auto datetime = local_days{ymd} + chrono::hours{tmp_h}
-                                  + chrono::minutes{tmp_m}
-                                  + chrono::seconds{tmp_s}
-                                  + chrono::microseconds{tmp_micro};
-  return datetime;
-}
-
-auto
-components2zoned (double Yv, double Mv, double Dv, double hv, double mv,
-                  double sv, double xv, string timezone, string precision)
-{
-  return resolve_local (timezone,
-                        components2localtime (Yv, Mv, Dv, hv, mv, sv, xv,
-                                              precision));
-}
-
 // Everything the daylight-saving questions need about one wall clock, from a
 // SINGLE tz-database lookup.  The database answers by local time, and a local
 // time names one moment, two, or none; 'get_info' reports which, along with the
@@ -553,6 +493,27 @@ zone_year_shift (double Yv)
   return 0.0;
 }
 
+// The wall clock a component set names, moved by SHIFT years so that 'date.h'
+// can hold it.  The components are folded in 64 bits first, and the shift is
+// taken from the year they land in rather than from the year given, since the
+// months, days or time can carry a date across that range on their own.  A
+// caller wanting the date back adds SHIFT to the year it reads.
+local_time<chrono::microseconds>
+components2localtime (double Yv, double Mv, double Dv, double hv, double mv,
+                      double sv, double xv, string precision, double& shift)
+{
+  int64_t dnum;
+  RowVector hms;
+  components2civil (Yv, Mv, Dv, hv, mv, sv, xv, precision, dnum, hms);
+  int64_t y, mo, d;
+  civil::civil_from_days (dnum, y, mo, d);
+  shift = zone_year_shift ((double) y);
+  dnum -= (int64_t) (shift / 400.0) * 146097;
+  double tod = hms(3) * 3600 + hms(4) * 60 + hms(5);
+  return local_days {days {(int) dnum}}
+         + chrono::microseconds {(int64_t) round (tod * 1e6)};
+}
+
 // The daylight saving part of a regime's offset in seconds, as MATLAB counts
 // it.  The database writes the winter of some zones as a negative saving
 // (Ireland, and Morocco during Ramadan), where MATLAB counts the other half of
@@ -603,8 +564,9 @@ components2fold (double Yv, double Mv, double Dv, double hv, double mv,
                  double sv, double xv, const zone_ref& tz, string precision,
                  double srcOff, bool haveSrc, local_cache& lc)
 {
-  Yv -= zone_year_shift (Yv);
-  auto lt = components2localtime (Yv, Mv, Dv, hv, mv, sv, xv, precision);
+  double shift;
+  auto lt = components2localtime (Yv, Mv, Dv, hv, mv, sv, xv, precision,
+                                  shift);
   const local_info& info = cached_local_info (tz, lt, lc);
   // 'resolve_local' shifts a clock inside a gap forward past it, which lands
   // it in the regime after the transition, and takes the later of a repeated
@@ -676,14 +638,6 @@ sys2components (double posix_sec, const zone_ref& tz, RowVector& OUT,
   using ds = chrono::duration<double>;
   auto sys = round<chrono::microseconds> (sys_time<ds> {ds {posix_sec}});
   sys2components (sys, tz, OUT, off, "microseconds", zc);
-}
-
-sys_time<chrono::microseconds>
-components2sys (double Yv, double Mv, double Dv, double hv, double mv,
-               double sv, double xv, string timezone, string precision)
-{
-  auto in = components2zoned (Yv, Mv, Dv, hv, mv, sv, xv, timezone, precision);
-  return chrono::time_point_cast<chrono::microseconds> (in.get_sys_time ());
 }
 
 auto timezone_precision (double time_sec, string timezone, string precision)
@@ -1834,7 +1788,9 @@ a repeated clock when an offset is given. \n\
                             precision, dnum, hms);
           double p = (double) dnum * 86400.0 + hms(3) * 3600 + hms(4) * 60
                      + hms(5) - OF(i);
-          double sh = zone_year_shift (Y(i));
+          int64_t yf, mf, df;
+          civil::civil_from_days (dnum, yf, mf, df);
+          double sh = zone_year_shift ((double) yf);
           RowVector C(6);
           double off;
           sys2components (p - (sh / 400.0) * 146097.0 * 86400.0, tzp, C, off,
@@ -1889,10 +1845,12 @@ a repeated clock when an offset is given. \n\
         }
         else
         {
+          double sh;
           auto lt = components2localtime (Y(i), M(i), D(i), h(i), m(i),
-                                          s(i), x(i), precision);
+                                          s(i), x(i), precision, sh);
           auto sys = local2sys (tzp, lt, lc);
-          S(i) = (double) sys.time_since_epoch ().count () / 1000000.0;
+          S(i) = (double) sys.time_since_epoch ().count () / 1000000.0
+                 + (sh / 400.0) * 146097.0 * 86400.0;
         }
       }
       retval(0) = S;
@@ -2059,55 +2017,11 @@ a repeated clock when an offset is given. \n\
       }
       else
       {
-        // Aggregate hours, minutes, seconds, and milliseconds into seconds,
-        // calculate extra days to add later and map remaining hours, minutes,
-        // and seconds to a local_time variable
-        double time_sec = h(i) * 3600 + m(i) * 60 + s(i) + x(i) / 1000;
-        int64_t extra_days = time_extra_days (time_sec);
-        time_sec = remainder (time_sec, 86400);
-        RowVector HMS = seconds2vector (time_sec, precision);
-        int tmp_h = (int)HMS(3);
-        int tmp_m = (int)HMS(4);
-        int tmp_s = (int)HMS(5);
-        double pr = 1000000;
-        if (precision == "milliseconds")
-        {
-          pr = 1000;
-        }
-        double tmp_frac_sec = HMS(5) - tmp_s;
-        int tmp_micro = (int)(round (tmp_frac_sec * pr));
-        // Fix years / months.  A year outside what 'date.h' holds is moved by
-        // a whole multiple of 400 first, and put back on the answer below: the
-        // zone's transitions repeat exactly over that period, so the clock
-        // resolves as it would have done, and only a year the database could
-        // never have covered is moved.
-        double sh = zone_year_shift (Y(i));
-        int tmp_Y = (int)(Y(i) - sh) + ((int)M(i) / 12);
-        int tmp_M = (int)M(i) % 12;
-        int tmp_D = (int)D(i) + (int)extra_days;
-        // Add/subtract months and days accordingly
-        year_month_day ymd = year(tmp_Y)/(int)0/(int)0;
-        if (tmp_M < 0)
-        {
-          ymd -= months{-tmp_M};
-        }
-        else
-        {
-          ymd += months{tmp_M};
-        }
-        if (tmp_D < 0)
-        {
-          ymd = sys_days{ymd} - days{-tmp_D};
-        }
-        else
-        {
-          ymd = sys_days{ymd} + days{tmp_D};
-        }
-        // Add time to date
-        auto datetime = local_days{ymd} + chrono::hours{tmp_h}
-                                        + chrono::minutes{tmp_m}
-                                        + chrono::seconds{tmp_s}
-                                        + chrono::microseconds{tmp_micro};
+        // Fold the components and resolve the wall clock in its own zone;
+        // the shift that brought it into range goes back on the year.
+        double sh;
+        auto datetime = components2localtime (Y(i), M(i), D(i), h(i), m(i),
+                                              s(i), x(i), precision, sh);
         // Make timezone conversion, resolving the wall clock and reading the
         // instant back in the target zone through the cached lookups.
         auto sysp = local2sys (tzFrom, datetime, lcn);
