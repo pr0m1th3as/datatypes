@@ -46,21 +46,6 @@ classdef datetime
   ## @seealso{calendarDuration, duration}
   ## @end deftp
 
-  properties (Constant)
-    ## -*- texinfo -*-
-    ## @deftp {datetime} {property} SystemTimeZone
-    ##
-    ## System time zone setting
-    ##
-    ## A read-only property specifying the local time zone of the system, where
-    ## Octave is running, as the name of a zone in the IANA Time Zone Database,
-    ## such as @qcode{'Europe/Athens'}.  It is @qcode{'UTC'} when the system
-    ## time zone cannot be determined.
-    ##
-    ## @end deftp
-    SystemTimeZone = __datetime__ ('systemtimezone');
-  endproperties
-
   properties (Access = private, Hidden)
     ## Whole years
     Year = 0
@@ -249,6 +234,23 @@ classdef datetime
                        " zero for an empty array."));
       endif
       E = datetime (nan (sz), 'ConvertFrom', 'datenum');
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {datetime} {@var{tz} =} datetime.SystemTimeZone ()
+    ##
+    ## System time zone setting.
+    ##
+    ## @code{@var{tz} = datetime.SystemTimeZone ()} returns the time zone of the
+    ## system where Octave is running, as the name of a zone in the IANA Time
+    ## Zone Database, such as @qcode{'Europe/Athens'}.  It is @qcode{'UTC'} when
+    ## the system time zone cannot be determined.  The parentheses may be
+    ## omitted, and the same value is read from any datetime array @var{d} as
+    ## @code{@var{d}.SystemTimeZone}.
+    ##
+    ## @end deftypefn
+    function tz = SystemTimeZone ()
+      tz = __datetime__ ('systemtimezone');
     endfunction
 
     ## -*- texinfo -*-
@@ -5686,7 +5688,7 @@ classdef datetime
               out = dtResolveFormat (this.Format, this.Hour, this.Minute, ...
                                      this.Second);
             case 'SystemTimeZone'
-              out = this.SystemTimeZone;
+              out = datetime.SystemTimeZone ();
             case 'TimeZone'
               out = this.TimeZone;
             case {'Year'}
