@@ -331,17 +331,11 @@ endfunction
 
 ## Reconstruct one column from its data cells and their ODS value types.
 function v = reconstruct_column (C, VT, textType)
-  seen = VT(! cellfun (@isempty, VT));
-  if (isempty (seen))
-    kind = 'string';
-  else
-    kind = seen{1};
-  endif
-  switch (kind)
+  switch (__colkind__ (C, VT))
     case 'float'
-      v = ods_numeric (C);
+      v = __numcells__ (C);
     case 'boolean'
-      v = logical (ods_numeric (C));
+      v = logical (__numcells__ (C));
     case 'date'
       v = ods_iso2datetime (C);
     case 'time'
@@ -354,16 +348,6 @@ function v = reconstruct_column (C, VT, textType)
         v = s;
       endif
   endswitch
-endfunction
-
-## Numeric column from ODS cells; missing cells become NaN.
-function M = ods_numeric (C)
-  M = nan (size (C));
-  for i = 1:numel (C)
-    if (! isempty (C{i}))
-      M(i) = double (C{i});
-    endif
-  endfor
 endfunction
 
 ## Cellstr column from ODS cells; numbers are stringified, missing become ''.
@@ -821,6 +805,77 @@ endfunction
 %!   assert_equal (R.flag, [true; false; true]);
 %! unwind_protect_cleanup
 %!   delete (fn);
+%! end_unwind_protect
+
+## XLSX has no infinite number: an infinity is written as text and read back
+%!test
+%! T = table ([Inf; -Inf; NaN; 1.5], 'VariableNames', {'v'});
+%! fn = [tempname() '.xlsx'];
+%! d = tempname ();
+%! unwind_protect
+%!   writetable (T, fn);
+%!   R = readtable (fn);
+%!   assert_equal (isequaln (R.v, [Inf; -Inf; NaN; 1.5]), true);
+%!   unzip (fn, d);
+%!   xml = fileread (fullfile (d, 'xl', 'worksheets', 'sheet1.xml'));
+%!   assert_equal (isempty (strfind (xml, '<t>-Inf</t>')), false);
+%!   assert_equal (isempty (strfind (xml, '<v>inf</v>')), true);
+%! unwind_protect_cleanup
+%!   delete (fn);
+%!   if (exist (d, 'dir'))
+%!     confirm_recursive_rmdir (false, 'local');
+%!     rmdir (d, 's');
+%!   endif
+%! end_unwind_protect
+
+## An error cell in an XLSX file is a missing value
+%!test
+%! d = tempname ();
+%! fn = [tempname() '.xlsx'];
+%! ns = 'http://schemas.openxmlformats.org/';
+%! hdr = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
+%! parts = { ...
+%!   '[Content_Types].xml', [hdr '<Types xmlns="' ns ...
+%!   'package/2006/content-types"><Default Extension="rels" ContentType=', ...
+%!   '"application/vnd.openxmlformats-package.relationships+xml"/>', ...
+%!   '<Default Extension="xml" ContentType="application/xml"/></Types>']; ...
+%!   '_rels/.rels', [hdr '<Relationships xmlns="' ns ...
+%!   'package/2006/relationships"><Relationship Id="rId1" Type="' ns ...
+%!   'officeDocument/2006/relationships/officeDocument" ', ...
+%!   'Target="xl/workbook.xml"/></Relationships>']; ...
+%!   'xl/workbook.xml', [hdr '<workbook xmlns="' ns ...
+%!   'spreadsheetml/2006/main" xmlns:r="' ns ...
+%!   'officeDocument/2006/relationships"><sheets><sheet name="Sheet1" ', ...
+%!   'sheetId="1" r:id="rId1"/></sheets></workbook>']; ...
+%!   'xl/_rels/workbook.xml.rels', [hdr '<Relationships xmlns="' ns ...
+%!   'package/2006/relationships"><Relationship Id="rId1" Type="' ns ...
+%!   'officeDocument/2006/relationships/worksheet" ', ...
+%!   'Target="worksheets/sheet1.xml"/></Relationships>']; ...
+%!   'xl/worksheets/sheet1.xml', [hdr '<worksheet xmlns="' ns ...
+%!   'spreadsheetml/2006/main"><sheetData><row r="1"><c r="A1" ', ...
+%!   't="inlineStr"><is><t>x</t></is></c></row><row r="2"><c r="A2">', ...
+%!   '<v>1</v></c></row><row r="3"><c r="A3" t="e"><v>#N/A</v></c></row>', ...
+%!   '<row r="4"><c r="A4" t="e"><v>#NUM!</v></c></row><row r="5">', ...
+%!   '<c r="A5"><v>4</v></c></row></sheetData></worksheet>']};
+%! unwind_protect
+%!   for k = 1:rows (parts)
+%!     p = fullfile (d, parts{k,1});
+%!     mkdir (fileparts (p));
+%!     fid = fopen (p, 'w');
+%!     fputs (fid, parts{k,2});
+%!     fclose (fid);
+%!   endfor
+%!   zip (fn, parts(:,1), d);
+%!   R = readtable (fn);
+%!   assert_equal (isequaln (R.x, [1; NaN; NaN; 4]), true);
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file'))
+%!     delete (fn);
+%!   endif
+%!   if (exist (d, 'dir'))
+%!     confirm_recursive_rmdir (false, 'local');
+%!     rmdir (d, 's');
+%!   endif
 %! end_unwind_protect
 
 ## '.xlsx' 'Range' anchor on write, clipped on read

@@ -5055,6 +5055,30 @@
 %! unwind_protect_cleanup
 %!   delete (fname);
 %! end_unwind_protect
+## Test infinities and NaN come back through the text pair
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:2)';
+%! TT = timetable (t, [Inf; -Inf; NaN], 'VariableNames', {'v'});
+%! fname = [tempname(), '.csv'];
+%! unwind_protect
+%!   timetable2csv (TT, fname);
+%!   B = csv2timetable (fname);
+%!   assert_equal (isequaln (B.v, [Inf; -Inf; NaN]), true);
+%! unwind_protect_cleanup
+%!   delete (fname);
+%! end_unwind_protect
+## Test infinities and NaN come back through the OpenDocument pair
+%!test
+%! t = datetime (2024, 6, 1) + hours (0:2)';
+%! TT = timetable (t, [Inf; -Inf; NaN], 'VariableNames', {'v'});
+%! fname = [tempname(), '.fods'];
+%! unwind_protect
+%!   timetable2ods (TT, fname);
+%!   B = ods2timetable (fname);
+%!   assert_equal (isequaln (B.v, [Inf; -Inf; NaN]), true);
+%! unwind_protect_cleanup
+%!   delete (fname);
+%! end_unwind_protect
 ## Test a zoned row time comes back zoned through the text pair
 %!test
 %! ny = 'America/New_York';

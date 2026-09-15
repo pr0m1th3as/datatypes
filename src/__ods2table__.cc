@@ -142,6 +142,14 @@ read_sheet (const pugi::xml_node &table, Cell &data, Cell &vtype, bool typed,
         raw = cell.attribute ("office:time-value").as_string ();
       else                              // string / empty
         raw = cell_text (cell);
+      // An error cell, which Calc writes as a string marked
+      // calcext:value-type="error", is a missing value, as MATLAB reads one
+      if (string (cell.attribute ("calcext:value-type").as_string ())
+          == "error")
+      {
+        vt.clear ();
+        raw.clear ();
+      }
       // blank: defer (may be trailing)
       if (trim && vt.empty () && raw.empty ())
       {

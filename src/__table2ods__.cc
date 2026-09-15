@@ -54,7 +54,8 @@ static const char *ODS_MIMETYPE =
 // (a double cannot hold the full 64-bit range; the reader restores the exact
 // class from the metadata sheet), everything else prints the shortest
 // decimal that reads back as the same double.  NaN and
-// empty produce a bare, value-less cell (i.e. a missing value).
+// empty produce a bare, value-less cell (i.e. a missing value), and an
+// infinity the text Inf or -Inf.
 static void
 write_float (pugi::xml_node &cell, const octave_value &ov)
 {
@@ -76,6 +77,15 @@ write_float (pugi::xml_node &cell, const octave_value &ov)
     double value = ov.double_value ();
     if (isnan (value))
       return;                           // NaN -> missing (bare cell)
+    if (isinf (value))
+    {
+      // A spreadsheet application loads a non-finite number as 0, so an
+      // infinity is written as the text Inf or -Inf, which reads back as the
+      // number
+      cell.append_attribute ("office:value-type") = "string";
+      cell.append_child ("text:p").text ().set (value > 0 ? "Inf" : "-Inf");
+      return;
+    }
     char tmp[32];
     shortest_double (tmp, 32, value);
     cell.append_attribute ("office:value-type") = "float";
@@ -191,6 +201,8 @@ display_len (const octave_value &ov, const string &vt)
       double v = ov.double_value ();
       if (isnan (v))
         return 0;
+      if (isinf (v))
+        return (v > 0) ? 3 : 4;         // "Inf", "-Inf"
       char tmp[32];
       return shortest_double (tmp, 32, v);
     }

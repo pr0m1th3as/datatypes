@@ -350,6 +350,10 @@ it directly. \n\
         continue;
       string t = c.attribute ("t").as_string ();
       long s = c.attribute ("s").as_int (-1);
+      // An error cell (#N/A, #NUM! and the rest) is a missing value, as
+      // MATLAB reads one
+      if (t == "e")
+        continue;
 
       octave_value val;
       string vt;

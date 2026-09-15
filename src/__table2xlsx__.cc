@@ -146,6 +146,13 @@ emit_cell (ostringstream &oss, long row, long col, const octave_value &ov,
       double val = ov.double_value ();
       if (isnan (val))
         return;
+      if (isinf (val))
+      {
+        // Excel has no infinite number; the text reads back as the number
+        oss << "<c r=\"" << ref << "\" t=\"inlineStr\"><is><t>"
+            << (val > 0 ? "Inf" : "-Inf") << "</t></is></c>";
+        return;
+      }
       char tmp[32];
       snprintf (tmp, 32, "%.15g", val);
       oss << "<c r=\"" << ref << "\"><v>" << tmp << "</v></c>";
@@ -222,6 +229,12 @@ emit_cell (ostringstream &oss, long row, long col, const octave_value &ov,
       double val = ov.double_value ();
       if (isnan (val))
         return;
+      if (isinf (val))
+      {
+        oss << "<c r=\"" << ref << "\" t=\"inlineStr\"><is><t>"
+            << (val > 0 ? "Inf" : "-Inf") << "</t></is></c>";
+        return;
+      }
       char tmp[32];
       snprintf (tmp, 32, "%.15g", val);
       oss << "<c r=\"" << ref << "\"><v>" << tmp << "</v></c>";

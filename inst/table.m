@@ -906,7 +906,7 @@ classdef table < tabular
     ## @item
     ## Numeric and logical variables are written as numbers (logicals as
     ## @code{0}/@code{1}).  Missing and infinite values are written as the
-    ## tokens @qcode{NaN}, @qcode{NA}, @qcode{inf}, and @qcode{-inf}.
+    ## tokens @qcode{NaN}, @qcode{NA}, @qcode{Inf}, and @qcode{-Inf}.
     ##
     ## @item
     ## Character, cellstr, and @code{string} variables are written as quoted

@@ -239,13 +239,16 @@ function [tbl, rowTimesName] = ods2table (filename, varargin)
 
   ## A sheet replaced by another writer can leave metadata that no longer fits
   ## it; a text, date or time cell under a numeric or logical type gives it away.
+  ## The text Inf, -Inf and NaN is how an infinity is written, not a mismatch.
   numvartype = {'double', 'single', 'int8', 'uint8', 'int16', 'uint16', ...
                 'int32', 'uint32', 'int64', 'uint64', 'logical'};
+  number = @(x) ischar (x) && any (strcmpi (x, {'Inf', '-Inf', 'NaN'}));
   for c = 1:min (size (T, 2), size (vtype, 2))
     col = T(:,c);
     col = col(! cellfun (@isempty, col));
-    if (! isempty (col) && any (strcmp (col{end}, numvartype))
-        && any (ismember (vtype(:,c), {'string', 'date', 'time'})))
+    text = ismember (vtype(:,c), {'date', 'time'}) ...
+           | (strcmp (vtype(:,c), 'string') & ! cellfun (number, data(:,c)));
+    if (! isempty (col) && any (strcmp (col{end}, numvartype)) && any (text))
       error (strcat ("ods2table: the metadata in '%s' does not match its", ...
                      " sheet: column %d holds text but is declared '%s'."), ...
              file, c + rowNamesTagged, col{end});
@@ -306,7 +309,7 @@ function v = ods_cell2var (C, VT, T)
   elseif (strcmp (T, 'logical'))
     v = logical (cell2mat (C));
   elseif (ismember (T, numvartype))
-    M = ods_column_numeric (C);
+    M = __numcells__ (C);
     if (any (cellfun (@(x) isinteger (x), C(:))))
       v = cellfun (@(x) cast (x, T), num2cell (M));  # element-wise, mixed types
     else
@@ -345,16 +348,6 @@ function v = ods_cell2var (C, VT, T)
   else
     v = ods_column_strings (C, VT);
   endif
-endfunction
-
-## Build a numeric matrix from a data cell block, mapping missing cells to NaN.
-function M = ods_column_numeric (C)
-  M = nan (size (C));
-  for i = 1:numel (C)
-    if (! isempty (C{i}))
-      M(i) = double (C{i});
-    endif
-  endfor
 endfunction
 
 ## Build a cellstr block from a data/value-type cell block: missing cells and
@@ -413,18 +406,11 @@ function tbl = ods_autodetect (data, vtype, varNamesRow, rowNamesCol, ...
   varNames = __undimname__ (varNames, {'Row', 'Variables'});
   varValues = cell (1, ncol);
   for c = 1:ncol
-    vt = vtype(:,c);
-    seen = vt(! cellfun (@isempty, vt));
-    if (isempty (seen))
-      kind = 'string';
-    else
-      kind = seen{1};
-    endif
-    switch (kind)
+    switch (__colkind__ (data(:,c), vtype(:,c)))
       case 'float'
-        varValues{c} = ods_column_numeric (data(:,c));
+        varValues{c} = __numcells__ (data(:,c));
       case 'boolean'
-        varValues{c} = logical (ods_column_numeric (data(:,c)));
+        varValues{c} = logical (__numcells__ (data(:,c)));
       case 'date'
         varValues{c} = __iso2dt__ (data(:,c));
       case 'time'
@@ -1248,6 +1234,57 @@ endfunction
 %!   table2ods (T, fn);
 %!   R = ods2table (fn);
 %!   assert_equal (R.v, [Inf; -Inf; 1.5]);
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## An infinity is written as text, since Calc loads a non-finite number as 0
+%!test
+%! fn = [tempname() '.fods'];
+%! T = table ([Inf; -Inf; 1.5], 'VariableNames', {'v'});
+%! unwind_protect
+%!   table2ods (T, fn);
+%!   xml = fileread (fn);
+%!   assert_equal (isempty (strfind (xml, 'office:value="inf"')), true);
+%!   assert_equal (isempty (strfind (xml, '<text:p>-Inf</text:p>')), false);
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+
+## A foreign sheet's numeric column reads text Inf and an error cell
+%!test
+%! fn = [tempname() '.fods'];
+%! f = @(v) ['<table:table-cell office:value-type="float" office:value="', ...
+%!           v, '"><text:p>', v, '</text:p></table:table-cell>'];
+%! s = @(v) ['<table:table-cell office:value-type="string"><text:p>', v, ...
+%!           '</text:p></table:table-cell>'];
+%! e = ['<table:table-cell table:formula="of:=NA()" ', ...
+%!      'office:value-type="string" office:string-value="#N/A" ', ...
+%!      'calcext:value-type="error"><text:p>#N/A</text:p></table:table-cell>'];
+%! r = @(varargin) ['<table:table-row>', varargin{:}, '</table:table-row>'];
+%! xml = ['<?xml version="1.0" encoding="UTF-8"?><office:document ', ...
+%!        'xmlns:office="urn:oasis:names:tc:opendocument:xmlns:', ...
+%!        'office:1.0" ', ...
+%!        'xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0" ', ...
+%!        'xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0" ', ...
+%!        'xmlns:calcext="urn:org:documentfoundation:names:experimental:', ...
+%!        'calc:xmlns:calcext:1.0" office:mimetype="application/', ...
+%!        'vnd.oasis.opendocument.spreadsheet"><office:body>', ...
+%!        '<office:spreadsheet><table:table table:name="Sheet1">', ...
+%!        r(s('x'), s('y')), r(f('1'), s('-Inf')), r(e, f('2')), ...
+%!        r(s('Inf'), f('3')), r(s('abc'), f('4')), ...
+%!        '</table:table></office:spreadsheet></office:body>', ...
+%!        '</office:document>'];
+%! unwind_protect
+%!   fid = fopen (fn, 'w');
+%!   fputs (fid, xml);
+%!   fclose (fid);
+%!   R = ods2table (fn);
+%!   assert_equal (isequaln (R.x, [1; NaN; Inf; NaN]), true);
+%!   assert_equal (R.y, [-Inf; 2; 3; 4]);
+%!   R = readtable (fn);
+%!   assert_equal (isequaln (R.x, [1; NaN; Inf; NaN]), true);
+%!   assert_equal (R.y, [-Inf; 2; 3; 4]);
 %! unwind_protect_cleanup
 %!   delete (fn);
 %! end_unwind_protect

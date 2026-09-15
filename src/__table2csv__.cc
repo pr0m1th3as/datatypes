@@ -154,6 +154,11 @@ This is a helper IO function for the @qcode{table2csv} method of the \
         {
           word += "NaN";
         }
+        // Infinities as MATLAB writes them; strtod reads any capitals back
+        else if (isinf (value))
+        {
+          word += (value > 0) ? "Inf" : "-Inf";
+        }
         else
         {
           char tmp[32];

@@ -885,6 +885,24 @@
 %!     delete (fn);
 %!   endif
 %! end_unwind_protect
+## Infinities are written as Inf and -Inf and round-trip through csv2table
+%!test
+%! T = table ([Inf; -Inf; 2], 'VariableNames', {'v'});
+%! fn = [tempname() '.csv'];
+%! unwind_protect
+%!   table2csv (T, fn);
+%!   txt = fileread (fn);
+%!   assert_equal (! isempty (regexp (txt, '^Inf$', 'lineanchors', 'once')), ...
+%!                 true);
+%!   assert_equal (! isempty (regexp (txt, '^-Inf$', 'lineanchors', ...
+%!                 'once')), true);
+%!   R = csv2table (fn);
+%!   assert_equal (R.v, [Inf; -Inf; 2]);
+%! unwind_protect_cleanup
+%!   if (exist (fn, 'file'))
+%!     delete (fn);
+%!   endif
+%! end_unwind_protect
 ## NA and NaN are written as distinct tokens and round-trip through csv2table
 %!test
 %! T = table ([1; NA; NaN], 'VariableNames', {'v'});

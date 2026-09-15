@@ -38,6 +38,12 @@ form, a `duration` as a clock, and everything else as its natural
 representation. Nothing on a data sheet is specific to this format, which is
 the point: opened in a spreadsheet application it looks like a table.
 
+A missing number (`NaN`) is an empty cell. An infinite number is the text
+`Inf` or `-Inf`: the format allows the numbers `INF` and `-INF`, but a
+spreadsheet application loads a non-finite number as 0. A reader takes the
+text `Inf`, `-Inf` and `NaN` in a numeric column back as those numbers, and an
+error cell as a missing value.
+
 For a `timetable` the first column is the row times, headed by the row
 dimension name. For a `table` with row names the first column is those names,
 headed likewise.
