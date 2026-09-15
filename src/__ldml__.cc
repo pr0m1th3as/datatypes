@@ -413,26 +413,27 @@ is_name_char (char c)
 
 // Days from the civil epoch 1970-01-01 (Howard Hinnant's algorithm), used for
 // the day-of-year field so that an out-of-range value rolls exactly as
-// datenum/datevec do in the m-code path.
-static long
-days_from_civil (long y, unsigned m, unsigned d)
+// datenum/datevec do in the m-code path.  Counts are 'int64_t', never 'long',
+// which is only 32 bits on Windows.
+static int64_t
+days_from_civil (int64_t y, unsigned m, unsigned d)
 {
   y -= m <= 2;
-  const long era = (y >= 0 ? y : y - 399) / 400;
+  const int64_t era = (y >= 0 ? y : y - 399) / 400;
   const unsigned yoe = static_cast<unsigned> (y - era * 400);
   const unsigned doy = (153 * (m + (m > 2 ? -3 : 9)) + 2) / 5 + d - 1;
   const unsigned doe = yoe * 365 + yoe / 4 - yoe / 100 + doy;
-  return era * 146097 + static_cast<long> (doe) - 719468;
+  return era * 146097 + static_cast<int64_t> (doe) - 719468;
 }
 
 static void
-civil_from_days (long z, long& y, unsigned& m, unsigned& d)
+civil_from_days (int64_t z, int64_t& y, unsigned& m, unsigned& d)
 {
   z += 719468;
-  const long era = (z >= 0 ? z : z - 146096) / 146097;
+  const int64_t era = (z >= 0 ? z : z - 146096) / 146097;
   const unsigned doe = static_cast<unsigned> (z - era * 146097);
   const unsigned yoe = (doe - doe / 1460 + doe / 36524 - doe / 146096) / 365;
-  y = static_cast<long> (yoe) + era * 400;
+  y = static_cast<int64_t> (yoe) + era * 400;
   const unsigned doy = doe - (365 * yoe + yoe / 4 - yoe / 100);
   const unsigned mp = (5 * doy + 2) / 153;
   d = doy - (153 * mp + 2) / 5 + 1;
@@ -453,7 +454,7 @@ days_in_month (double Y, double M)
   }
   if (m == 2)
   {
-    long y = static_cast<long> (Y);
+    int64_t y = static_cast<int64_t> (Y);
     bool leap = (y % 4 == 0 && y % 100 != 0) || (y % 400 == 0);
     return (leap ? 29 : 28);
   }
@@ -956,10 +957,10 @@ ldml_parse (const Cell& strs, const string& fmt, double pivot, int lidx,
             // Day of year, resolved through the civil calendar.  Only the
             // month and day are taken, exactly as the m-code does, so a value
             // beyond the end of the year keeps the parsed year.
-            long yy;
+            int64_t yy;
             unsigned mm, dd;
-            civil_from_days (days_from_civil (static_cast<long> (Yv), 1, 1)
-                             + static_cast<long> (val) - 1, yy, mm, dd);
+            civil_from_days (days_from_civil (static_cast<int64_t> (Yv), 1, 1)
+                             + static_cast<int64_t> (val) - 1, yy, mm, dd);
             Mv = mm;
             Dv = dd;
             break;
@@ -1053,7 +1054,7 @@ static const char *R_QORD[4] = {"1st quarter", "2nd quarter", "3rd quarter",
 
 // sprintf ('%0*d', width, value).
 static string
-zeropad (int width, long value)
+zeropad (int width, long long value)
 {
   char buf[64];
   if (value < 0)
@@ -1062,11 +1063,11 @@ zeropad (int width, long value)
     // -32767 as '-00032767' and not '-0032767'.  Counting the sign against the
     // width would also cost the field a digit, which is what stopped the
     // rendered text from being readable back.
-    snprintf (buf, sizeof (buf), "-%0*ld", width, -value);
+    snprintf (buf, sizeof (buf), "-%0*lld", width, -value);
   }
   else
   {
-    snprintf (buf, sizeof (buf), "%0*ld", width, value);
+    snprintf (buf, sizeof (buf), "%0*lld", width, value);
   }
   return string (buf);
 }
@@ -1261,7 +1262,7 @@ ldml_format (const NDArray& Y, const NDArray& M, const NDArray& D,
       continue;
     }
 
-    const long yy = static_cast<long> (Y(k));
+    const int64_t yy = static_cast<int64_t> (Y(k));
     const int mo = static_cast<int> (M(k));
     const int dd = static_cast<int> (D(k));
     const int hh = static_cast<int> (H(k));
@@ -1335,8 +1336,8 @@ ldml_format (const NDArray& Y, const NDArray& M, const NDArray& D,
 
         case 'D':
         {
-          long doy = days_from_civil (yy, mo, dd)
-                     - days_from_civil (yy, 1, 1) + 1;
+          int64_t doy = days_from_civil (yy, mo, dd)
+                        - days_from_civil (yy, 1, 1) + 1;
           piece = zeropad (nn, doy);
           break;
         }
@@ -1344,7 +1345,7 @@ ldml_format (const NDArray& Y, const NDArray& M, const NDArray& D,
         case 'e':
         {
           // weekday, Sunday = 1 (1970-01-01 was a Thursday).
-          long z = days_from_civil (yy, mo, dd);
+          int64_t z = days_from_civil (yy, mo, dd);
           int wd = static_cast<int> (omod (z + 4, 7.0)) + 1;
           switch (nn)
           {
@@ -1488,7 +1489,7 @@ ldml_format (const NDArray& Y, const NDArray& M, const NDArray& D,
         case 'W':
         {
           // Week of the month, Sunday based, first week = week 1.
-          long z1 = days_from_civil (yy, mo, 1);
+          int64_t z1 = days_from_civil (yy, mo, 1);
           int firstDow = static_cast<int> (omod (z1 + 4, 7.0)) + 1;
           int w = (dd - 1 + (firstDow - 1)) / 7 + 1;
           snprintf (buf, sizeof (buf), "%d", w);

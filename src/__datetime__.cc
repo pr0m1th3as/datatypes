@@ -334,8 +334,8 @@ RowVector seconds2vector (double time_sec, string precision, double unit = 0)
     sec_of_day += 86400.0;
     dayf -= 1;
   }
-  long y, mo, d;
-  civil::civil_from_days ((long) dayf, y, mo, d);
+  int64_t y, mo, d;
+  civil::civil_from_days ((int64_t) dayf, y, mo, d);
   auto tp = double2micro (sec_of_day);
   auto day_tp = chrono::floor<days>(tp);
   hh_mm_ss time_tp{tp - day_tp};
@@ -400,10 +400,10 @@ tz2vector (const ZonedType& to, string precision)
 // exact, so an hour component of -24 landed two days back rather than one.  The
 // seconds left behind are read off by 'seconds2vector', which answers modulo a
 // day whatever the sign it is given, so only this count has to be right.
-long
+int64_t
 time_extra_days (double time_sec)
 {
-  return (long) floor (time_sec / 86400.0);
+  return (int64_t) floor (time_sec / 86400.0);
 }
 
 // Normalize a component set without consulting 'date.h' or the timezone
@@ -414,11 +414,11 @@ time_extra_days (double time_sec)
 // what it is handed is one day's worth of seconds.
 void
 components2civil (double Yv, double Mv, double Dv, double hv, double mv,
-                  double sv, double xv, string precision, long& days,
+                  double sv, double xv, string precision, int64_t& days,
                   RowVector& hms)
 {
   double time_sec = hv * 3600 + mv * 60 + sv + xv / 1000;
-  long extra_days = time_extra_days (time_sec);
+  int64_t extra_days = time_extra_days (time_sec);
   hms = seconds2vector (remainder (time_sec, 86400), precision);
   days = civil::components2days (Yv, Mv, Dv, extra_days);
 }
@@ -428,10 +428,10 @@ components2civil (double Yv, double Mv, double Dv, double hv, double mv,
 // output in 'ColumnVector' and the rest in 'NDArray'.
 template <typename Vec>
 void
-set_civil (long days, const RowVector& hms, int i, Vec& Y, Vec& M,
+set_civil (int64_t days, const RowVector& hms, int i, Vec& Y, Vec& M,
            Vec& D, Vec& h, Vec& m, Vec& s)
 {
-  long yo, mo, dd;
+  int64_t yo, mo, dd;
   civil::civil_from_days (days, yo, mo, dd);
   Y(i) = (double) yo;
   M(i) = (double) mo;
@@ -449,7 +449,7 @@ components2localtime (double Yv, double Mv, double Dv, double hv, double mv,
   // calculate extra days to add later and map remaining hours, minutes, and
   // seconds to a local_time variable.
   double time_sec = hv * 3600 + mv * 60 + sv + xv / 1000;
-  long extra_days = time_extra_days (time_sec);
+  int64_t extra_days = time_extra_days (time_sec);
   time_sec = remainder (time_sec, 86400);
   RowVector HMS = seconds2vector (time_sec, precision);
   int tmp_h = (int)HMS(3);
@@ -1620,7 +1620,7 @@ a repeated clock when an offset is given. \n\
         {
           // Aggregate hours, minutes, and seconds into seconds, calculate extra
           // days for later and retrieve remaining hours, minutes, and seconds
-          long dnum;
+          int64_t dnum;
           RowVector hms;
           components2civil (YMDhms(i,0), YMDhms(i,1), YMDhms(i,2),
                             YMDhms(i,3), YMDhms(i,4), YMDhms(i,5), 0,
@@ -1746,7 +1746,7 @@ a repeated clock when an offset is given. \n\
           // time point: microseconds in an 'int64' run out at about 292277
           // years from the epoch, well inside the range the calendar now
           // carries, and they would wrap silently rather than refuse.
-          long dnum;
+          int64_t dnum;
           RowVector hms;
           components2civil (Y(i), M(i), D(i), h(i), m(i), s(i), x(i),
                             precision, dnum, hms);
@@ -1828,7 +1828,7 @@ a repeated clock when an offset is given. \n\
           // with a year outside 'date.h''s range moved by a whole multiple of
           // 400 before the target zone is asked about it -- 146097 days
           // exactly, so the instant keeps its place in the year.
-          long dnum;
+          int64_t dnum;
           RowVector hms;
           components2civil (Y(i), M(i), D(i), h(i), m(i), s(i), x(i),
                             precision, dnum, hms);
@@ -1880,7 +1880,7 @@ a repeated clock when an offset is given. \n\
         {
           // No offset to resolve, so the calendar answers on its own and any
           // year survives.
-          long dnum;
+          int64_t dnum;
           RowVector hms;
           components2civil (Y(i), M(i), D(i), h(i), m(i), s(i), x(i),
                             precision, dnum, hms);
@@ -2021,7 +2021,7 @@ a repeated clock when an offset is given. \n\
         }
         else
         {
-          long dnum;
+          int64_t dnum;
           RowVector hms;
           components2civil (Y(i), M(i), D(i), h(i), m(i), s(i), x(i),
                             precision, dnum, hms);
@@ -2063,7 +2063,7 @@ a repeated clock when an offset is given. \n\
         // calculate extra days to add later and map remaining hours, minutes,
         // and seconds to a local_time variable
         double time_sec = h(i) * 3600 + m(i) * 60 + s(i) + x(i) / 1000;
-        long extra_days = time_extra_days (time_sec);
+        int64_t extra_days = time_extra_days (time_sec);
         time_sec = remainder (time_sec, 86400);
         RowVector HMS = seconds2vector (time_sec, precision);
         int tmp_h = (int)HMS(3);
