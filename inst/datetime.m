@@ -700,7 +700,11 @@ classdef datetime
     ## agrees period for period, up to its own limit of about year 144684,
     ## beyond which it raises where this class continues to answer.  A date
     ## before any zone had a transition takes that zone's local mean time,
-    ## again as MATLAB does within its range.
+    ## again as MATLAB does within its range.  In such a zone MATLAB also
+    ## refuses a day component beyond the range of a 32-bit integer, whether
+    ## given to the constructor or assigned, with an error calling it not an
+    ## integer; this class accepts it and answers with the date and time it
+    ## gives without a zone.
     ##
     ## @strong{Deviation from MATLAB} in the components of an @strong{infinite}
     ## datetime.  Building one is documented behaviour and is followed exactly:
