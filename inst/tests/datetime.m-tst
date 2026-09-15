@@ -1039,7 +1039,8 @@
 %!test
 %! d = datetime ('2024-03-09T22:00:00-05:00', 'InputFormat', ...
 %!               'uuuu-MM-dd''T''HH:mm:ssXXX', 'TimeZone', 'local');
-%! assert_equal (d.TimeZone, datetime.SystemTimeZone);
+%! assert_equal (d.TimeZone, datetime (2024, 1, 1, 'TimeZone', ...
+%!                                     datetime.SystemTimeZone).TimeZone);
 %! assert_equal (posixtime (d), posixtime (datetime (2024, 3, 10, 3, 0, 0, ...
 %!               'TimeZone', 'UTC')));
 %!test
@@ -3874,42 +3875,52 @@
 %!error <datetime.subsasgn: 'TimeZone' must be a character vector.> ...
 %! d = datetime (2020, 1, 1); d.TimeZone = 5;
 
-## Test SystemTimeZone is a zone name, not an abbreviation
+## Test SystemTimeZone is a zone name, not an abbreviation, stored as 'local'
+## stores it
 %!test
 %! d = datetime (2024, 1, 1, 'TimeZone', datetime.SystemTimeZone);
-%! assert_equal (d.TimeZone, datetime.SystemTimeZone);
+%! assert_equal (d.TimeZone, ...
+%!               datetime (2024, 1, 1, 'TimeZone', 'local').TimeZone);
 
-## Test 'local' names the system time zone, in any letter case
+## Test 'local' names the system time zone, in any letter case, and is stored
+## as naming that zone stores it
 %!test
 %! d = datetime (2024, 1, 1, 12, 0, 0, 'TimeZone', 'local');
-%! assert_equal (d.TimeZone, datetime.SystemTimeZone);
+%! assert_equal (d.TimeZone, datetime (2024, 1, 1, 'TimeZone', ...
+%!                                     datetime.SystemTimeZone).TimeZone);
 %! assert_equal ([d.Hour, d.Minute], [12, 0]);
 %!test
 %! d = datetime (2024, 1, 1, 'TimeZone', 'LOCAL');
-%! assert_equal (d.TimeZone, datetime.SystemTimeZone);
+%! assert_equal (d.TimeZone, datetime (2024, 1, 1, 'TimeZone', ...
+%!                                     datetime.SystemTimeZone).TimeZone);
 %!test
 %! d = datetime ('2024-01-01 12:00:00', 'TimeZone', 'Local');
-%! assert_equal (d.TimeZone, datetime.SystemTimeZone);
+%! assert_equal (d.TimeZone, datetime (2024, 1, 1, 'TimeZone', ...
+%!                                     datetime.SystemTimeZone).TimeZone);
 %! assert_equal ([d.Hour, d.Minute], [12, 0]);
 %!test
 %! d = datetime (0, 'ConvertFrom', 'posixtime', 'TimeZone', 'local');
-%! assert_equal (d.TimeZone, datetime.SystemTimeZone);
+%! assert_equal (d.TimeZone, datetime (2024, 1, 1, 'TimeZone', ...
+%!                                     datetime.SystemTimeZone).TimeZone);
 %! assert_equal (posixtime (d), 0);
 %!test
 %! u = datetime (2024, 1, 1, 12, 0, 0, 'TimeZone', 'UTC');
 %! d = datetime (u, 'TimeZone', 'local');
-%! assert_equal (d.TimeZone, datetime.SystemTimeZone);
+%! assert_equal (d.TimeZone, datetime (2024, 1, 1, 'TimeZone', ...
+%!                                     datetime.SystemTimeZone).TimeZone);
 %! assert_equal (posixtime (d), posixtime (u));
 %!test
 %! d = datetime (2024, 1, 1, 12, 0, 0);
 %! d.TimeZone = 'local';
-%! assert_equal (d.TimeZone, datetime.SystemTimeZone);
+%! assert_equal (d.TimeZone, datetime (2024, 1, 1, 'TimeZone', ...
+%!                                     datetime.SystemTimeZone).TimeZone);
 %! assert_equal ([d.Hour, d.Minute], [12, 0]);
 %!test
 %! u = datetime (2024, 1, 1, 12, 0, 0, 'TimeZone', 'UTC');
 %! d = u;
 %! d.TimeZone = 'Local';
-%! assert_equal (d.TimeZone, datetime.SystemTimeZone);
+%! assert_equal (d.TimeZone, datetime (2024, 1, 1, 'TimeZone', ...
+%!                                     datetime.SystemTimeZone).TimeZone);
 %! assert_equal (posixtime (d), posixtime (u));
 
 ## Test a fixed-offset zone is stored as '+HH:MM' whatever its spelling

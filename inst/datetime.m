@@ -150,7 +150,9 @@ classdef datetime
     ## a character vector.
     ##
     ## Setting it to @qcode{'local'}, in any letter case, stores the system time
-    ## zone given by @code{datetime.SystemTimeZone}.
+    ## zone given by @code{datetime.SystemTimeZone}, exactly as setting that
+    ## zone by name would store it, so a system zone of @qcode{'Etc/UTC'} is
+    ## stored as @qcode{'+00:00'}.
     ##
     ## A fixed offset from UTC, which never observes daylight saving time, is
     ## stored as @qcode{'+HH:MM'} or @qcode{'-HH:MM'}, or as
@@ -653,9 +655,9 @@ classdef datetime
     ## name no absolute instant, and no daylight saving rule applies to them.
     ## Supported time zones are those of the IANA Time Zone Database, and
     ## @qcode{'local'}, in any letter case, names the system time zone given by
-    ## @code{datetime.SystemTimeZone}, which is what the property stores.  A
-    ## fixed offset from UTC such as @qcode{'+05:30'} is accepted too; see the
-    ## @code{TimeZone} property for its spellings.  A zone may also be
+    ## @code{datetime.SystemTimeZone}, stored as naming that zone would store
+    ## it.  A fixed offset from UTC such as @qcode{'+05:30'} is accepted too;
+    ## see the @code{TimeZone} property for its spellings.  A zone may also be
     ## attached, changed, or dropped afterwards through the
     ## @qcode{'TimeZone'} property; attaching one reinterprets the wall-clock
     ## values in that zone, whereas changing between two zones preserves the
@@ -773,10 +775,12 @@ classdef datetime
         error ("datetime: 'MixedFormats' must be a logical scalar.");
       endif
       MixedFormats = logical (MixedFormats);
-      ## 'local' names the system time zone, and the array stores its name.
+      ## 'local' names the system time zone, which is then stored exactly as
+      ## naming that zone would store it: 'Etc/UTC' as '+00:00'.
       if (ischar (TimeZone) && strcmpi (TimeZone, 'local'))
         TimeZone = datetime.SystemTimeZone;
-      elseif (ischar (TimeZone) && ! isempty (TimeZone))
+      endif
+      if (ischar (TimeZone) && ! isempty (TimeZone))
         TimeZone = dtZoneName (TimeZone, 'datetime');
       endif
 
@@ -5826,7 +5830,8 @@ classdef datetime
               endif
               if (strcmpi (toTimeZone, 'local'))
                 toTimeZone = datetime.SystemTimeZone;
-              elseif (! isempty (toTimeZone))
+              endif
+              if (! isempty (toTimeZone))
                 toTimeZone = dtZoneName (toTimeZone, 'datetime.subsasgn');
               endif
               ## Validate the target zone (empty means an unzoned array).
