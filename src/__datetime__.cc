@@ -107,20 +107,22 @@ fixed_abbrev (chrono::seconds off)
     return "GMT";
   }
   char sgn = (off.count () < 0 ? '-' : '+');
+  // The caller admits at most '+23:59:59', so two digits per field always fit.
+  long hh = (a / 3600) % 100;
   char buf[16];
   if (a % 60)
   {
-    snprintf (buf, sizeof (buf), "%c%02ld%02ld%02ld", sgn, a / 3600,
+    snprintf (buf, sizeof (buf), "%c%02ld%02ld%02ld", sgn, hh,
               (a % 3600) / 60, a % 60);
   }
   else if (a % 3600)
   {
-    snprintf (buf, sizeof (buf), "%c%02ld%02ld", sgn, a / 3600,
+    snprintf (buf, sizeof (buf), "%c%02ld%02ld", sgn, hh,
               (a % 3600) / 60);
   }
   else
   {
-    snprintf (buf, sizeof (buf), "%c%02ld", sgn, a / 3600);
+    snprintf (buf, sizeof (buf), "%c%02ld", sgn, hh);
   }
   return string (buf);
 }
@@ -1061,7 +1063,7 @@ a repeated clock when an offset is given. \n\
   {
     find_zone (timezone);
   }
-  catch (exception)
+  catch (const exception&)
   {
     if (nargout == 7)
     {
@@ -1077,7 +1079,7 @@ a repeated clock when an offset is given. \n\
   {
     find_zone (to_tzone);
   }
-  catch (exception)
+  catch (const exception&)
   {
     if (nargout == 7)
     {
@@ -2059,3 +2061,23 @@ a repeated clock when an offset is given. \n\
   // Should never reach this point! Exit safely, just in case.
   return retval;
 }
+
+/*
+## Fixed-offset zone abbreviations: the widest output is seven characters,
+## because 'parse_fixed_offset' admits at most '+23:59:59'.
+%!assert_equal (__datetime__ (2026, 3, 9, 14, 0, 0, 'ConvertTo', ...
+%!              'zoneabbrev', 'TimeZone', '+23:59:59', ...
+%!              'Precision', 'microseconds'), {'+235959'})
+%!assert_equal (__datetime__ (2026, 3, 9, 14, 0, 0, 'ConvertTo', ...
+%!              'zoneabbrev', 'TimeZone', '-23:59:59', ...
+%!              'Precision', 'microseconds'), {'-235959'})
+%!assert_equal (__datetime__ (2026, 3, 9, 14, 0, 0, 'ConvertTo', ...
+%!              'zoneabbrev', 'TimeZone', '+05:30', ...
+%!              'Precision', 'microseconds'), {'+0530'})
+%!assert_equal (__datetime__ (2026, 3, 9, 14, 0, 0, 'ConvertTo', ...
+%!              'zoneabbrev', 'TimeZone', '+00:00', ...
+%!              'Precision', 'microseconds'), {'GMT'})
+%!error <__datetime__: invalid string value for 'TimeZone'.> ...
+%! __datetime__ (2026, 3, 9, 14, 0, 0, 'ConvertTo', 'zoneabbrev', ...
+%!               'TimeZone', '+24:00', 'Precision', 'microseconds')
+*/
