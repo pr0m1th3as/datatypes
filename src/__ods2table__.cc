@@ -312,7 +312,7 @@ meta_preamble (const Cell &meta)
   return out;
 }
 
-DEFUN_DLD (__ods2table__, args, nargout,
+DEFUN_DLD (__ods2table__, args, ,
            "-*- texinfo -*-\n \
  @deftypefn {datatypes} {[@var{data}, @var{vtype}, @var{meta}] =} \
 __ods2table__ (@var{file})\n\

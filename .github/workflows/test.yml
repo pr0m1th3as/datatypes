@@ -18,3 +18,4 @@ jobs:
     with:
       warning-flags: '-O2 -Wall -Wextra'
       warning-platforms: '["linux", "windows", "macos"]'
+      warning-exclude: 'ods/miniz\.c:'

@@ -162,7 +162,7 @@ style_kind (long s, const vector<int> &xf_fmt,
   return string ();
 }
 
-DEFUN_DLD (__xlsx2table__, args, nargout,
+DEFUN_DLD (__xlsx2table__, args, ,
            "-*- texinfo -*-\n \
  @deftypefn {datatypes} {[@var{data}, @var{vtype}, @var{meta}, @var{names}] =} \
 __xlsx2table__ (@var{file})\n\
