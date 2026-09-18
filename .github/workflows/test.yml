@@ -15,3 +15,6 @@ concurrency:
 jobs:
   test:
     uses: pr0m1th3as/octave-ci/.github/workflows/package-test.yml@v1
+    with:
+      warning-flags: '-O2 -Wall -Wextra'
+      warning-platforms: '["linux", "windows", "macos"]'
