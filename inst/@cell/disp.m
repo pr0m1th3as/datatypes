@@ -16,7 +16,7 @@
 ## this program; if not, see <http://www.gnu.org/licenses/>.
 
 ## -*- texinfo -*-
-## @deftypefn  {datatypes} {} disp (@var{C})
+## @deftypefn {cell} {} disp (@var{C})
 ##
 ## Customized display of cell arrays.
 ##

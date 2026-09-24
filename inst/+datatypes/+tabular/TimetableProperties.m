@@ -16,7 +16,7 @@
 ## this program; if not, see <http://www.gnu.org/licenses/>.
 
 ## -*- texinfo -*-
-## @deftp {datatypes.tabular} {} TimetableProperties
+## @deftp {datatypes} datatypes.tabular.TimetableProperties
 ##
 ## The properties object of a @code{timetable}.
 ##

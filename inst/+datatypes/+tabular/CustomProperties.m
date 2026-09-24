@@ -16,7 +16,7 @@
 ## this program; if not, see <http://www.gnu.org/licenses/>.
 
 ## -*- texinfo -*-
-## @deftp {datatypes.tabular} {} CustomProperties
+## @deftp {datatypes} datatypes.tabular.CustomProperties
 ##
 ## The custom metadata of a @code{table} or a @code{timetable}.
 ##

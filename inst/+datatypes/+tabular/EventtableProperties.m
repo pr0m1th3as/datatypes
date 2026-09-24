@@ -16,7 +16,7 @@
 ## this program; if not, see <http://www.gnu.org/licenses/>.
 
 ## -*- texinfo -*-
-## @deftp {datatypes.tabular} {} EventtableProperties
+## @deftp {datatypes} datatypes.tabular.EventtableProperties
 ##
 ## The properties object of an @code{eventtable}.
 ##

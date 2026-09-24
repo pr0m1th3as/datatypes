@@ -16,7 +16,7 @@
 ## this program; if not, see <http://www.gnu.org/licenses/>.
 
 ## -*- texinfo -*-
-## @deftp {datatypes.tabular} {} TabularProperties
+## @deftp {datatypes} datatypes.tabular.TabularProperties
 ##
 ## Abstract superclass of the properties objects of @code{table} and
 ## @code{timetable}.

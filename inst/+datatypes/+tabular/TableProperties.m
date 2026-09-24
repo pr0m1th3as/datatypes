@@ -16,7 +16,7 @@
 ## this program; if not, see <http://www.gnu.org/licenses/>.
 
 ## -*- texinfo -*-
-## @deftp {datatypes.tabular} {} TableProperties
+## @deftp {datatypes} datatypes.tabular.TableProperties
 ##
 ## The properties object of a @code{table}.
 ##
