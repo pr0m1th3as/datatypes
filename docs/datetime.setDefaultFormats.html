@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -436,11 +445,9 @@
                 </ol>
               </nav>
 
-<dl>
-<dt><code><h5 class="fs">datetime: <b>datetime.setDefaultFormats</b> (<code>'default'</code>, <var>fmt</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <b>datetime.setDefaultFormats</b> (<code>'defaultdate'</code>, <var>fmt</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <b>datetime.setDefaultFormats</b> (<code>'reset'</code>)</code></h5></dt>
-</dl>
+<p class="h5 fs"><code>datetime: <b>datetime.setDefaultFormats</b> (<code>'default'</code>, <var>fmt</var>)</code></p>
+<p class="h5 fs"><code>datetime: <b>datetime.setDefaultFormats</b> (<code>'defaultdate'</code>, <var>fmt</var>)</code></p>
+<p class="h5 fs fs-last"><code>datetime: <b>datetime.setDefaultFormats</b> (<code>'reset'</code>)</code></p>
 <p> Set the default display formats of datetime arrays.
 </p>
 <div class="ms-5">
@@ -472,7 +479,8 @@
  correct program can depend on the argument being ignored.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/datetime.m#L330">datetime</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/datetime.m#L330">datetime</a>
+</p>
 </div>
 
             </div>

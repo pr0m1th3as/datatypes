@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -417,10 +426,8 @@
                 </ol>
               </nav>
 
-<dl>
-<dt><code><h5 class="fs">timetable: <b>writetimetable</b> (<var>tt</var>, <var>filename</var>)</code></h5></dt>
-<dt><code><h5 class="fs">timetable: <b>writetimetable</b> (<var>tt</var>, <var>filename</var>, <var>Name</var>, <var>Value</var>)</code></h5></dt>
-</dl>
+<p class="h5 fs"><code>timetable: <b>writetimetable</b> (<var>tt</var>, <var>filename</var>)</code></p>
+<p class="h5 fs fs-last"><code>timetable: <b>writetimetable</b> (<var>tt</var>, <var>filename</var>, <var>Name</var>, <var>Value</var>)</code></p>
 <p> Write a timetable to a file in the MATLAB-compatible form.
 </p>
 <div class="ms-5">
@@ -476,8 +483,6 @@
  for a text file; <code>'overwritesheet'</code>, <code>'inplace'</code>,
  <code>'append'</code> or <code>'replacefile'</code> for a spreadsheet.</td></tr>
 </table>
-<p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/timetable.m#L5027">timetable</a>
 </div>
 
 <p> An attached event table is <strong>not</strong> written and nothing warns, as
@@ -502,12 +507,13 @@
 </p>
 <p> <strong>See also: </strong>
   <a href="readtimetable.html">readtimetable</a>, 
-  <a href="timetable.timetable2ods.html">timetable2ods</a>, 
-  <a href="timetable.timetable2csv.html">timetable2csv</a>, 
+  <a href="timetable.timetable2ods.html">timetable.timetable2ods</a>, 
+  <a href="timetable.timetable2csv.html">timetable.timetable2csv</a>, 
   <a href="table.writetable.html">table.writetable</a>
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/timetable.m#L5027">timetable</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/timetable.m#L5026">timetable</a>
+</p>
 </div>
         <div class="card rounded my-4">
           <div class="card-header card-header-mod">

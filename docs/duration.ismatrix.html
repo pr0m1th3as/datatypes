@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -427,9 +436,7 @@
                 </ol>
               </nav>
 
-<dl>
-<dt><code><h5 class="fs">duration: <var>TF</var> = <b>ismatrix</b> (<var>D</var>)</code></h5></dt>
-</dl>
+<p class="h5 fs fs-last"><code>duration: <var>TF</var> = <b>ismatrix</b> (<var>D</var>)</code></p>
 <p> Return true if duration array is a 2-D array.
 </p>
 <div class="ms-5">
@@ -439,7 +446,8 @@
  <code>ndims (<var>D</var>) == 2</code>.  By definition, a scalar is also a matrix.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/duration.m#L1160">duration</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/duration.m#L1160">duration</a>
+</p>
 </div>
 
             </div>

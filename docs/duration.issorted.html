@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -427,14 +436,12 @@
                 </ol>
               </nav>
 
-<dl>
-<dt><code><h5 class="fs">duration: <var>TF</var> = <b>issorted</b> (<var>D</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: <var>TF</var> = <b>issorted</b> (<var>D</var>, <var>dim</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: <var>TF</var> = <b>issorted</b> (<var>D</var>, <var>direction</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: <var>TF</var> = <b>issorted</b> (<var>D</var>, <var>dim</var>, <var>direction</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: <var>TF</var> = <b>issorted</b> (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: <var>TF</var> = <b>issorted</b> (&hellip;, <code>'ComparisonMethod'</code>, <var>CM</var>)</code></h5></dt>
-</dl>
+<p class="h5 fs"><code>duration: <var>TF</var> = <b>issorted</b> (<var>D</var>)</code></p>
+<p class="h5 fs"><code>duration: <var>TF</var> = <b>issorted</b> (<var>D</var>, <var>dim</var>)</code></p>
+<p class="h5 fs"><code>duration: <var>TF</var> = <b>issorted</b> (<var>D</var>, <var>direction</var>)</code></p>
+<p class="h5 fs"><code>duration: <var>TF</var> = <b>issorted</b> (<var>D</var>, <var>dim</var>, <var>direction</var>)</code></p>
+<p class="h5 fs"><code>duration: <var>TF</var> = <b>issorted</b> (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code></p>
+<p class="h5 fs fs-last"><code>duration: <var>TF</var> = <b>issorted</b> (&hellip;, <code>'ComparisonMethod'</code>, <var>CM</var>)</code></p>
 <p> Return true if duration array is sorted.
 </p>
 <div class="ms-5">
@@ -492,7 +499,8 @@
 </li></ul>
 
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/duration.m#L1458">duration</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/duration.m#L1458">duration</a>
+</p>
 </div>
         <div class="card rounded my-4">
           <div class="card-header card-header-mod">

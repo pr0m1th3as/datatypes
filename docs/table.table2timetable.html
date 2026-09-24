@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -377,13 +386,11 @@
                 </ol>
               </nav>
 
-<dl>
-<dt><code><h5 class="fs">table: <var>tt</var> = <b>table2timetable</b> (<var>tbl</var>)</code></h5></dt>
-<dt><code><h5 class="fs">table: <var>tt</var> = <b>table2timetable</b> (<var>tbl</var>, <code>'RowTimes'</code>, <var>rowTimes</var>)</code></h5></dt>
-<dt><code><h5 class="fs">table: <var>tt</var> = <b>table2timetable</b> (<var>tbl</var>, <code>'TimeStep'</code>, <var>dt</var>)</code></h5></dt>
-<dt><code><h5 class="fs">table: <var>tt</var> = <b>table2timetable</b> (<var>tbl</var>, <code>'SampleRate'</code>, <var>fs</var>)</code></h5></dt>
-<dt><code><h5 class="fs">table: <var>tt</var> = <b>table2timetable</b> (&hellip;, <code>'StartTime'</code>, <var>t0</var>)</code></h5></dt>
-</dl>
+<p class="h5 fs"><code>table: <var>tt</var> = <b>table2timetable</b> (<var>tbl</var>)</code></p>
+<p class="h5 fs"><code>table: <var>tt</var> = <b>table2timetable</b> (<var>tbl</var>, <code>'RowTimes'</code>, <var>rowTimes</var>)</code></p>
+<p class="h5 fs"><code>table: <var>tt</var> = <b>table2timetable</b> (<var>tbl</var>, <code>'TimeStep'</code>, <var>dt</var>)</code></p>
+<p class="h5 fs"><code>table: <var>tt</var> = <b>table2timetable</b> (<var>tbl</var>, <code>'SampleRate'</code>, <var>fs</var>)</code></p>
+<p class="h5 fs fs-last"><code>table: <var>tt</var> = <b>table2timetable</b> (&hellip;, <code>'StartTime'</code>, <var>t0</var>)</code></p>
 <p> Convert a table to a timetable.
 </p>
 <div class="ms-5">
@@ -417,7 +424,8 @@
   <a href="table.html">table</a>
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/table.m#L727">table</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/table.m#L744">table</a>
+</p>
 </div>
 
             </div>

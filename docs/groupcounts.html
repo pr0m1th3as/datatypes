@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -390,12 +399,10 @@
               </div>
             </div>
             <div class="card-body">
-<dl>
-<dt><code><h5 class="fs">datatypes: <var>B</var> = <b>groupcounts</b> (<var>A</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datatypes: <var>B</var> = <b>groupcounts</b> (<var>A</var>, <var>groupbins</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datatypes: [<var>B</var>, <var>BG</var>, <var>BP</var>] = <b>groupcounts</b> (&hellip;)</code></h5></dt>
-<dt><code><h5 class="fs">datatypes: [&hellip;] = <b>groupcounts</b> (&hellip;, <var>Name</var>, <var>Value</var>)</code></h5></dt>
-</dl>
+<p class="h5 fs"><code>datatypes: <var>B</var> = <b>groupcounts</b> (<var>A</var>)</code></p>
+<p class="h5 fs"><code>datatypes: <var>B</var> = <b>groupcounts</b> (<var>A</var>, <var>groupbins</var>)</code></p>
+<p class="h5 fs"><code>datatypes: [<var>B</var>, <var>BG</var>, <var>BP</var>] = <b>groupcounts</b> (&hellip;)</code></p>
+<p class="h5 fs fs-last"><code>datatypes: [&hellip;] = <b>groupcounts</b> (&hellip;, <var>Name</var>, <var>Value</var>)</code></p>
 <p> Count the number of elements in each group of an array.
 </p>
 <div class="ms-5">
@@ -438,7 +445,8 @@
   <a href="table.html">table</a>
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/groupcounts.m">groupcounts</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/groupcounts.m">groupcounts</a>
+</p>
 </div>
 
             </div>

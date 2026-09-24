@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -417,16 +426,14 @@
                 </ol>
               </nav>
 
-<dl>
-<dt><code><h5 class="fs">timetable: <var>tt</var> = <b>timetable</b> (<var>rowTimes</var>, <var>var1</var>, &hellip;, <var>varN</var>)</code></h5></dt>
-<dt><code><h5 class="fs">timetable: <var>tt</var> = <b>timetable</b> (<var>var1</var>, &hellip;, <var>varN</var>, <code>'RowTimes'</code>, <var>rowTimes</var>)</code></h5></dt>
-<dt><code><h5 class="fs">timetable: <var>tt</var> = <b>timetable</b> (<var>var1</var>, &hellip;, <var>varN</var>, <code>'TimeStep'</code>, <var>dt</var>)</code></h5></dt>
-<dt><code><h5 class="fs">timetable: <var>tt</var> = <b>timetable</b> (<var>var1</var>, &hellip;, <var>varN</var>, <code>'SampleRate'</code>, <var>fs</var>)</code></h5></dt>
-<dt><code><h5 class="fs">timetable: <var>tt</var> = <b>timetable</b> (&hellip;, <code>'StartTime'</code>, <var>t0</var>)</code></h5></dt>
-<dt><code><h5 class="fs">timetable: <var>tt</var> = <b>timetable</b> (<code>'Size'</code>, <var>sz</var>, <code>'VariableTypes'</code>, <var>varTypes</var>, &hellip;)</code></h5></dt>
-<dt><code><h5 class="fs">timetable: <var>tt</var> = <b>timetable</b> (&hellip;, <code>'VariableNames'</code>, <var>varNames</var>)</code></h5></dt>
-<dt><code><h5 class="fs">timetable: <var>tt</var> = <b>timetable</b> (&hellip;, <code>'DimensionNames'</code>, <var>dimNames</var>)</code></h5></dt>
-</dl>
+<p class="h5 fs"><code>timetable: <var>tt</var> = <b>timetable</b> (<var>rowTimes</var>, <var>var1</var>, &hellip;, <var>varN</var>)</code></p>
+<p class="h5 fs"><code>timetable: <var>tt</var> = <b>timetable</b> (<var>var1</var>, &hellip;, <var>varN</var>, <code>'RowTimes'</code>, <var>rowTimes</var>)</code></p>
+<p class="h5 fs"><code>timetable: <var>tt</var> = <b>timetable</b> (<var>var1</var>, &hellip;, <var>varN</var>, <code>'TimeStep'</code>, <var>dt</var>)</code></p>
+<p class="h5 fs"><code>timetable: <var>tt</var> = <b>timetable</b> (<var>var1</var>, &hellip;, <var>varN</var>, <code>'SampleRate'</code>, <var>fs</var>)</code></p>
+<p class="h5 fs"><code>timetable: <var>tt</var> = <b>timetable</b> (&hellip;, <code>'StartTime'</code>, <var>t0</var>)</code></p>
+<p class="h5 fs"><code>timetable: <var>tt</var> = <b>timetable</b> (<code>'Size'</code>, <var>sz</var>, <code>'VariableTypes'</code>, <var>varTypes</var>, &hellip;)</code></p>
+<p class="h5 fs"><code>timetable: <var>tt</var> = <b>timetable</b> (&hellip;, <code>'VariableNames'</code>, <var>varNames</var>)</code></p>
+<p class="h5 fs fs-last"><code>timetable: <var>tt</var> = <b>timetable</b> (&hellip;, <code>'DimensionNames'</code>, <var>dimNames</var>)</code></p>
 <p> Create a new timetable.
 </p>
 <div class="ms-5">
@@ -482,10 +489,11 @@
 <p> <strong>See also: </strong>
   <a href="table.table2timetable.html">table.table2timetable</a>, 
   <a href="array2timetable.html">array2timetable</a>, 
-  <a href="timetable.isregular.html">isregular</a>
+  <a href="timetable.isregular.html">timetable.isregular</a>
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/timetable.m#L1432">timetable</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/timetable.m#L1415">timetable</a>
+</p>
 </div>
 
             </div>

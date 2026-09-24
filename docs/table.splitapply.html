@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -377,10 +386,8 @@
                 </ol>
               </nav>
 
-<dl>
-<dt><code><h5 class="fs">table: <var>Y</var> = <b>splitapply</b> (<var>func</var>, <var>T</var>, <var>G</var>)</code></h5></dt>
-<dt><code><h5 class="fs">table: [<var>Y1</var>, &hellip;, <var>YM</var>] = <b>splitapply</b> (<var>func</var>, <var>T</var>, <var>G</var>)</code></h5></dt>
-</dl>
+<p class="h5 fs"><code>table: <var>Y</var> = <b>splitapply</b> (<var>func</var>, <var>T</var>, <var>G</var>)</code></p>
+<p class="h5 fs fs-last"><code>table: [<var>Y1</var>, &hellip;, <var>YM</var>] = <b>splitapply</b> (<var>func</var>, <var>T</var>, <var>G</var>)</code></p>
 <p> Split table data into groups and apply a function to each group.
 </p>
 <div class="ms-5">
@@ -399,7 +406,8 @@
  multiple outputs of <var>func</var>, each concatenated across groups.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/table.m#L3204">table</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/table.m#L3235">table</a>
+</p>
 </div>
         <div class="card rounded my-4">
           <div class="card-header card-header-mod">

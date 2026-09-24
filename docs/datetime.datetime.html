@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -436,25 +445,23 @@
                 </ol>
               </nav>
 
-<dl>
-<dt><code><h5 class="fs">datetime: <var>T</var> = <b>datetime</b> (<code>'now'</code>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>T</var> = <b>datetime</b> (<code>'today'</code>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>T</var> = <b>datetime</b> (<code>'tomorrow'</code>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>T</var> = <b>datetime</b> (<code>'yesterday'</code>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>T</var> = <b>datetime</b> (<var>DateStrings</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>T</var> = <b>datetime</b> (<var>DateStrings</var>, <code>'MixedFormats'</code>, <var>TF</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>T</var> = <b>datetime</b> (<var>DateStrings</var>, <code>'InputFormat'</code>, <var>INFMT</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>T</var> = <b>datetime</b> (<var>DateStrings</var>,<code>'InputFormat'</code>, <var>INFMT</var>, <code>'PivotYear'</code>, <var>PIVOT</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>T</var> = <b>datetime</b> (<var>DateStrings</var>,<code>'InputFormat'</code>, <var>INFMT</var>, <code>'Locale'</code>, <var>LOCALE</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>T</var> = <b>datetime</b> (<var>DateVectors</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>T</var> = <b>datetime</b> (<var>Y</var>, <var>MO</var>, <var>D</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>T</var> = <b>datetime</b> (<var>Y</var>, <var>MO</var>, <var>D</var>, <var>H</var>, <var>MI</var>, <var>S</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>T</var> = <b>datetime</b> (<var>Y</var>, <var>MO</var>, <var>D</var>, <var>H</var>, <var>MI</var>, <var>S</var>, <var>MS</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>T</var> = <b>datetime</b> (<var>X</var>, <code>'ConvertFrom'</code>, <var>TYPE</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>T</var> = <b>datetime</b> (<var>D</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>T</var> = <b>datetime</b> (&hellip;, <code>'Format'</code>, <var>FMT</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>T</var> = <b>datetime</b> (&hellip;, <code>'TimeZone'</code>, <var>TZ</var>)</code></h5></dt>
-</dl>
+<p class="h5 fs"><code>datetime: <var>T</var> = <b>datetime</b> (<code>'now'</code>)</code></p>
+<p class="h5 fs"><code>datetime: <var>T</var> = <b>datetime</b> (<code>'today'</code>)</code></p>
+<p class="h5 fs"><code>datetime: <var>T</var> = <b>datetime</b> (<code>'tomorrow'</code>)</code></p>
+<p class="h5 fs"><code>datetime: <var>T</var> = <b>datetime</b> (<code>'yesterday'</code>)</code></p>
+<p class="h5 fs"><code>datetime: <var>T</var> = <b>datetime</b> (<var>DateStrings</var>)</code></p>
+<p class="h5 fs"><code>datetime: <var>T</var> = <b>datetime</b> (<var>DateStrings</var>, <code>'MixedFormats'</code>, <var>TF</var>)</code></p>
+<p class="h5 fs"><code>datetime: <var>T</var> = <b>datetime</b> (<var>DateStrings</var>, <code>'InputFormat'</code>, <var>INFMT</var>)</code></p>
+<p class="h5 fs"><code>datetime: <var>T</var> = <b>datetime</b> (<var>DateStrings</var>,<code>'InputFormat'</code>, <var>INFMT</var>, <code>'PivotYear'</code>, <var>PIVOT</var>)</code></p>
+<p class="h5 fs"><code>datetime: <var>T</var> = <b>datetime</b> (<var>DateStrings</var>,<code>'InputFormat'</code>, <var>INFMT</var>, <code>'Locale'</code>, <var>LOCALE</var>)</code></p>
+<p class="h5 fs"><code>datetime: <var>T</var> = <b>datetime</b> (<var>DateVectors</var>)</code></p>
+<p class="h5 fs"><code>datetime: <var>T</var> = <b>datetime</b> (<var>Y</var>, <var>MO</var>, <var>D</var>)</code></p>
+<p class="h5 fs"><code>datetime: <var>T</var> = <b>datetime</b> (<var>Y</var>, <var>MO</var>, <var>D</var>, <var>H</var>, <var>MI</var>, <var>S</var>)</code></p>
+<p class="h5 fs"><code>datetime: <var>T</var> = <b>datetime</b> (<var>Y</var>, <var>MO</var>, <var>D</var>, <var>H</var>, <var>MI</var>, <var>S</var>, <var>MS</var>)</code></p>
+<p class="h5 fs"><code>datetime: <var>T</var> = <b>datetime</b> (<var>X</var>, <code>'ConvertFrom'</code>, <var>TYPE</var>)</code></p>
+<p class="h5 fs"><code>datetime: <var>T</var> = <b>datetime</b> (<var>D</var>)</code></p>
+<p class="h5 fs"><code>datetime: <var>T</var> = <b>datetime</b> (&hellip;, <code>'Format'</code>, <var>FMT</var>)</code></p>
+<p class="h5 fs fs-last"><code>datetime: <var>T</var> = <b>datetime</b> (&hellip;, <code>'TimeZone'</code>, <var>TZ</var>)</code></p>
 <p> Create a new array of datetime values.
 </p>
 <div class="ms-5">
@@ -496,8 +503,6 @@
 <tr><td width="34%"><code>'MM/dd/uuuu'</code></td><td width="66%">or <code>'dd/MM/uuuu'</code>; see below.</td></tr>
 <tr><td width="34%"><code>'HH:mm:ss'</code></td><td width="66%">a time alone, taking today&rsquo;s date.</td></tr>
 </table>
-<p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/datetime.m#L741">datetime</a>
 </div>
 
 <p> Three further shapes are read that MATLAB does not detect, and are
@@ -809,7 +814,8 @@
   <a href="duration.html">duration</a>
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/datetime.m#L741">datetime</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/datetime.m#L741">datetime</a>
+</p>
 </div>
         <div class="card rounded my-4">
           <div class="card-header card-header-mod">

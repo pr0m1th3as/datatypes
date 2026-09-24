@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -390,7 +399,7 @@
               </div>
             </div>
             <div class="card-body">
-<dl><code><h5 class="description">datatypes: vartype</h5></code></dl>
+<p class="h5 description mb-3"><code>datatypes: vartype</code></p>
 <p> Subscript into a table by variable type.
 </p>
 <div class="ms-5">
@@ -401,7 +410,7 @@
   <a href="table.html">table</a>
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/vartype.m">vartype</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/vartype.m">vartype</a>
 </p>
 </div>
         <p class="lead my-3">The <code>vartype</code> class offers the following public methods:</p>
@@ -424,9 +433,7 @@ Create a subscript into table by variable type.
           </div>
           <div class="collapse multi-collapse" id="vartype_vartype">
             <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">vartype: <var>S</var> = <b>vartype</b> (<var>type</var>)</code></h5></dt>
-</dl>
+<p class="h5 fs fs-last"><code>vartype: <var>S</var> = <b>vartype</b> (<var>type</var>)</code></p>
 <p> </p>
 <p> <code><var>S</var> = vartype (<var>type</var>)</code> creates a subscript to select table
  variables of a specified type.  The input argument, <var>type</var>, must be a
@@ -461,9 +468,7 @@ Match a <code>vartype</code> object to a variable value.
           </div>
           <div class="collapse multi-collapse" id="vartype_varMatch">
             <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">vartype: <var>TF</var> = <b>varMatch</b> (<var>obj</var>, <var>value</var>)</code></h5></dt>
-</dl>
+<p class="h5 fs fs-last"><code>vartype: <var>TF</var> = <b>varMatch</b> (<var>obj</var>, <var>value</var>)</code></p>
 <p> </p>
 <p> <code><var>TF</var> = varMatch (<var>obj</var>, <var>value</var>)</code> compares the class
  type of the variable in <var>value</var> with the predefined class type in the

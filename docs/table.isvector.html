@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -377,9 +386,7 @@
                 </ol>
               </nav>
 
-<dl>
-<dt><code><h5 class="fs">table: <var>TF</var> = <b>isvector</b> (<var>tbl</var>)</code></h5></dt>
-</dl>
+<p class="h5 fs fs-last"><code>table: <var>TF</var> = <b>isvector</b> (<var>tbl</var>)</code></p>
 <p> Test input table for being a vector.
 </p>
 <div class="ms-5">
@@ -387,7 +394,8 @@
  table <var>tbl</var> has a single row or a single column.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/table.m#L4098">table</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/table.m#L4129">table</a>
+</p>
 </div>
         <div class="card rounded my-4">
           <div class="card-header card-header-mod">

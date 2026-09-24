@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -395,10 +404,8 @@
                 </ol>
               </nav>
 
-<dl>
-<dt><code><h5 class="fs">categorical: <var>B</var> = <b>mergecats</b> (<var>A</var>, <var>oldcats</var>)</code></h5></dt>
-<dt><code><h5 class="fs">categorical: <var>B</var> = <b>mergecats</b> (<var>A</var>, <var>oldcats</var>, <var>newcat</var>)</code></h5></dt>
-</dl>
+<p class="h5 fs"><code>categorical: <var>B</var> = <b>mergecats</b> (<var>A</var>, <var>oldcats</var>)</code></p>
+<p class="h5 fs fs-last"><code>categorical: <var>B</var> = <b>mergecats</b> (<var>A</var>, <var>oldcats</var>, <var>newcat</var>)</code></p>
 <p> Merge categories in categorical array.
 </p>
 <div class="ms-5">
@@ -421,7 +428,8 @@
  in <var>oldcats</var> that do not reference an existing category are ignored.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/categorical.m#L1929">categorical</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/categorical.m#L1943">categorical</a>
+</p>
 </div>
         <div class="card rounded my-4">
           <div class="card-header card-header-mod">

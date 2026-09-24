@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -417,12 +426,10 @@
                 </ol>
               </nav>
 
-<dl>
-<dt><code><h5 class="fs">timetable: <var>ttB</var> = <b>fillmissing</b> (<var>ttA</var>, <var>method</var>)</code></h5></dt>
-<dt><code><h5 class="fs">timetable: <var>ttB</var> = <b>fillmissing</b> (<var>ttA</var>, <code>'constant'</code>, <var>v</var>)</code></h5></dt>
-<dt><code><h5 class="fs">timetable: <var>ttB</var> = <b>fillmissing</b> (&hellip;, <var>Name</var>, <var>Value</var>)</code></h5></dt>
-<dt><code><h5 class="fs">timetable: [<var>ttB</var>, <var>TF</var>] = <b>fillmissing</b> (&hellip;)</code></h5></dt>
-</dl>
+<p class="h5 fs"><code>timetable: <var>ttB</var> = <b>fillmissing</b> (<var>ttA</var>, <var>method</var>)</code></p>
+<p class="h5 fs"><code>timetable: <var>ttB</var> = <b>fillmissing</b> (<var>ttA</var>, <code>'constant'</code>, <var>v</var>)</code></p>
+<p class="h5 fs"><code>timetable: <var>ttB</var> = <b>fillmissing</b> (&hellip;, <var>Name</var>, <var>Value</var>)</code></p>
+<p class="h5 fs fs-last"><code>timetable: [<var>ttB</var>, <var>TF</var>] = <b>fillmissing</b> (&hellip;)</code></p>
 <p> Fill the missing values of a timetable.
 </p>
 <div class="ms-5">
@@ -453,13 +460,14 @@
  never filled and the time step is unchanged.
 </p>
 <p> <strong>See also: </strong>
-  <a href="timetable.ismissing.html">ismissing</a>, 
-  <a href="timetable.rmmissing.html">rmmissing</a>, 
-  <a href="timetable.standardizeMissing.html">standardizeMissing</a>, 
+  <a href="timetable.ismissing.html">timetable.ismissing</a>, 
+  <a href="timetable.rmmissing.html">timetable.rmmissing</a>, 
+  <a href="timetable.standardizeMissing.html">timetable.standardizeMissing</a>, 
   <a href="timetable.html">timetable</a>
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/timetable.m#L2381">timetable</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/timetable.m#L2372">timetable</a>
+</p>
 </div>
         <div class="card rounded my-4">
           <div class="card-header card-header-mod">

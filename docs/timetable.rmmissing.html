@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -417,16 +426,16 @@
                 </ol>
               </nav>
 
-<dl>
-<dt><code><h5 class="fs">timetable: <var>ttB</var> = <b>rmmissing</b> (<var>ttA</var>)</code></h5></dt>
-<dt><code><h5 class="fs">timetable: <var>ttB</var> = <b>rmmissing</b> (<var>ttA</var>, <var>Name</var>, <var>Value</var>)</code></h5></dt>
-<dt><code><h5 class="fs">timetable: [<var>ttB</var>, <var>TF</var>] = <b>rmmissing</b> (&hellip;)</code></h5></dt>
-</dl>
-<p> Remove the incomplete rows of a timetable.
+<p class="h5 fs"><code>timetable: <var>ttB</var> = <b>rmmissing</b> (<var>ttA</var>)</code></p>
+<p class="h5 fs"><code>timetable: <var>ttB</var> = <b>rmmissing</b> (<var>ttA</var>, <var>dim</var>)</code></p>
+<p class="h5 fs"><code>timetable: <var>ttB</var> = <b>rmmissing</b> (&hellip;, <var>Name</var>, <var>Value</var>)</code></p>
+<p class="h5 fs fs-last"><code>timetable: [<var>ttB</var>, <var>TF</var>] = <b>rmmissing</b> (&hellip;)</code></p>
+<p> Remove the incomplete rows or variables of a timetable.
 </p>
 <div class="ms-5">
 <p> <code><var>ttB</var> = rmmissing (<var>ttA</var>)</code> removes every row holding a
- missing value.
+ missing value.  <code>rmmissing (<var>ttA</var>, 2)</code> removes every variable
+ holding one instead, and keeps every row and its row time.
 </p>
 <p> <strong>A row whose row time is missing is removed whatever its
  variables hold</strong>, and whatever <code>'DataVariables'</code> or
@@ -437,21 +446,26 @@
 </p>
 <p> <code>'DataVariables'</code> names the variables to judge a row by, and
  <code>'MinNumMissing'</code> how many missing values a row must hold before
- it goes.  Neither reaches the row times.
+ it goes, or with <var>dim</var> equal to 2 how many a variable must.
+ <code>'MissingLocations'</code> marks the missing values in place of
+ <code>ismissing</code>, as a logical matrix or a table, exactly as for
+ <code>table.rmmissing</code>.  None of them reaches the row times.
 </p>
 <p> <code>[<var>ttB</var>, <var>TF</var>] = rmmissing (&hellip;)</code> also returns a
  logical column marking the rows that were removed, the ones dropped
- for their row times included.
+ for their row times included, or with <var>dim</var> equal to 2 a logical
+ row marking the removed variables.
 </p>
 <p> The time step is read afresh from the rows that survive.
 </p>
 <p> <strong>See also: </strong>
-  <a href="timetable.ismissing.html">ismissing</a>, 
-  <a href="timetable.standardizeMissing.html">standardizeMissing</a>, 
+  <a href="timetable.ismissing.html">timetable.ismissing</a>, 
+  <a href="timetable.standardizeMissing.html">timetable.standardizeMissing</a>, 
   <a href="timetable.html">timetable</a>
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/timetable.m#L2316">timetable</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/timetable.m#L2306">timetable</a>
+</p>
 </div>
         <div class="card rounded my-4">
           <div class="card-header card-header-mod">

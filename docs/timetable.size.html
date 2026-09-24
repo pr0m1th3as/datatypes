@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -417,11 +426,9 @@
                 </ol>
               </nav>
 
-<dl>
-<dt><code><h5 class="fs">timetable: <var>sz</var> = <b>size</b> (<var>tt</var>)</code></h5></dt>
-<dt><code><h5 class="fs">timetable: <var>dim_sz</var> = <b>size</b> (<var>tt</var>, <var>dim</var>)</code></h5></dt>
-<dt><code><h5 class="fs">timetable: [<var>rows</var>, <var>columns</var>] = <b>size</b> (<var>tt</var>)</code></h5></dt>
-</dl>
+<p class="h5 fs"><code>timetable: <var>sz</var> = <b>size</b> (<var>tt</var>)</code></p>
+<p class="h5 fs"><code>timetable: <var>dim_sz</var> = <b>size</b> (<var>tt</var>, <var>dim</var>)</code></p>
+<p class="h5 fs fs-last"><code>timetable: [<var>rows</var>, <var>columns</var>] = <b>size</b> (<var>tt</var>)</code></p>
 <p> Size of a timetable.
 </p>
 <div class="ms-5">
@@ -439,7 +446,8 @@
   <a href="timetable.numel.html">numel</a>
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/timetable.m#L1911">timetable</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/timetable.m#L1894">timetable</a>
+</p>
 </div>
 
             </div>

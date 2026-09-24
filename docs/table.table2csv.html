@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -377,10 +386,8 @@
                 </ol>
               </nav>
 
-<dl>
-<dt><code><h5 class="fs">table: <b>table2csv</b> (<var>tbl</var>, <var>file</var>)</code></h5></dt>
-<dt><code><h5 class="fs">table: <b>table2csv</b> (<var>tbl</var>, <var>file</var>, <var>Name</var>, <var>Value</var>)</code></h5></dt>
-</dl>
+<p class="h5 fs"><code>table: <b>table2csv</b> (<var>tbl</var>, <var>file</var>)</code></p>
+<p class="h5 fs fs-last"><code>table: <b>table2csv</b> (<var>tbl</var>, <var>file</var>, <var>Name</var>, <var>Value</var>)</code></p>
 <p> Write a table to a comma-separated-value (CSV) file.
 </p>
 <div class="ms-5">
@@ -441,8 +448,6 @@
 <tr><td width="30%"><code>'WriteRowNames'</code></td><td width="70%">A logical scalar specifying whether
  the row labels are written as a leading column (default <code>true</code>).</td></tr>
 </table>
-<p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/table.m#L908">table</a>
 </div>
 
 <p> Note the following round-trip limitation when reading the file back
@@ -451,7 +456,8 @@
  values are not reconstructed.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/table.m#L908">table</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/table.m#L925">table</a>
+</p>
 </div>
         <div class="card rounded my-4">
           <div class="card-header card-header-mod">

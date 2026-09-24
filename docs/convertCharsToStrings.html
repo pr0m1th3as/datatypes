@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -390,10 +399,8 @@
               </div>
             </div>
             <div class="card-body">
-<dl>
-<dt><code><h5 class="fs">datatypes: <var>B</var> = <b>convertCharsToStrings</b> (<var>A</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datatypes: [<var>B1</var>, &hellip;, <var>Bn</var>] = <b>convertCharsToStrings</b> (<var>A1</var>, &hellip;, <var>An</var>)</code></h5></dt>
-</dl>
+<p class="h5 fs"><code>datatypes: <var>B</var> = <b>convertCharsToStrings</b> (<var>A</var>)</code></p>
+<p class="h5 fs fs-last"><code>datatypes: [<var>B1</var>, &hellip;, <var>Bn</var>] = <b>convertCharsToStrings</b> (<var>A1</var>, &hellip;, <var>An</var>)</code></p>
 <p> Convert character arrays to a string arrays, where applicable.
 </p>
 <div class="ms-5">
@@ -413,7 +420,8 @@
   <a href="string.html">string</a>
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/convertCharsToStrings.m">convertCharsToStrings</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/convertCharsToStrings.m">convertCharsToStrings</a>
+</p>
 </div>
 
             </div>

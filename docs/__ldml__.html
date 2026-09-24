@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -390,9 +399,7 @@
               </div>
             </div>
             <div class="card-body">
-<dl>
-<dt><code><h5 class="fs">: [<var>DV</var>, <var>OFF</var>] = <b>__ldml__</b> (&quot;parse&quot;, <var>strs</var>, <var>fmt</var>, <var>pivot</var>, <var>locale</var>)</code></h5></dt>
-</dl>
+<p class="h5 fs fs-last"><code>: [<var>DV</var>, <var>OFF</var>] = <b>__ldml__</b> (&quot;parse&quot;, <var>strs</var>, <var>fmt</var>, <var>pivot</var>, <var>locale</var>)</code></p>
 <p>Parse date/time strings under an LDML <code>'InputFormat'</code> pattern. 
 </p>
 <div class="ms-5">
@@ -404,6 +411,7 @@
 </p>
 <p><strong>Source Code: </strong>
   <a href="https://github.com/pr0m1th3as/datatypes/tree/HEAD/src/__ldml__.cc">__ldml__</a>
+</p>
 </div>
 
             </div>

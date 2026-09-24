@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -347,10 +356,8 @@
                 </ol>
               </nav>
 
-<dl>
-<dt><code><h5 class="fs">calendarDuration: <var>B</var> = <b>circshift</b> (<var>A</var>, <var>n</var>)</code></h5></dt>
-<dt><code><h5 class="fs">calendarDuration: <var>B</var> = <b>circshift</b> (<var>A</var>, <var>n</var>, <var>dim</var>)</code></h5></dt>
-</dl>
+<p class="h5 fs"><code>calendarDuration: <var>B</var> = <b>circshift</b> (<var>A</var>, <var>n</var>)</code></p>
+<p class="h5 fs fs-last"><code>calendarDuration: <var>B</var> = <b>circshift</b> (<var>A</var>, <var>n</var>, <var>dim</var>)</code></p>
 <p> Circularly shift the elements in a calendarDuration array.
 </p>
 <div class="ms-5">
@@ -369,7 +376,8 @@
  integer value.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/calendarDuration.m#L1918">calendarDuration</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/calendarDuration.m#L1918">calendarDuration</a>
+</p>
 </div>
 
             </div>

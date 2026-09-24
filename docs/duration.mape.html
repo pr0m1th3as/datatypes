@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -427,15 +436,13 @@
                 </ol>
               </nav>
 
-<dl>
-<dt><code><h5 class="fs">duration: <var>E</var> = <b>mape</b> (<var>F</var>, <var>A</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: <var>E</var> = <b>mape</b> (<var>F</var>, <var>A</var>, <var>dim</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: <var>E</var> = <b>mape</b> (<var>F</var>, <var>A</var>, <var>vecdim</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: <var>E</var> = <b>mape</b> (<var>F</var>, <var>A</var>, <code>'all'</code>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: <var>E</var> = <b>mape</b> (&hellip;, <var>nanflag</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: <var>E</var> = <b>mape</b> (&hellip;, <var>zeroflag</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: <var>E</var> = <b>mape</b> (&hellip;, <code>'Weights'</code>, <var>W</var>)</code></h5></dt>
-</dl>
+<p class="h5 fs"><code>duration: <var>E</var> = <b>mape</b> (<var>F</var>, <var>A</var>)</code></p>
+<p class="h5 fs"><code>duration: <var>E</var> = <b>mape</b> (<var>F</var>, <var>A</var>, <var>dim</var>)</code></p>
+<p class="h5 fs"><code>duration: <var>E</var> = <b>mape</b> (<var>F</var>, <var>A</var>, <var>vecdim</var>)</code></p>
+<p class="h5 fs"><code>duration: <var>E</var> = <b>mape</b> (<var>F</var>, <var>A</var>, <code>'all'</code>)</code></p>
+<p class="h5 fs"><code>duration: <var>E</var> = <b>mape</b> (&hellip;, <var>nanflag</var>)</code></p>
+<p class="h5 fs"><code>duration: <var>E</var> = <b>mape</b> (&hellip;, <var>zeroflag</var>)</code></p>
+<p class="h5 fs fs-last"><code>duration: <var>E</var> = <b>mape</b> (&hellip;, <code>'Weights'</code>, <var>W</var>)</code></p>
 <p> Compute the mean absolute percentage error between duration arrays.
 </p>
 <div class="ms-5">
@@ -448,7 +455,8 @@
  both <var>F</var> and <var>A</var> must be duration arrays.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/duration.m#L2998">duration</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/duration.m#L2998">duration</a>
+</p>
 </div>
         <div class="card rounded my-4">
           <div class="card-header card-header-mod">

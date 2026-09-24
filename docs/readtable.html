@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -390,10 +399,8 @@
               </div>
             </div>
             <div class="card-body">
-<dl>
-<dt><code><h5 class="fs">datatypes: <var>tbl</var> = <b>readtable</b> (<var>filename</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datatypes: <var>tbl</var> = <b>readtable</b> (<var>filename</var>, <var>Name</var>, <var>Value</var>)</code></h5></dt>
-</dl>
+<p class="h5 fs"><code>datatypes: <var>tbl</var> = <b>readtable</b> (<var>filename</var>)</code></p>
+<p class="h5 fs fs-last"><code>datatypes: <var>tbl</var> = <b>readtable</b> (<var>filename</var>, <var>Name</var>, <var>Value</var>)</code></p>
 <p> Read a file into a table, detecting variable types automatically.
 </p>
 <div class="ms-5">
@@ -440,8 +447,6 @@
  <code>'ReadRowNames'</code> is <code>true</code>.  Zero is equivalent to
  <code>'ReadRowNames'</code>, <code>false</code>.</td></tr>
 </table>
-<p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/readtable.m">readtable</a>
 </div>
 
 <p> An OpenDocument file written by <code>table2ods</code> carries the package&rsquo;s own
@@ -462,7 +467,8 @@
   <a href="ods2table.html">ods2table</a>
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/readtable.m">readtable</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/readtable.m">readtable</a>
+</p>
 </div>
         <div class="card rounded my-4">
           <div class="card-header card-header-mod">

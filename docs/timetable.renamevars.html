@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -417,9 +426,7 @@
                 </ol>
               </nav>
 
-<dl>
-<dt><code><h5 class="fs">timetable: <var>ttB</var> = <b>renamevars</b> (<var>ttA</var>, <var>vars</var>, <var>newNames</var>)</code></h5></dt>
-</dl>
+<p class="h5 fs fs-last"><code>timetable: <var>ttB</var> = <b>renamevars</b> (<var>ttA</var>, <var>vars</var>, <var>newNames</var>)</code></p>
 <p> Rename variables in a timetable.
 </p>
 <div class="ms-5">
@@ -439,11 +446,12 @@
  renamed back; see deviation D6.
 </p>
 <p> <strong>See also: </strong>
-  <a href="timetable.movevars.html">movevars</a>, 
+  <a href="timetable.movevars.html">timetable.movevars</a>, 
   <a href="timetable.html">timetable</a>
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/timetable.m#L2552">timetable</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/timetable.m#L2543">timetable</a>
+</p>
 </div>
         <div class="card rounded my-4">
           <div class="card-header card-header-mod">

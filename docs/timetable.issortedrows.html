@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -417,13 +426,11 @@
                 </ol>
               </nav>
 
-<dl>
-<dt><code><h5 class="fs">timetable: <var>TF</var> = <b>issortedrows</b> (<var>tt</var>)</code></h5></dt>
-<dt><code><h5 class="fs">timetable: <var>TF</var> = <b>issortedrows</b> (<var>tt</var>, <var>rowDimName</var>)</code></h5></dt>
-<dt><code><h5 class="fs">timetable: <var>TF</var> = <b>issortedrows</b> (<var>tt</var>, <var>vars</var>)</code></h5></dt>
-<dt><code><h5 class="fs">timetable: <var>TF</var> = <b>issortedrows</b> (<var>tt</var>, &hellip;, <var>direction</var>)</code></h5></dt>
-<dt><code><h5 class="fs">timetable: <var>TF</var> = <b>issortedrows</b> (&hellip;, <var>Name</var>, <var>Value</var>)</code></h5></dt>
-</dl>
+<p class="h5 fs"><code>timetable: <var>TF</var> = <b>issortedrows</b> (<var>tt</var>)</code></p>
+<p class="h5 fs"><code>timetable: <var>TF</var> = <b>issortedrows</b> (<var>tt</var>, <var>rowDimName</var>)</code></p>
+<p class="h5 fs"><code>timetable: <var>TF</var> = <b>issortedrows</b> (<var>tt</var>, <var>vars</var>)</code></p>
+<p class="h5 fs"><code>timetable: <var>TF</var> = <b>issortedrows</b> (<var>tt</var>, &hellip;, <var>direction</var>)</code></p>
+<p class="h5 fs fs-last"><code>timetable: <var>TF</var> = <b>issortedrows</b> (&hellip;, <var>Name</var>, <var>Value</var>)</code></p>
 <p> True when the rows of a timetable are already in a given order.
 </p>
 <div class="ms-5">
@@ -446,7 +453,8 @@
   <a href="timetable.html">timetable</a>
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/timetable.m#L2952">timetable</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/timetable.m#L2943">timetable</a>
+</p>
 </div>
         <div class="card rounded my-4">
           <div class="card-header card-header-mod">

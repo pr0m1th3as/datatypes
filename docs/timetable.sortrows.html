@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -417,14 +426,12 @@
                 </ol>
               </nav>
 
-<dl>
-<dt><code><h5 class="fs">timetable: <var>ttB</var> = <b>sortrows</b> (<var>ttA</var>)</code></h5></dt>
-<dt><code><h5 class="fs">timetable: <var>ttB</var> = <b>sortrows</b> (<var>ttA</var>, <var>rowDimName</var>)</code></h5></dt>
-<dt><code><h5 class="fs">timetable: <var>ttB</var> = <b>sortrows</b> (<var>ttA</var>, <var>vars</var>)</code></h5></dt>
-<dt><code><h5 class="fs">timetable: <var>ttB</var> = <b>sortrows</b> (<var>ttA</var>, &hellip;, <var>direction</var>)</code></h5></dt>
-<dt><code><h5 class="fs">timetable: <var>ttB</var> = <b>sortrows</b> (&hellip;, <var>Name</var>, <var>Value</var>)</code></h5></dt>
-<dt><code><h5 class="fs">timetable: [<var>ttB</var>, <var>index</var>] = <b>sortrows</b> (&hellip;)</code></h5></dt>
-</dl>
+<p class="h5 fs"><code>timetable: <var>ttB</var> = <b>sortrows</b> (<var>ttA</var>)</code></p>
+<p class="h5 fs"><code>timetable: <var>ttB</var> = <b>sortrows</b> (<var>ttA</var>, <var>rowDimName</var>)</code></p>
+<p class="h5 fs"><code>timetable: <var>ttB</var> = <b>sortrows</b> (<var>ttA</var>, <var>vars</var>)</code></p>
+<p class="h5 fs"><code>timetable: <var>ttB</var> = <b>sortrows</b> (<var>ttA</var>, &hellip;, <var>direction</var>)</code></p>
+<p class="h5 fs"><code>timetable: <var>ttB</var> = <b>sortrows</b> (&hellip;, <var>Name</var>, <var>Value</var>)</code></p>
+<p class="h5 fs fs-last"><code>timetable: [<var>ttB</var>, <var>index</var>] = <b>sortrows</b> (&hellip;)</code></p>
 <p> Sort the rows of a timetable.
 </p>
 <div class="ms-5">
@@ -471,11 +478,12 @@
  minus one hour to plus one.
 </p>
 <p> <strong>See also: </strong>
-  <a href="timetable.issortedrows.html">issortedrows</a>, 
+  <a href="timetable.issortedrows.html">timetable.issortedrows</a>, 
   <a href="timetable.html">timetable</a>
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/timetable.m#L2803">timetable</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/timetable.m#L2794">timetable</a>
+</p>
 </div>
         <div class="card rounded my-4">
           <div class="card-header card-header-mod">

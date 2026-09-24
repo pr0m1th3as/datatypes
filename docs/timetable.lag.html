@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -417,10 +426,8 @@
                 </ol>
               </nav>
 
-<dl>
-<dt><code><h5 class="fs">timetable: <var>ttB</var> = <b>lag</b> (<var>ttA</var>)</code></h5></dt>
-<dt><code><h5 class="fs">timetable: <var>ttB</var> = <b>lag</b> (<var>ttA</var>, <var>n</var>)</code></h5></dt>
-</dl>
+<p class="h5 fs"><code>timetable: <var>ttB</var> = <b>lag</b> (<var>ttA</var>)</code></p>
+<p class="h5 fs fs-last"><code>timetable: <var>ttB</var> = <b>lag</b> (<var>ttA</var>, <var>n</var>)</code></p>
 <p> Shift the data of a timetable along its own row times.
 </p>
 <div class="ms-5">
@@ -445,13 +452,14 @@
  own.  Every property of the timetable survives.
 </p>
 <p> <strong>See also: </strong>
-  <a href="timetable.retime.html">retime</a>, 
-  <a href="timetable.synchronize.html">synchronize</a>, 
-  <a href="timetable.isregular.html">isregular</a>, 
+  <a href="timetable.retime.html">timetable.retime</a>, 
+  <a href="timetable.synchronize.html">timetable.synchronize</a>, 
+  <a href="timetable.isregular.html">timetable.isregular</a>, 
   <a href="timetable.html">timetable</a>
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/timetable.m#L4122">timetable</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/timetable.m#L4118">timetable</a>
+</p>
 </div>
 
             </div>

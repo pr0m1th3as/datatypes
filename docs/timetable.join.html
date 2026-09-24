@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -417,11 +426,9 @@
                 </ol>
               </nav>
 
-<dl>
-<dt><code><h5 class="fs">timetable: <var>ttC</var> = <b>join</b> (<var>ttL</var>, <var>tblR</var>)</code></h5></dt>
-<dt><code><h5 class="fs">timetable: <var>ttC</var> = <b>join</b> (<var>ttL</var>, <var>tblR</var>, <var>Name</var>, <var>Value</var>)</code></h5></dt>
-<dt><code><h5 class="fs">timetable: [<var>ttC</var>, <var>index</var>] = <b>join</b> (&hellip;)</code></h5></dt>
-</dl>
+<p class="h5 fs"><code>timetable: <var>ttC</var> = <b>join</b> (<var>ttL</var>, <var>tblR</var>)</code></p>
+<p class="h5 fs"><code>timetable: <var>ttC</var> = <b>join</b> (<var>ttL</var>, <var>tblR</var>, <var>Name</var>, <var>Value</var>)</code></p>
+<p class="h5 fs fs-last"><code>timetable: [<var>ttC</var>, <var>index</var>] = <b>join</b> (&hellip;)</code></p>
 <p> Join a timetable with another tabular object.
 </p>
 <div class="ms-5">
@@ -468,7 +475,8 @@
  agree, and the operation is refused where they do not.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/timetable.m#L3638">timetable</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/timetable.m#L3632">timetable</a>
+</p>
 </div>
 
             </div>

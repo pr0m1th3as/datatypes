@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -436,11 +445,9 @@
                 </ol>
               </nav>
 
-<dl>
-<dt><code><h5 class="fs">datetime: <var>VI</var> = <b>interp1</b> (<var>X</var>, <var>V</var>, <var>XI</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>VI</var> = <b>interp1</b> (&hellip;, <var>method</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>VI</var> = <b>interp1</b> (&hellip;, <var>method</var>, <var>extrap</var>)</code></h5></dt>
-</dl>
+<p class="h5 fs"><code>datetime: <var>VI</var> = <b>interp1</b> (<var>X</var>, <var>V</var>, <var>XI</var>)</code></p>
+<p class="h5 fs"><code>datetime: <var>VI</var> = <b>interp1</b> (&hellip;, <var>method</var>)</code></p>
+<p class="h5 fs fs-last"><code>datetime: <var>VI</var> = <b>interp1</b> (&hellip;, <var>method</var>, <var>extrap</var>)</code></p>
 <p> One-dimensional interpolation involving datetime arrays.
 </p>
 <div class="ms-5">
@@ -465,7 +472,8 @@
  requested.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/datetime.m#L3975">datetime</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/datetime.m#L3988">datetime</a>
+</p>
 </div>
         <div class="card rounded my-4">
           <div class="card-header card-header-mod">

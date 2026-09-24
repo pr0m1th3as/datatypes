@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -377,10 +386,8 @@
                 </ol>
               </nav>
 
-<dl>
-<dt><code><h5 class="fs">table: <b>table2ods</b> (<var>tbl</var>, <var>file</var>)</code></h5></dt>
-<dt><code><h5 class="fs">table: <b>table2ods</b> (<var>tbl</var>, <var>file</var>, <var>Name</var>, <var>Value</var>)</code></h5></dt>
-</dl>
+<p class="h5 fs"><code>table: <b>table2ods</b> (<var>tbl</var>, <var>file</var>)</code></p>
+<p class="h5 fs fs-last"><code>table: <b>table2ods</b> (<var>tbl</var>, <var>file</var>, <var>Name</var>, <var>Value</var>)</code></p>
 <p> Write a table to an OpenDocument spreadsheet file.
 </p>
 <div class="ms-5">
@@ -445,8 +452,6 @@
  <code>'append'</code> appends the table&rsquo;s rows to it, and
  <code>'replacefile'</code> discards any existing file.</td></tr>
 </table>
-<p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/table.m#L1011">table</a>
 </div>
 
 <p> A nested table is split into columns tagged with both the outer and the
@@ -458,7 +463,8 @@
  cell arrays of character vectors and their values are not reconstructed.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/table.m#L1011">table</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/table.m#L1028">table</a>
+</p>
 </div>
         <div class="card rounded my-4">
           <div class="card-header card-header-mod">

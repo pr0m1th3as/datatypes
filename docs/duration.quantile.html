@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -427,16 +436,14 @@
                 </ol>
               </nav>
 
-<dl>
-<dt><code><h5 class="fs">duration: <var>Q</var> = <b>quantile</b> (<var>D</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: <var>Q</var> = <b>quantile</b> (<var>D</var>, <var>p</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: <var>Q</var> = <b>quantile</b> (<var>D</var>, <var>n</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: <var>Q</var> = <b>quantile</b> (<var>D</var>, &hellip;, <var>dim</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: <var>Q</var> = <b>quantile</b> (<var>D</var>, &hellip;, <var>vecdim</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: <var>Q</var> = <b>quantile</b> (<var>D</var>, &hellip;, <code>'all'</code>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: <var>Q</var> = <b>quantile</b> (<var>D</var>, <var>p</var>, &hellip;, <var>method</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: <var>Q</var> = <b>quantile</b> (<var>D</var>, <var>n</var>, &hellip;, <var>method</var>)</code></h5></dt>
-</dl>
+<p class="h5 fs"><code>duration: <var>Q</var> = <b>quantile</b> (<var>D</var>)</code></p>
+<p class="h5 fs"><code>duration: <var>Q</var> = <b>quantile</b> (<var>D</var>, <var>p</var>)</code></p>
+<p class="h5 fs"><code>duration: <var>Q</var> = <b>quantile</b> (<var>D</var>, <var>n</var>)</code></p>
+<p class="h5 fs"><code>duration: <var>Q</var> = <b>quantile</b> (<var>D</var>, &hellip;, <var>dim</var>)</code></p>
+<p class="h5 fs"><code>duration: <var>Q</var> = <b>quantile</b> (<var>D</var>, &hellip;, <var>vecdim</var>)</code></p>
+<p class="h5 fs"><code>duration: <var>Q</var> = <b>quantile</b> (<var>D</var>, &hellip;, <code>'all'</code>)</code></p>
+<p class="h5 fs"><code>duration: <var>Q</var> = <b>quantile</b> (<var>D</var>, <var>p</var>, &hellip;, <var>method</var>)</code></p>
+<p class="h5 fs fs-last"><code>duration: <var>Q</var> = <b>quantile</b> (<var>D</var>, <var>n</var>, &hellip;, <var>method</var>)</code></p>
 <p> Compute the quantiles of a duration array.
 </p>
 <div class="ms-5">
@@ -445,7 +452,8 @@
  Type <code>help quantile</code> for more information.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/duration.m#L3097">duration</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/duration.m#L3097">duration</a>
+</p>
 </div>
         <div class="card rounded my-4">
           <div class="card-header card-header-mod">

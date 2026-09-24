@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -347,11 +356,9 @@
                 </ol>
               </nav>
 
-<dl>
-<dt><code><h5 class="fs">calendarDuration: <var>E</var> = <b>calendarDuration.empty</b> ()</code></h5></dt>
-<dt><code><h5 class="fs">calendarDuration: <var>E</var> = <b>calendarDuration.empty</b> (<var>sz</var>)</code></h5></dt>
-<dt><code><h5 class="fs">calendarDuration: <var>E</var> = <b>calendarDuration.empty</b> (<var>m</var>, <var>n</var>, &hellip;)</code></h5></dt>
-</dl>
+<p class="h5 fs"><code>calendarDuration: <var>E</var> = <b>calendarDuration.empty</b> ()</code></p>
+<p class="h5 fs"><code>calendarDuration: <var>E</var> = <b>calendarDuration.empty</b> (<var>sz</var>)</code></p>
+<p class="h5 fs fs-last"><code>calendarDuration: <var>E</var> = <b>calendarDuration.empty</b> (<var>m</var>, <var>n</var>, &hellip;)</code></p>
 <p> Create an empty calendarDuration array.
 </p>
 <div class="ms-5">
@@ -366,7 +373,8 @@
  names no size and gives <em class="math">0&times;0</em>.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/calendarDuration.m#L93">calendarDuration</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/calendarDuration.m#L93">calendarDuration</a>
+</p>
 </div>
 
             </div>

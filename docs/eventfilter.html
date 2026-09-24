@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -390,7 +399,7 @@
               </div>
             </div>
             <div class="card-body">
-<dl><code><h5 class="description">datatypes: eventfilter</h5></code></dl>
+<p class="h5 description mb-3"><code>datatypes: eventfilter</code></p>
 <p> Subscript into a timetable by what was happening rather than by when.
 </p>
 <div class="ms-5">
@@ -419,7 +428,7 @@
   <a href="timetable.html">timetable</a>
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/eventfilter.m">eventfilter</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/eventfilter.m">eventfilter</a>
 </p>
 </div>
         <p class="lead my-3">The <code>eventfilter</code> class offers the following public methods:</p>
@@ -442,10 +451,8 @@ Create an event filter.
           </div>
           <div class="collapse multi-collapse" id="eventfilter_eventfilter">
             <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">eventfilter: <var>ef</var> = <b>eventfilter</b> (<var>tt</var>)</code></h5></dt>
-<dt><code><h5 class="fs">eventfilter: <var>ef</var> = <b>eventfilter</b> (<var>eventLabels</var>)</code></h5></dt>
-</dl>
+<p class="h5 fs"><code>eventfilter: <var>ef</var> = <b>eventfilter</b> (<var>tt</var>)</code></p>
+<p class="h5 fs fs-last"><code>eventfilter: <var>ef</var> = <b>eventfilter</b> (<var>eventLabels</var>)</code></p>
 <p> </p>
 <p> <code><var>ef</var> = eventfilter (<var>tt</var>)</code> creates a filter that may be
  written against the variables of the event table attached to the
@@ -636,9 +643,7 @@ Return the names a condition may be written against.
           </div>
           <div class="collapse multi-collapse" id="eventfilter_properties">
             <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">eventfilter: <var>names</var> = <b>properties</b> (<var>ef</var>)</code></h5></dt>
-</dl>
+<p class="h5 fs fs-last"><code>eventfilter: <var>names</var> = <b>properties</b> (<var>ef</var>)</code></p>
 <p> </p>
 <p> They are the variables of the event table the filter came from,
  together with <code>Time</code>.  A filter made from a list of labels
@@ -668,9 +673,7 @@ Return the positions of the rows of <var>tt</var> the filter selects.
           </div>
           <div class="collapse multi-collapse" id="eventfilter_rowIndices">
             <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">eventfilter: <var>ix</var> = <b>rowIndices</b> (<var>ef</var>, <var>tt</var>)</code></h5></dt>
-</dl>
+<p class="h5 fs fs-last"><code>eventfilter: <var>ix</var> = <b>rowIndices</b> (<var>ef</var>, <var>tt</var>)</code></p>
 <p> </p>
 
 
@@ -696,9 +699,7 @@ Return the times of the events of <var>tt</var> the filter matches.
           </div>
           <div class="collapse multi-collapse" id="eventfilter_eventTimes">
             <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">eventfilter: <var>t</var> = <b>eventTimes</b> (<var>ef</var>, <var>tt</var>)</code></h5></dt>
-</dl>
+<p class="h5 fs fs-last"><code>eventfilter: <var>t</var> = <b>eventTimes</b> (<var>ef</var>, <var>tt</var>)</code></p>
 <p> </p>
 <p> The times come back in the order the event table holds them.  It is
  what a <code>timerange</code> reads when an event filter is given as one of

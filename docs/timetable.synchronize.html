@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -417,13 +426,11 @@
                 </ol>
               </nav>
 
-<dl>
-<dt><code><h5 class="fs">timetable: <var>tt</var> = <b>synchronize</b> (<var>tt1</var>, <var>tt2</var>)</code></h5></dt>
-<dt><code><h5 class="fs">timetable: <var>tt</var> = <b>synchronize</b> (<var>tt1</var>, &hellip;, <var>ttN</var>)</code></h5></dt>
-<dt><code><h5 class="fs">timetable: <var>tt</var> = <b>synchronize</b> (&hellip;, <var>newTimes</var>)</code></h5></dt>
-<dt><code><h5 class="fs">timetable: <var>tt</var> = <b>synchronize</b> (&hellip;, <var>method</var>)</code></h5></dt>
-<dt><code><h5 class="fs">timetable: <var>tt</var> = <b>synchronize</b> (&hellip;, <var>Name</var>, <var>Value</var>)</code></h5></dt>
-</dl>
+<p class="h5 fs"><code>timetable: <var>tt</var> = <b>synchronize</b> (<var>tt1</var>, <var>tt2</var>)</code></p>
+<p class="h5 fs"><code>timetable: <var>tt</var> = <b>synchronize</b> (<var>tt1</var>, &hellip;, <var>ttN</var>)</code></p>
+<p class="h5 fs"><code>timetable: <var>tt</var> = <b>synchronize</b> (&hellip;, <var>newTimes</var>)</code></p>
+<p class="h5 fs"><code>timetable: <var>tt</var> = <b>synchronize</b> (&hellip;, <var>method</var>)</code></p>
+<p class="h5 fs fs-last"><code>timetable: <var>tt</var> = <b>synchronize</b> (&hellip;, <var>Name</var>, <var>Value</var>)</code></p>
 <p> Put several timetables on one set of row times and set them side by
  side.
 </p>
@@ -470,13 +477,14 @@
  agree, and the operation is refused where they do not.
 </p>
 <p> <strong>See also: </strong>
-  <a href="timetable.retime.html">retime</a>, 
+  <a href="timetable.retime.html">timetable.retime</a>, 
   <a href="timetable.html">timetable</a>, 
   <a href="timetable.horzcat.html">horzcat</a>, 
-  <a href="timetable.isregular.html">isregular</a>
+  <a href="timetable.isregular.html">timetable.isregular</a>
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/timetable.m#L4187">timetable</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/timetable.m#L4183">timetable</a>
+</p>
 </div>
 
             </div>

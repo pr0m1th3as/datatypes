@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -390,11 +399,9 @@
               </div>
             </div>
             <div class="card-body">
-<dl>
-<dt><code><h5 class="fs">datatypes: <var>tbl</var> = <b>ods2table</b> (<var>filename</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datatypes: <var>tbl</var> = <b>ods2table</b> (<var>filename</var>, <code>'Sheet'</code>, <var>sheet</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datatypes: [<var>tbl</var>, <var>rowTimesName</var>] = <b>ods2table</b> (&hellip;)</code></h5></dt>
-</dl>
+<p class="h5 fs"><code>datatypes: <var>tbl</var> = <b>ods2table</b> (<var>filename</var>)</code></p>
+<p class="h5 fs"><code>datatypes: <var>tbl</var> = <b>ods2table</b> (<var>filename</var>, <code>'Sheet'</code>, <var>sheet</var>)</code></p>
+<p class="h5 fs fs-last"><code>datatypes: [<var>tbl</var>, <var>rowTimesName</var>] = <b>ods2table</b> (&hellip;)</code></p>
 <p> Read an OpenDocument spreadsheet file into a table.
 </p>
 <div class="ms-5">
@@ -431,8 +438,6 @@
  column headed <code>Row</code>, which is what <code>writetable</code> writes for the row
  names, is taken as the row names without being named here.</td></tr>
 </table>
-<p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/ods2table.m">ods2table</a>
 </div>
 
 <p> When the file carries the hidden <code>__datatypes_meta__</code> sheet written by
@@ -470,7 +475,8 @@
  arrays of character vectors and their values are not reconstructed.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/ods2table.m">ods2table</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/ods2table.m">ods2table</a>
+</p>
 </div>
         <div class="card rounded my-4">
           <div class="card-header card-header-mod">

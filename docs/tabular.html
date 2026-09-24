@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -390,7 +399,7 @@
               </div>
             </div>
             <div class="card-body">
-<dl><code><h5 class="description">datatypes: tabular</h5></code></dl>
+<p class="h5 description mb-3"><code>datatypes: tabular</code></p>
 <p> Abstract superclass of <code>table</code> and <code>timetable</code>.
 </p>
 <div class="ms-5">
@@ -405,7 +414,7 @@
  <code>RowNames</code> and <code>timetable</code> with <code>RowTimes</code>.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/tabular.m">tabular</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/tabular.m">tabular</a>
 </p>
 </div>
         <p class="lead my-3">The <code>tabular</code> class contains the following properties:</p>
@@ -428,7 +437,6 @@ Table description
           </div>
           <div class="collapse multi-collapse" id="tabular_Description">
             <div class="border-bottom py-2">
-
 <p> </p>
 <p> Table description specified as a character vector or a string scalar.
  If specified as a string scalar, it is converted and stored internally
@@ -459,7 +467,6 @@ Additional table information
           </div>
           <div class="collapse multi-collapse" id="tabular_UserData">
             <div class="border-bottom py-2">
-
 <p> </p>
 <p> Additional table information, specified as an array.  Any type of data
  can be attached using this property.  You can access the <code>UserData</code>
@@ -489,7 +496,6 @@ Dimension names
           </div>
           <div class="collapse multi-collapse" id="tabular_DimensionNames">
             <div class="border-bottom py-2">
-
 <p> </p>
 <p> Dimension names specified as a two-element cell array of character
  vectors or a two-element string array.  If specified as a string array,
@@ -527,7 +533,6 @@ Variable names
           </div>
           <div class="collapse multi-collapse" id="tabular_VariableNames">
             <div class="border-bottom py-2">
-
 <p> </p>
 <p> Variable names, specified as a cell array of character vectors or a
  string array.  If specified as a string array, it is converted and stored
@@ -562,7 +567,6 @@ Variable data types
           </div>
           <div class="collapse multi-collapse" id="tabular_VariableTypes">
             <div class="border-bottom py-2">
-
 <p> </p>
 <p> The class of the data of each variable, defined as a cell array of
  character vectors or a string array with the same number of elements as
@@ -599,7 +603,6 @@ Variable descriptions
           </div>
           <div class="collapse multi-collapse" id="tabular_VariableDescriptions">
             <div class="border-bottom py-2">
-
 <p> </p>
 <p> Variable descriptions, specified as a cell array of character vectors or
  a string array.  If specified as a string array, it is converted and
@@ -638,7 +641,6 @@ Variable units
           </div>
           <div class="collapse multi-collapse" id="tabular_VariableUnits">
             <div class="border-bottom py-2">
-
 <p> </p>
 <p> Variable units, specified as a cell array of character vectors or a
  string array.  If specified as a string array, it is converted and stored
@@ -677,7 +679,6 @@ Variable continuity
           </div>
           <div class="collapse multi-collapse" id="tabular_VariableContinuity">
             <div class="border-bottom py-2">
-
 <p> </p>
 <p> Continuity of each variable, specified as a cell array of character
  vectors or a string array carrying one element per variable, each of
@@ -721,7 +722,6 @@ Customized metadata of table and its variables
           </div>
           <div class="collapse multi-collapse" id="tabular_CustomProperties">
             <div class="border-bottom py-2">
-
 <p> </p>
 <p> Custom properties that contain metadata of a table and its variables.
  By default, this is an empty container.  Each custom property holds

@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -436,14 +445,12 @@
                 </ol>
               </nav>
 
-<dl>
-<dt><code><h5 class="fs">datetime: <var>B</var> = <b>sort</b> (<var>A</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>B</var> = <b>sort</b> (<var>A</var>, <var>dim</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>B</var> = <b>sort</b> (<var>A</var>, <var>direction</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>B</var> = <b>sort</b> (<var>A</var>, <var>dim</var>, <var>direction</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: <var>B</var> = <b>sort</b> (&hellip;, <code>'MissingPlacement'</code>, <var>mp</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datetime: [<var>B</var>, <var>I</var>] = <b>sort</b> (&hellip;)</code></h5></dt>
-</dl>
+<p class="h5 fs"><code>datetime: <var>B</var> = <b>sort</b> (<var>A</var>)</code></p>
+<p class="h5 fs"><code>datetime: <var>B</var> = <b>sort</b> (<var>A</var>, <var>dim</var>)</code></p>
+<p class="h5 fs"><code>datetime: <var>B</var> = <b>sort</b> (<var>A</var>, <var>direction</var>)</code></p>
+<p class="h5 fs"><code>datetime: <var>B</var> = <b>sort</b> (<var>A</var>, <var>dim</var>, <var>direction</var>)</code></p>
+<p class="h5 fs"><code>datetime: <var>B</var> = <b>sort</b> (&hellip;, <code>'MissingPlacement'</code>, <var>mp</var>)</code></p>
+<p class="h5 fs fs-last"><code>datetime: [<var>B</var>, <var>I</var>] = <b>sort</b> (&hellip;)</code></p>
 <p> Sort a datetime array.
 </p>
 <div class="ms-5">
@@ -470,7 +477,8 @@
  by <var>I</var> along the operating dimension.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/datetime.m#L3169">datetime</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/datetime.m#L3182">datetime</a>
+</p>
 </div>
         <div class="card rounded my-4">
           <div class="card-header card-header-mod">

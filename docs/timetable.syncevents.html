@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -417,11 +426,9 @@
                 </ol>
               </nav>
 
-<dl>
-<dt><code><h5 class="fs">timetable: <var>tt2</var> = <b>syncevents</b> (<var>tt</var>)</code></h5></dt>
-<dt><code><h5 class="fs">timetable: <var>tt2</var> = <b>syncevents</b> (<var>tt</var>, <var>defaultLabel</var>)</code></h5></dt>
-<dt><code><h5 class="fs">timetable: <var>tt2</var> = <b>syncevents</b> (&hellip;, <code>'EventDataVariables'</code>, <var>vars</var>)</code></h5></dt>
-</dl>
+<p class="h5 fs"><code>timetable: <var>tt2</var> = <b>syncevents</b> (<var>tt</var>)</code></p>
+<p class="h5 fs"><code>timetable: <var>tt2</var> = <b>syncevents</b> (<var>tt</var>, <var>defaultLabel</var>)</code></p>
+<p class="h5 fs fs-last"><code>timetable: <var>tt2</var> = <b>syncevents</b> (&hellip;, <code>'EventDataVariables'</code>, <var>vars</var>)</code></p>
 <p> Copy the attached event table&rsquo;s data onto the rows it covers.
 </p>
 <div class="ms-5">
@@ -458,12 +465,13 @@
 <p> The result keeps the event table it was synchronised from.
 </p>
 <p> <strong>See also: </strong>
-  <a href="timetable.extractevents.html">extractevents</a>, 
+  <a href="timetable.extractevents.html">timetable.extractevents</a>, 
   <a href="eventtable.html">eventtable</a>, 
   <a href="timetable.html">timetable</a>
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/timetable.m#L4473">timetable</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/timetable.m#L4469">timetable</a>
+</p>
 </div>
         <div class="card rounded my-4">
           <div class="card-header card-header-mod">

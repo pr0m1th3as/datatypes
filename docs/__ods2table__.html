@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -390,11 +399,9 @@
               </div>
             </div>
             <div class="card-body">
-<dl>
-<dt><code><h5 class="fs">datatypes: [<var>data</var>, <var>vtype</var>, <var>meta</var>] = <b>__ods2table__</b> (<var>file</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datatypes: [<var>data</var>, <var>vtype</var>, <var>meta</var>] = <b>__ods2table__</b> (<var>file</var>, <var>sheet</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datatypes: [<var>data</var>, <var>vtype</var>, <var>meta</var>, <var>names</var>, <var>preamble</var>] = <b>__ods2table__</b> (&hellip;)</code></h5></dt>
-</dl>
+<p class="h5 fs"><code>datatypes: [<var>data</var>, <var>vtype</var>, <var>meta</var>] = <b>__ods2table__</b> (<var>file</var>)</code></p>
+<p class="h5 fs"><code>datatypes: [<var>data</var>, <var>vtype</var>, <var>meta</var>] = <b>__ods2table__</b> (<var>file</var>, <var>sheet</var>)</code></p>
+<p class="h5 fs fs-last"><code>datatypes: [<var>data</var>, <var>vtype</var>, <var>meta</var>, <var>names</var>, <var>preamble</var>] = <b>__ods2table__</b> (&hellip;)</code></p>
 <p>Barebone function for reading a flat ODS (<code>.fods</code>) file.
 </p>
 <div class="ms-5">
@@ -402,6 +409,7 @@
 </p>
 <p><strong>Source Code: </strong>
   <a href="https://github.com/pr0m1th3as/datatypes/tree/HEAD/src/__ods2table__.cc">__ods2table__</a>
+</p>
 </div>
 
             </div>

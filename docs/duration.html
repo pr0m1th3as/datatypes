@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -390,7 +399,7 @@
               </div>
             </div>
             <div class="card-body">
-<dl><code><h5 class="description">datatypes: duration</h5></code></dl>
+<p class="h5 description mb-3"><code>datatypes: duration</code></p>
 <p> Array representing durations of time using fixed-length time units.
 </p>
 <div class="ms-5">
@@ -412,7 +421,7 @@
   <a href="datetime.html">datetime</a>
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/duration.m">duration</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/duration.m">duration</a>
 </p>
 </div>
         <p class="lead my-3">The <code>duration</code> class contains the following properties:</p>
@@ -435,7 +444,6 @@ Display format
           </div>
           <div class="collapse multi-collapse" id="duration_Format">
             <div class="border-bottom py-2">
-
 <p> </p>
 <p> Display format, specified as a character vector or string scalar.  If
  specified as a string scalar, it is converted and stored internally as

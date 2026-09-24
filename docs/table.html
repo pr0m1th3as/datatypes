@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -390,7 +399,7 @@
               </div>
             </div>
             <div class="card-body">
-<dl><code><h5 class="description">datatypes: table</h5></code></dl>
+<p class="h5 description mb-3"><code>datatypes: table</code></p>
 <p> Array of tabular data containing multiple columnar variables.
 </p>
 <div class="ms-5">
@@ -422,6 +431,23 @@
  variable keeps its height, so a five-row table displays as
  <code>5x0</code> rather than as empty.
 </p>
+<p> Assigning to a subscripted table with parentheses takes another table
+ or a cell array with one element per row and variable assigned.  A
+ variable name the table does not carry, or the index after its last
+ variable, creates a new variable, named <code>Var<var>N</var></code> when it is
+ given by index; an index that would leave a gap is refused.  Rows and
+ variables the assignment adds but does not fill take the default value
+ of their type, with a warning.  A table with neither rows nor variables
+ takes the height of what is assigned to it.
+</p>
+<p> Assigning with curly brackets writes the contents of the variables, as
+ reading with them returns them: an array whose columns are those of the
+ variables assigned, side by side, or a scalar that fills them all.  Each
+ variable converts what it is given as its own type does, so a cell
+ variable takes a cell array.  Variables and rows are created as with
+ parentheses, and assigning an empty matrix is refused, since curly
+ brackets never delete.
+</p>
 <p> Besides the <code>table</code> constructor, you can also use <code>array2table</code>,
  <code>cell2table</code>, and <code>struct2table</code> to create tables from the
  respective data types.
@@ -439,7 +465,7 @@
   <a href="struct2table.html">struct2table</a>
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/table.m">table</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/table.m">table</a>
 </p>
 </div>
         <p class="lead my-3">The <code>table</code> class contains the following properties:</p>
@@ -462,7 +488,6 @@ Row names
           </div>
           <div class="collapse multi-collapse" id="table_RowNames">
             <div class="border-bottom py-2">
-
 <p> </p>
 <p> Row names, specified as a cell array of character vectors or a string
  array.  If specified as a string array, it is converted and stored
@@ -672,7 +697,6 @@ Table description
           </div>
           <div class="collapse multi-collapse" id="table_Description">
             <div class="border-bottom py-2">
-
 <p> </p>
 <p> Table description specified as a character vector or a string scalar.
  If specified as a string scalar, it is converted and stored internally
@@ -703,7 +727,6 @@ Additional table information
           </div>
           <div class="collapse multi-collapse" id="table_UserData">
             <div class="border-bottom py-2">
-
 <p> </p>
 <p> Additional table information, specified as an array.  Any type of data
  can be attached using this property.  You can access the <code>UserData</code>
@@ -733,7 +756,6 @@ Dimension names
           </div>
           <div class="collapse multi-collapse" id="table_DimensionNames">
             <div class="border-bottom py-2">
-
 <p> </p>
 <p> Dimension names specified as a two-element cell array of character
  vectors or a two-element string array.  If specified as a string array,
@@ -890,7 +912,6 @@ Variable names
           </div>
           <div class="collapse multi-collapse" id="table_VariableNames">
             <div class="border-bottom py-2">
-
 <p> </p>
 <p> Variable names, specified as a cell array of character vectors or a
  string array.  If specified as a string array, it is converted and stored
@@ -982,7 +1003,6 @@ Variable data types
           </div>
           <div class="collapse multi-collapse" id="table_VariableTypes">
             <div class="border-bottom py-2">
-
 <p> </p>
 <p> The class of the data of each variable, defined as a cell array of
  character vectors or a string array with the same number of elements as
@@ -1019,7 +1039,6 @@ Variable descriptions
           </div>
           <div class="collapse multi-collapse" id="table_VariableDescriptions">
             <div class="border-bottom py-2">
-
 <p> </p>
 <p> Variable descriptions, specified as a cell array of character vectors or
  a string array.  If specified as a string array, it is converted and
@@ -1058,7 +1077,6 @@ Variable units
           </div>
           <div class="collapse multi-collapse" id="table_VariableUnits">
             <div class="border-bottom py-2">
-
 <p> </p>
 <p> Variable units, specified as a cell array of character vectors or a
  string array.  If specified as a string array, it is converted and stored
@@ -1097,7 +1115,6 @@ Variable continuity
           </div>
           <div class="collapse multi-collapse" id="table_VariableContinuity">
             <div class="border-bottom py-2">
-
 <p> </p>
 <p> Continuity of each variable, specified as a cell array of character
  vectors or a string array carrying one element per variable, each of
@@ -1141,7 +1158,6 @@ Customized metadata of table and its variables
           </div>
           <div class="collapse multi-collapse" id="table_CustomProperties">
             <div class="border-bottom py-2">
-
 <p> </p>
 <p> Custom properties that contain metadata of a table and its variables.
  By default, this is an empty container.  Each custom property holds
@@ -1459,7 +1475,7 @@ Customized metadata of table and its variables
                       </tr>
                       <tr>
                         <td><b><code><a href="table.rmmissing.html">rmmissing</a></code></b></td>
-                        <td>Remove missing table elements by rows.</td>
+                        <td>Remove missing table elements by rows or by variables.</td>
                       </tr>
                       <tr>
                         <td><b><code><a href="table.fillmissing.html">fillmissing</a></code></b></td>

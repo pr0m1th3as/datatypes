@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -390,9 +399,7 @@
               </div>
             </div>
             <div class="card-body">
-<dl>
-<dt><code><h5 class="fs">datatypes: <b>__table2xlsx__</b> (<var>file</var>, <var>data</var>, <var>vtype</var>, <var>opts</var>)</code></h5></dt>
-</dl>
+<p class="h5 fs fs-last"><code>datatypes: <b>__table2xlsx__</b> (<var>file</var>, <var>data</var>, <var>vtype</var>, <var>opts</var>)</code></p>
 <p>Barebone function for writing an Office Open XML (<code>.xlsx</code> / <code>.xlsm</code>) spreadsheet.  A single sheet is written from <var>data</var> / <var>vtype</var>; when <var>opts</var> carries a <code>sheets</code> struct array (fields <code>name</code>, <code>data</code>, <code>vtype</code>, <code>header</code>) a multi-sheet workbook is written instead.
 </p>
 <div class="ms-5">
@@ -400,6 +407,7 @@
 </p>
 <p><strong>Source Code: </strong>
   <a href="https://github.com/pr0m1th3as/datatypes/tree/HEAD/src/__table2xlsx__.cc">__table2xlsx__</a>
+</p>
 </div>
 
             </div>

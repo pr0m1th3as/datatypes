@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -417,13 +426,11 @@
                 </ol>
               </nav>
 
-<dl>
-<dt><code><h5 class="fs">timetable: <var>ttB</var> = <b>topkrows</b> (<var>ttA</var>, <var>k</var>)</code></h5></dt>
-<dt><code><h5 class="fs">timetable: <var>ttB</var> = <b>topkrows</b> (<var>ttA</var>, <var>k</var>, <var>vars</var>)</code></h5></dt>
-<dt><code><h5 class="fs">timetable: <var>ttB</var> = <b>topkrows</b> (<var>ttA</var>, <var>k</var>, <var>vars</var>, <var>direction</var>)</code></h5></dt>
-<dt><code><h5 class="fs">timetable: <var>ttB</var> = <b>topkrows</b> (&hellip;, <var>Name</var>, <var>Value</var>)</code></h5></dt>
-<dt><code><h5 class="fs">timetable: [<var>ttB</var>, <var>index</var>] = <b>topkrows</b> (&hellip;)</code></h5></dt>
-</dl>
+<p class="h5 fs"><code>timetable: <var>ttB</var> = <b>topkrows</b> (<var>ttA</var>, <var>k</var>)</code></p>
+<p class="h5 fs"><code>timetable: <var>ttB</var> = <b>topkrows</b> (<var>ttA</var>, <var>k</var>, <var>vars</var>)</code></p>
+<p class="h5 fs"><code>timetable: <var>ttB</var> = <b>topkrows</b> (<var>ttA</var>, <var>k</var>, <var>vars</var>, <var>direction</var>)</code></p>
+<p class="h5 fs"><code>timetable: <var>ttB</var> = <b>topkrows</b> (&hellip;, <var>Name</var>, <var>Value</var>)</code></p>
+<p class="h5 fs fs-last"><code>timetable: [<var>ttB</var>, <var>index</var>] = <b>topkrows</b> (&hellip;)</code></p>
 <p> The top <var>k</var> rows of a timetable, in sorted order.
 </p>
 <div class="ms-5">
@@ -458,12 +465,13 @@
  default ranking of a regular timetable steps backwards.
 </p>
 <p> <strong>See also: </strong>
-  <a href="timetable.head.html">head</a>, 
+  <a href="timetable.head.html">timetable.head</a>, 
   <a href="timetable.sortrows.html">sortrows</a>, 
   <a href="timetable.html">timetable</a>
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/timetable.m#L2893">timetable</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/timetable.m#L2884">timetable</a>
+</p>
 </div>
         <div class="card rounded my-4">
           <div class="card-header card-header-mod">

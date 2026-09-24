@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -377,16 +386,15 @@
                 </ol>
               </nav>
 
-<dl>
-<dt><code><h5 class="fs">table: <var>TF</var> = <b>ismatrix</b> (<var>tbl</var>)</code></h5></dt>
-</dl>
+<p class="h5 fs fs-last"><code>table: <var>TF</var> = <b>ismatrix</b> (<var>tbl</var>)</code></p>
 <p> Test input table for being a matrix.
 </p>
 <div class="ms-5">
 <p> For tables, <code>ismatrix</code> is always true, by definition.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/table.m#L4053">table</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/table.m#L4084">table</a>
+</p>
 </div>
 
             </div>

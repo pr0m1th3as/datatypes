@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -370,16 +379,15 @@
                 </ol>
               </nav>
 
-<dl>
-<dt><code><h5 class="fs">string: <var>TF</var> = <b>isscalar</b> (<var>str</var>)</code></h5></dt>
-</dl>
+<p class="h5 fs fs-last"><code>string: <var>TF</var> = <b>isscalar</b> (<var>str</var>)</code></p>
 <p> Test if string array is a scalar.
 </p>
 <div class="ms-5">
 <p> <var>TF</var> is <code>true</code>, if string array <var>str</var> is a scalar.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/string.m#L1074">string</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/string.m#L1074">string</a>
+</p>
 </div>
 
             </div>

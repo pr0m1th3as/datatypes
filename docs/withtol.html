@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -390,7 +399,7 @@
               </div>
             </div>
             <div class="card-body">
-<dl><code><h5 class="description">datatypes: withtol</h5></code></dl>
+<p class="h5 description mb-3"><code>datatypes: withtol</code></p>
 <p> Subscript into a timetable by times matched within a tolerance.
 </p>
 <div class="ms-5">
@@ -404,7 +413,7 @@
   <a href="timetable.html">timetable</a>
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/withtol.m">withtol</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/withtol.m">withtol</a>
 </p>
 </div>
         <p class="lead my-3">The <code>withtol</code> class offers the following public methods:</p>
@@ -427,9 +436,7 @@ Create a tolerant time subscript.
           </div>
           <div class="collapse multi-collapse" id="withtol_withtol">
             <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">withtol: <var>wt</var> = <b>withtol</b> (<var>subscriptTimes</var>, <var>tol</var>)</code></h5></dt>
-</dl>
+<p class="h5 fs fs-last"><code>withtol: <var>wt</var> = <b>withtol</b> (<var>subscriptTimes</var>, <var>tol</var>)</code></p>
 <p> </p>
 <p> <code><var>wt</var> = withtol (<var>subscriptTimes</var>, <var>tol</var>)</code> creates a
  subscript selecting the rows of a timetable whose times are within
@@ -473,9 +480,7 @@ Return the positions in <var>rowTimes</var> the subscript selects.
           </div>
           <div class="collapse multi-collapse" id="withtol_rowIndices">
             <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">withtol: <var>ix</var> = <b>rowIndices</b> (<var>wt</var>, <var>rowTimes</var>)</code></h5></dt>
-</dl>
+<p class="h5 fs fs-last"><code>withtol: <var>ix</var> = <b>rowIndices</b> (<var>wt</var>, <var>rowTimes</var>)</code></p>
 <p> </p>
 <p> The positions come back grouped by the time that matched them, in the
  order those times were asked for, rather than in the order the rows

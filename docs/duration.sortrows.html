@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -427,14 +436,12 @@
                 </ol>
               </nav>
 
-<dl>
-<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (<var>A</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (<var>A</var>, <var>col</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (<var>A</var>, <var>direction</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (<var>A</var>, <var>col</var>, <var>direction</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: <var>B</var> = <b>sortrows</b> (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: [<var>B</var>, <var>index</var>] = <b>sortrows</b> (<var>A</var>, &hellip;)</code></h5></dt>
-</dl>
+<p class="h5 fs"><code>duration: <var>B</var> = <b>sortrows</b> (<var>A</var>)</code></p>
+<p class="h5 fs"><code>duration: <var>B</var> = <b>sortrows</b> (<var>A</var>, <var>col</var>)</code></p>
+<p class="h5 fs"><code>duration: <var>B</var> = <b>sortrows</b> (<var>A</var>, <var>direction</var>)</code></p>
+<p class="h5 fs"><code>duration: <var>B</var> = <b>sortrows</b> (<var>A</var>, <var>col</var>, <var>direction</var>)</code></p>
+<p class="h5 fs"><code>duration: <var>B</var> = <b>sortrows</b> (&hellip;, <code>'MissingPlacement'</code>, <var>MP</var>)</code></p>
+<p class="h5 fs fs-last"><code>duration: [<var>B</var>, <var>index</var>] = <b>sortrows</b> (<var>A</var>, &hellip;)</code></p>
 <p> Sort rows in a duration array.
 </p>
 <div class="ms-5">
@@ -480,7 +487,8 @@
  sorted matrix <var>B</var> such that <code><var>B</var> = <var>A</var>(<var>index</var>,:)</code>.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/duration.m#L3588">duration</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/duration.m#L3588">duration</a>
+</p>
 </div>
 
             </div>

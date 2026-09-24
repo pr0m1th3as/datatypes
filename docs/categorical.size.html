@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -395,12 +404,10 @@
                 </ol>
               </nav>
 
-<dl>
-<dt><code><h5 class="fs">categorical: <var>sz</var> = <b>size</b> (<var>C</var>)</code></h5></dt>
-<dt><code><h5 class="fs">categorical: <var>dim_sz</var> = <b>size</b> (<var>C</var>, <var>dim</var>)</code></h5></dt>
-<dt><code><h5 class="fs">categorical: <var>dim_sz</var> = <b>size</b> (<var>C</var>, <var>d1</var>, <var>d2</var>, &hellip;)</code></h5></dt>
-<dt><code><h5 class="fs">categorical: [<var>rows</var>, <var>columns</var>, &hellip;, <var>dim_n_sz</var>] = <b>size</b> (&hellip;)</code></h5></dt>
-</dl>
+<p class="h5 fs"><code>categorical: <var>sz</var> = <b>size</b> (<var>C</var>)</code></p>
+<p class="h5 fs"><code>categorical: <var>dim_sz</var> = <b>size</b> (<var>C</var>, <var>dim</var>)</code></p>
+<p class="h5 fs"><code>categorical: <var>dim_sz</var> = <b>size</b> (<var>C</var>, <var>d1</var>, <var>d2</var>, &hellip;)</code></p>
+<p class="h5 fs fs-last"><code>categorical: [<var>rows</var>, <var>columns</var>, &hellip;, <var>dim_n_sz</var>] = <b>size</b> (&hellip;)</code></p>
 <p> Size of a categorical array.
 </p>
 <div class="ms-5">
@@ -422,7 +429,8 @@
  arguments must equal the number of dimensions requested.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/categorical.m#L895">categorical</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/categorical.m#L898">categorical</a>
+</p>
 </div>
 
             </div>

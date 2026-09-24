@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -370,9 +379,7 @@
                 </ol>
               </nav>
 
-<dl>
-<dt><code><h5 class="fs">string: <var>B</var> = <b>ctranspose</b> (<var>A</var>)</code></h5></dt>
-</dl>
+<p class="h5 fs fs-last"><code>string: <var>B</var> = <b>ctranspose</b> (<var>A</var>)</code></p>
 <p> Transpose a string matrix.
 </p>
 <div class="ms-5">
@@ -382,7 +389,8 @@
  <code>transpose</code>.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/string.m#L4098">string</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/string.m#L4098">string</a>
+</p>
 </div>
 
             </div>

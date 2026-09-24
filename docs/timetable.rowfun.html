@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -417,10 +426,8 @@
                 </ol>
               </nav>
 
-<dl>
-<dt><code><h5 class="fs">timetable: <var>B</var> = <b>rowfun</b> (<var>func</var>, <var>A</var>)</code></h5></dt>
-<dt><code><h5 class="fs">timetable: <var>B</var> = <b>rowfun</b> (<var>func</var>, <var>A</var>, <var>Name</var>, <var>Value</var>, &hellip;)</code></h5></dt>
-</dl>
+<p class="h5 fs"><code>timetable: <var>B</var> = <b>rowfun</b> (<var>func</var>, <var>A</var>)</code></p>
+<p class="h5 fs fs-last"><code>timetable: <var>B</var> = <b>rowfun</b> (<var>func</var>, <var>A</var>, <var>Name</var>, <var>Value</var>, &hellip;)</code></p>
 <p> Apply a function to each row of a timetable.
 </p>
 <div class="ms-5">
@@ -481,7 +488,8 @@
 </dl>
 
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/timetable.m#L3245">timetable</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/timetable.m#L3239">timetable</a>
+</p>
 </div>
 
             </div>

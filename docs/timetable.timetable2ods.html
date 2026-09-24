@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -417,10 +426,8 @@
                 </ol>
               </nav>
 
-<dl>
-<dt><code><h5 class="fs">timetable: <b>timetable2ods</b> (<var>tt</var>, <var>file</var>)</code></h5></dt>
-<dt><code><h5 class="fs">timetable: <b>timetable2ods</b> (<var>tt</var>, <var>file</var>, <var>Name</var>, <var>Value</var>)</code></h5></dt>
-</dl>
+<p class="h5 fs"><code>timetable: <b>timetable2ods</b> (<var>tt</var>, <var>file</var>)</code></p>
+<p class="h5 fs fs-last"><code>timetable: <b>timetable2ods</b> (<var>tt</var>, <var>file</var>, <var>Name</var>, <var>Value</var>)</code></p>
 <p> Write a timetable to an OpenDocument spreadsheet file.
 </p>
 <div class="ms-5">
@@ -467,8 +474,6 @@
  exists), <code>'append'</code> appends the timetable&rsquo;s rows to it, and
  <code>'replacefile'</code> discards any existing file.</td></tr>
 </table>
-<p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/timetable.m#L4877">timetable</a>
 </div>
 
 <p> An attached event table is written too, on a sheet of its own named
@@ -486,12 +491,13 @@
 </p>
 <p> <strong>See also: </strong>
   <a href="ods2timetable.html">ods2timetable</a>, 
-  <a href="timetable.timetable2csv.html">timetable2csv</a>, 
+  <a href="timetable.timetable2csv.html">timetable.timetable2csv</a>, 
   <a href="struct2ods.html">struct2ods</a>, 
   <a href="table.table2ods.html">table.table2ods</a>
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/timetable.m#L4877">timetable</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/timetable.m#L4875">timetable</a>
+</p>
 </div>
         <div class="card rounded my-4">
           <div class="card-header card-header-mod">

@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -390,10 +399,8 @@
               </div>
             </div>
             <div class="card-body">
-<dl>
-<dt><code><h5 class="fs">datatypes: <var>tbl</var> = <b>csv2table</b> (<var>filename</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datatypes: <var>tbl</var> = <b>csv2table</b> (<var>filename</var>, <var>Name</var>, <var>Value</var>)</code></h5></dt>
-</dl>
+<p class="h5 fs"><code>datatypes: <var>tbl</var> = <b>csv2table</b> (<var>filename</var>)</code></p>
+<p class="h5 fs fs-last"><code>datatypes: <var>tbl</var> = <b>csv2table</b> (<var>filename</var>, <var>Name</var>, <var>Value</var>)</code></p>
 <p> Load a CSV file into a table.
 </p>
 <div class="ms-5">
@@ -528,8 +535,6 @@
  of ours is read the way MATLAB reads it.  It never applies to a file written
  by <code>table2csv</code>, which declares every variable&rsquo;s type.</td></tr>
 </table>
-<p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/csv2table.m">csv2table</a>
 </div>
 
 <p> A <code>datetime</code> or <code>duration</code> variable written by <code>table2csv</code> is
@@ -549,7 +554,8 @@
   <a href="table.html">table</a>
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/csv2table.m">csv2table</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/csv2table.m">csv2table</a>
+</p>
 </div>
         <div class="card rounded my-4">
           <div class="card-header card-header-mod">

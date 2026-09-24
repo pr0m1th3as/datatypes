@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -427,17 +436,15 @@
                 </ol>
               </nav>
 
-<dl>
-<dt><code><h5 class="fs">duration: <var>bin</var> = <b>discretize</b> (<var>D</var>, <var>edges</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: <var>bin</var> = <b>discretize</b> (<var>D</var>, <var>N</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: <var>bin</var> = <b>discretize</b> (<var>D</var>, <var>dur</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: <var>bin</var> = <b>discretize</b> (<var>D</var>, <var>unit</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: <var>Y</var> = <b>discretize</b> (&hellip;, <var>values</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: <var>C</var> = <b>discretize</b> (&hellip;, &rsquo;categorical&rsquo;)</code></h5></dt>
-<dt><code><h5 class="fs">duration: <var>C</var> = <b>discretize</b> (&hellip;, &rsquo;categorical&rsquo;, <var>names</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: <var>Y</var> = <b>discretize</b> (&hellip;, &rsquo;IncludedEdge&rsquo;, <var>side</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: [<var>bin</var>, <var>edges</var>] = <b>discretize</b> (&hellip;)</code></h5></dt>
-</dl>
+<p class="h5 fs"><code>duration: <var>bin</var> = <b>discretize</b> (<var>D</var>, <var>edges</var>)</code></p>
+<p class="h5 fs"><code>duration: <var>bin</var> = <b>discretize</b> (<var>D</var>, <var>N</var>)</code></p>
+<p class="h5 fs"><code>duration: <var>bin</var> = <b>discretize</b> (<var>D</var>, <var>dur</var>)</code></p>
+<p class="h5 fs"><code>duration: <var>bin</var> = <b>discretize</b> (<var>D</var>, <var>unit</var>)</code></p>
+<p class="h5 fs"><code>duration: <var>Y</var> = <b>discretize</b> (&hellip;, <var>values</var>)</code></p>
+<p class="h5 fs"><code>duration: <var>C</var> = <b>discretize</b> (&hellip;, &rsquo;categorical&rsquo;)</code></p>
+<p class="h5 fs"><code>duration: <var>C</var> = <b>discretize</b> (&hellip;, &rsquo;categorical&rsquo;, <var>names</var>)</code></p>
+<p class="h5 fs"><code>duration: <var>Y</var> = <b>discretize</b> (&hellip;, &rsquo;IncludedEdge&rsquo;, <var>side</var>)</code></p>
+<p class="h5 fs fs-last"><code>duration: [<var>bin</var>, <var>edges</var>] = <b>discretize</b> (&hellip;)</code></p>
 <p> Group durations into bins.
 </p>
 <div class="ms-5">
@@ -478,7 +485,8 @@
   <a href="discretize.html">discretize</a>
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/duration.m#L3232">duration</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/duration.m#L3232">duration</a>
+</p>
 </div>
 
             </div>

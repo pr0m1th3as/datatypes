@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -390,7 +399,7 @@
               </div>
             </div>
             <div class="card-body">
-<dl><code><h5 class="description">datatypes: timetable</h5></code></dl>
+<p class="h5 description mb-3"><code>datatypes: timetable</code></p>
 <p> Array of tabular data whose rows are labelled by time.
 </p>
 <div class="ms-5">
@@ -422,6 +431,15 @@
  variables exactly as it does for a <code>table</code>, and the row times go
  with the rows they label.  The row times themselves cannot be deleted.
 </p>
+<p> Assigning to a subscripted timetable with parentheses or curly
+ brackets writes values and creates variables and rows as it does for a
+ <code>table</code>; a row added this way has a missing row time, or the next
+ one along a step given when the timetable was created.  A timetable
+ assigned with parentheses must carry the row times of the rows it is
+ assigned to, and is refused otherwise, where MATLAB pastes its rows by
+ position and ignores their times; <code>synchronize</code> aligns two
+ timetables first.
+</p>
 <p> Besides the <code>timetable</code> constructor, you can also use
  <code>table2timetable</code> and <code>array2timetable</code> to create timetables
  from the respective data types.
@@ -435,12 +453,12 @@
   <a href="eventtable.html">eventtable</a>, 
   <a href="istimetable.html">istimetable</a>, 
   <a href="istabular.html">istabular</a>, 
-  <a href="timetable.isregular.html">isregular</a>, 
+  <a href="timetable.isregular.html">timetable.isregular</a>, 
   <a href="datetime.html">datetime</a>, 
   <a href="duration.html">duration</a>
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/timetable.m">timetable</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/timetable.m">timetable</a>
 </p>
 </div>
         <p class="lead my-3">The <code>timetable</code> class contains the following properties:</p>
@@ -463,7 +481,6 @@ Row times
           </div>
           <div class="collapse multi-collapse" id="timetable_RowTimes">
             <div class="border-bottom py-2">
-
 <p> </p>
 <p> Row times, specified as a <code>datetime</code> or <code>duration</code> vector
  with one element for each row of the timetable.  They are stored as a
@@ -498,7 +515,6 @@ Time of the first row
           </div>
           <div class="collapse multi-collapse" id="timetable_StartTime">
             <div class="border-bottom py-2">
-
 <p> </p>
 <p> Time of the first row, of the same type as <code>RowTimes</code>.  It
  follows the first row: deleting the first row leaves <code>StartTime</code>
@@ -530,7 +546,6 @@ Sampling rate in hertz
           </div>
           <div class="collapse multi-collapse" id="timetable_SampleRate">
             <div class="border-bottom py-2">
-
 <p> </p>
 <p> Sampling rate, specified as a positive numeric scalar, being the
  reciprocal of <code>TimeStep</code> measured in seconds.  It is
@@ -563,7 +578,6 @@ Spacing between row times
           </div>
           <div class="collapse multi-collapse" id="timetable_TimeStep">
             <div class="border-bottom py-2">
-
 <p> </p>
 <p> Spacing between consecutive row times, specified as a <code>duration</code>
  or <code>calendarDuration</code> scalar, or a <code>NaN</code> duration when the
@@ -602,7 +616,6 @@ Event table attached to this timetable
           </div>
           <div class="collapse multi-collapse" id="timetable_Events">
             <div class="border-bottom py-2">
-
 <p> </p>
 <p> Event table attached to this timetable, specified as an
  <code>eventtable</code>, or empty when no events are attached.  A plain
@@ -645,7 +658,6 @@ Table description
           </div>
           <div class="collapse multi-collapse" id="timetable_Description">
             <div class="border-bottom py-2">
-
 <p> </p>
 <p> Table description specified as a character vector or a string scalar.
  If specified as a string scalar, it is converted and stored internally
@@ -676,7 +688,6 @@ Additional table information
           </div>
           <div class="collapse multi-collapse" id="timetable_UserData">
             <div class="border-bottom py-2">
-
 <p> </p>
 <p> Additional table information, specified as an array.  Any type of data
  can be attached using this property.  You can access the <code>UserData</code>
@@ -706,7 +717,6 @@ Dimension names
           </div>
           <div class="collapse multi-collapse" id="timetable_DimensionNames">
             <div class="border-bottom py-2">
-
 <p> </p>
 <p> Dimension names specified as a two-element cell array of character
  vectors or a two-element string array.  If specified as a string array,
@@ -744,7 +754,6 @@ Variable names
           </div>
           <div class="collapse multi-collapse" id="timetable_VariableNames">
             <div class="border-bottom py-2">
-
 <p> </p>
 <p> Variable names, specified as a cell array of character vectors or a
  string array.  If specified as a string array, it is converted and stored
@@ -779,7 +788,6 @@ Variable data types
           </div>
           <div class="collapse multi-collapse" id="timetable_VariableTypes">
             <div class="border-bottom py-2">
-
 <p> </p>
 <p> The class of the data of each variable, defined as a cell array of
  character vectors or a string array with the same number of elements as
@@ -816,7 +824,6 @@ Variable descriptions
           </div>
           <div class="collapse multi-collapse" id="timetable_VariableDescriptions">
             <div class="border-bottom py-2">
-
 <p> </p>
 <p> Variable descriptions, specified as a cell array of character vectors or
  a string array.  If specified as a string array, it is converted and
@@ -855,7 +862,6 @@ Variable units
           </div>
           <div class="collapse multi-collapse" id="timetable_VariableUnits">
             <div class="border-bottom py-2">
-
 <p> </p>
 <p> Variable units, specified as a cell array of character vectors or a
  string array.  If specified as a string array, it is converted and stored
@@ -894,7 +900,6 @@ Variable continuity
           </div>
           <div class="collapse multi-collapse" id="timetable_VariableContinuity">
             <div class="border-bottom py-2">
-
 <p> </p>
 <p> Continuity of each variable, specified as a cell array of character
  vectors or a string array carrying one element per variable, each of
@@ -938,7 +943,6 @@ Customized metadata of table and its variables
           </div>
           <div class="collapse multi-collapse" id="timetable_CustomProperties">
             <div class="border-bottom py-2">
-
 <p> </p>
 <p> Custom properties that contain metadata of a table and its variables.
  By default, this is an empty container.  Each custom property holds
@@ -1174,7 +1178,7 @@ Customized metadata of table and its variables
                       </tr>
                       <tr>
                         <td><b><code><a href="timetable.rmmissing.html">rmmissing</a></code></b></td>
-                        <td>Remove the incomplete rows of a timetable.</td>
+                        <td>Remove the incomplete rows or variables of a timetable.</td>
                       </tr>
                       <tr>
                         <td><b><code><a href="timetable.standardizeMissing.html">standardizeMissing</a></code></b></td>

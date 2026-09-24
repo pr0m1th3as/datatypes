@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -377,12 +386,11 @@
                 </ol>
               </nav>
 
-<dl>
-<dt><code><h5 class="fs">table: <var>tbl</var> = <b>rmmissing</b> (<var>tblA</var>)</code></h5></dt>
-<dt><code><h5 class="fs">table: <var>tbl</var> = <b>rmmissing</b> (&hellip;, <var>Name</var>, <var>Value</var>)</code></h5></dt>
-<dt><code><h5 class="fs">table: [<var>tbl</var>, <var>TF</var>] = <b>rmmissing</b> (&hellip;)</code></h5></dt>
-</dl>
-<p> Remove missing table elements by rows.
+<p class="h5 fs"><code>table: <var>tbl</var> = <b>rmmissing</b> (<var>tblA</var>)</code></p>
+<p class="h5 fs"><code>table: <var>tbl</var> = <b>rmmissing</b> (<var>tblA</var>, <var>dim</var>)</code></p>
+<p class="h5 fs"><code>table: <var>tbl</var> = <b>rmmissing</b> (&hellip;, <var>Name</var>, <var>Value</var>)</code></p>
+<p class="h5 fs fs-last"><code>table: [<var>tbl</var>, <var>TF</var>] = <b>rmmissing</b> (&hellip;)</code></p>
+<p> Remove missing table elements by rows or by variables.
 </p>
 <div class="ms-5">
 <p> <code><var>tbl</var> = rmmissing (<var>tblA</var>)</code> returns a table with the rows
@@ -390,7 +398,15 @@
  values are determined per variable according to its data type
  (<code>NaN</code> for numeric, <code>NaT</code> for <code>datetime</code>, <code>&lt;missing&gt;</code>
  for <code>string</code>, <code>&lt;undefined&gt;</code> for <code>categorical</code>,
- <code>{''}</code> for cellstr, etc.), as reported by <code>ismissing</code>.
+ <code>{''}</code> for cellstr, etc.), as reported by <code>ismissing</code>.  A
+ variable with several columns counts once in a row where any of its
+ columns is missing.
+</p>
+<p> <code><var>tbl</var> = rmmissing (<var>tblA</var>, <var>dim</var>)</code> removes rows when
+ <var>dim</var> is 1, the default, and variables when <var>dim</var> is 2.  With
+ <var>dim</var> equal to 2, a variable is removed when it holds a missing
+ value, and the options below count down each variable instead of
+ across each row.
 </p>
 <p> <code><var>tbl</var> = rmmissing (&hellip;, <var>Name</var>, <var>Value</var>)</code>
  customizes the operation with the following options:
@@ -398,26 +414,32 @@
 <dl compact="compact">
 <dt> <code>'MinNumMissing'</code></dt>
 <dd> A positive integer <var>n</var> (default <code>1</code>).  A row is removed only
- when it has at least <var>n</var> variables with a missing value.</dd>
+ when it has at least <var>n</var> variables with a missing value, and with
+ <var>dim</var> equal to 2 a variable only when it is missing in at least
+ <var>n</var> rows.</dd>
 <dt> <code>'DataVariables'</code></dt>
 <dd> Restrict the search for missing values to the indicated subset of table
  variables, using the same variable referencing as the other <code>table</code>
- methods.  Variables outside the subset are not inspected, but all
- variables are kept in the output.</dd>
+ methods.  Variables outside the subset are not inspected, so they are
+ kept in the output whatever they hold.</dd>
 <dt> <code>'MissingLocations'</code></dt>
 <dd> Supply the missing-value locations explicitly instead of deriving them
- with <code>ismissing</code>.  The value is either a logical matrix with one row
- per row of the input and one column per inspected variable, or a
- <code>table</code> of logical variables whose names and sizes match the
- inspected variables.</dd>
+ with <code>ismissing</code>; the values the table holds are then not
+ consulted.  The value is either a logical matrix with one row per row of
+ the input and one column per variable of <var>tblA</var> or per inspected
+ variable, or a <code>table</code> of logical variables whose names and sizes
+ match the inspected variables.  Where both sizes agree, the columns are
+ taken in the order of the variables of <var>tblA</var>.</dd>
 </dl>
 
 <p> <code>[<var>tbl</var>, <var>TF</var>] = rmmissing (&hellip;)</code> also returns a logical
- column vector <var>TF</var>, with one element per row of <var>tblA</var>, that is
- <code>true</code> for each removed row.
+ vector <var>TF</var> that is <code>true</code> for each removed row, a column with
+ one element per row of <var>tblA</var>, or with <var>dim</var> equal to 2 for each
+ removed variable, a row with one element per variable of <var>tblA</var>.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/table.m#L3018">table</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/table.m#L3049">table</a>
+</p>
 </div>
         <div class="card rounded my-4">
           <div class="card-header card-header-mod">

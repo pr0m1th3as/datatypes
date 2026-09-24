@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -370,11 +379,9 @@
                 </ol>
               </nav>
 
-<dl>
-<dt><code><h5 class="fs">string: <var>newstr</var> = <b>extractBetween</b> (<var>str</var>, <var>startPat</var>, <var>endPat</var>)</code></h5></dt>
-<dt><code><h5 class="fs">string: <var>newstr</var> = <b>extractBetween</b> (<var>str</var>, <var>startPos</var>, <var>endPos</var>)</code></h5></dt>
-<dt><code><h5 class="fs">string: <var>newstr</var> = <b>extractBetween</b> (&hellip;, <code>&quot;Boundaries&quot;</code>, <var>bounds</var>)</code></h5></dt>
-</dl>
+<p class="h5 fs"><code>string: <var>newstr</var> = <b>extractBetween</b> (<var>str</var>, <var>startPat</var>, <var>endPat</var>)</code></p>
+<p class="h5 fs"><code>string: <var>newstr</var> = <b>extractBetween</b> (<var>str</var>, <var>startPos</var>, <var>endPos</var>)</code></p>
+<p class="h5 fs fs-last"><code>string: <var>newstr</var> = <b>extractBetween</b> (&hellip;, <code>&quot;Boundaries&quot;</code>, <var>bounds</var>)</code></p>
 <p> Extract the substrings between start and end boundaries.
 </p>
 <div class="ms-5">
@@ -410,7 +417,8 @@
  as <var>str</var>.  Missing values in <var>str</var> are preserved.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/string.m#L2519">string</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/string.m#L2519">string</a>
+</p>
 </div>
         <div class="card rounded my-4">
           <div class="card-header card-header-mod">

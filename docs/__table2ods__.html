@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -390,10 +399,8 @@
               </div>
             </div>
             <div class="card-body">
-<dl>
-<dt><code><h5 class="fs">datatypes: <b>__table2ods__</b> (<var>file</var>, <var>data</var>, <var>vtype</var>, <var>meta</var>, <var>flat</var>)</code></h5></dt>
-<dt><code><h5 class="fs">datatypes: <b>__table2ods__</b> (<var>file</var>, <var>data</var>, <var>vtype</var>, <var>meta</var>, <var>flat</var>, <var>opts</var>)</code></h5></dt>
-</dl>
+<p class="h5 fs"><code>datatypes: <b>__table2ods__</b> (<var>file</var>, <var>data</var>, <var>vtype</var>, <var>meta</var>, <var>flat</var>)</code></p>
+<p class="h5 fs fs-last"><code>datatypes: <b>__table2ods__</b> (<var>file</var>, <var>data</var>, <var>vtype</var>, <var>meta</var>, <var>flat</var>, <var>opts</var>)</code></p>
 <p>Barebone function for saving a table to a flat (<code>.fods</code>) or compressed (<code>.ods</code>) OpenDocument spreadsheet file.
 </p>
 <div class="ms-5">
@@ -401,6 +408,7 @@
 </p>
 <p><strong>Source Code: </strong>
   <a href="https://github.com/pr0m1th3as/datatypes/tree/HEAD/src/__table2ods__.cc">__table2ods__</a>
+</p>
 </div>
 
             </div>

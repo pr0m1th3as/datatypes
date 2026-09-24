@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -417,10 +426,8 @@
                 </ol>
               </nav>
 
-<dl>
-<dt><code><h5 class="fs">timetable: <var>TF</var> = <b>containsrange</b> (<var>tt</var>, <var>ref</var>)</code></h5></dt>
-<dt><code><h5 class="fs">timetable: [<var>TF</var>, <var>whichRows</var>] = <b>containsrange</b> (<var>tt</var>, <var>ref</var>)</code></h5></dt>
-</dl>
+<p class="h5 fs"><code>timetable: <var>TF</var> = <b>containsrange</b> (<var>tt</var>, <var>ref</var>)</code></p>
+<p class="h5 fs fs-last"><code>timetable: [<var>TF</var>, <var>whichRows</var>] = <b>containsrange</b> (<var>tt</var>, <var>ref</var>)</code></p>
 <p> True when a timetable spans the whole of a range of times.
 </p>
 <div class="ms-5">
@@ -448,13 +455,14 @@
  false, and so does a reference naming no instant, such as a <code>NaT</code>.
 </p>
 <p> <strong>See also: </strong>
-  <a href="timetable.overlapsrange.html">overlapsrange</a>, 
-  <a href="timetable.withinrange.html">withinrange</a>, 
+  <a href="timetable.overlapsrange.html">timetable.overlapsrange</a>, 
+  <a href="timetable.withinrange.html">timetable.withinrange</a>, 
   <a href="timerange.html">timerange</a>, 
   <a href="timetable.html">timetable</a>
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/timetable.m#L2999">timetable</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/timetable.m#L2991">timetable</a>
+</p>
 </div>
         <div class="card rounded my-4">
           <div class="card-header card-header-mod">

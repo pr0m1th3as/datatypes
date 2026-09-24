@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -395,14 +404,12 @@
                 </ol>
               </nav>
 
-<dl>
-<dt><code><h5 class="fs">categorical: <var>M</var> = <b>mode</b> (<var>A</var>)</code></h5></dt>
-<dt><code><h5 class="fs">categorical: [<var>M</var>, <var>F</var>] = <b>mode</b> (<var>A</var>)</code></h5></dt>
-<dt><code><h5 class="fs">categorical: [<var>M</var>, <var>F</var>, <var>C</var>] = <b>mode</b> (<var>A</var>)</code></h5></dt>
-<dt><code><h5 class="fs">categorical: [&hellip;] = <b>mode</b> (<var>A</var>, <var>dim</var>)</code></h5></dt>
-<dt><code><h5 class="fs">categorical: [&hellip;] = <b>mode</b> (<var>A</var>, <var>vecdim</var>)</code></h5></dt>
-<dt><code><h5 class="fs">categorical: [&hellip;] = <b>mode</b> (<var>A</var>, <code>'all'</code>)</code></h5></dt>
-</dl>
+<p class="h5 fs"><code>categorical: <var>M</var> = <b>mode</b> (<var>A</var>)</code></p>
+<p class="h5 fs"><code>categorical: [<var>M</var>, <var>F</var>] = <b>mode</b> (<var>A</var>)</code></p>
+<p class="h5 fs"><code>categorical: [<var>M</var>, <var>F</var>, <var>C</var>] = <b>mode</b> (<var>A</var>)</code></p>
+<p class="h5 fs"><code>categorical: [&hellip;] = <b>mode</b> (<var>A</var>, <var>dim</var>)</code></p>
+<p class="h5 fs"><code>categorical: [&hellip;] = <b>mode</b> (<var>A</var>, <var>vecdim</var>)</code></p>
+<p class="h5 fs fs-last"><code>categorical: [&hellip;] = <b>mode</b> (<var>A</var>, <code>'all'</code>)</code></p>
 <p> Most frequent element in a categorical array.
 </p>
 <div class="ms-5">
@@ -437,7 +444,8 @@
  all dimensions and returns the most frequent element in <var>A</var>.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/categorical.m#L3180">categorical</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/categorical.m#L3194">categorical</a>
+</p>
 </div>
         <div class="card rounded my-4">
           <div class="card-header card-header-mod">

@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -377,13 +386,11 @@
                 </ol>
               </nav>
 
-<dl>
-<dt><code><h5 class="fs">table: <var>tbl</var> = <b>table</b> (<var>var1</var>, <var>var2</var>, &hellip;, <var>varN</var>)</code></h5></dt>
-<dt><code><h5 class="fs">table: <var>tbl</var> = <b>table</b> (<code>'Size'</code>, <var>sz</var>, <code>'VariableTypes'</code>, <var>varTypes</var>)</code></h5></dt>
-<dt><code><h5 class="fs">table: <var>tbl</var> = <b>table</b> (&hellip;, <code>'VariableNames'</code>, <var>varNames</var>)</code></h5></dt>
-<dt><code><h5 class="fs">table: <var>tbl</var> = <b>table</b> (&hellip;, <code>'RowNames'</code>, <var>rowNames</var>)</code></h5></dt>
-<dt><code><h5 class="fs">table: <var>tbl</var> = <b>table</b> (&hellip;, <code>'DimensionNames'</code>, <var>dimNames</var>)</code></h5></dt>
-</dl>
+<p class="h5 fs"><code>table: <var>tbl</var> = <b>table</b> (<var>var1</var>, <var>var2</var>, &hellip;, <var>varN</var>)</code></p>
+<p class="h5 fs"><code>table: <var>tbl</var> = <b>table</b> (<code>'Size'</code>, <var>sz</var>, <code>'VariableTypes'</code>, <var>varTypes</var>)</code></p>
+<p class="h5 fs"><code>table: <var>tbl</var> = <b>table</b> (&hellip;, <code>'VariableNames'</code>, <var>varNames</var>)</code></p>
+<p class="h5 fs"><code>table: <var>tbl</var> = <b>table</b> (&hellip;, <code>'RowNames'</code>, <var>rowNames</var>)</code></p>
+<p class="h5 fs fs-last"><code>table: <var>tbl</var> = <b>table</b> (&hellip;, <code>'DimensionNames'</code>, <var>dimNames</var>)</code></p>
 <p> Create a new table.
 </p>
 <div class="ms-5">
@@ -422,7 +429,8 @@
  variables.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/table.m#L381">table</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/table.m#L398">table</a>
+</p>
 </div>
         <div class="card rounded my-4">
           <div class="card-header card-header-mod">

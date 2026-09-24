@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -390,9 +399,7 @@
               </div>
             </div>
             <div class="card-body">
-<dl>
-<dt><code><h5 class="fs">datatypes: <var>D</var> = <b>years</b> (<var>X</var>)</code></h5></dt>
-</dl>
+<p class="h5 fs fs-last"><code>datatypes: <var>D</var> = <b>years</b> (<var>X</var>)</code></p>
 <p> Fixed-time duration in years.
 </p>
 <div class="ms-5">
@@ -414,7 +421,8 @@
   <a href="duration.years.html">duration.years</a>
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/years.m">years</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/years.m">years</a>
+</p>
 </div>
         <div class="card rounded my-4">
           <div class="card-header card-header-mod">

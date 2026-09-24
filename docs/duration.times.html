@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -427,9 +436,7 @@
                 </ol>
               </nav>
 
-<dl>
-<dt><code><h5 class="fs">duration: <var>C</var> = <b>times</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
-</dl>
+<p class="h5 fs fs-last"><code>duration: <var>C</var> = <b>times</b> (<var>A</var>, <var>B</var>)</code></p>
 <p> Element-wise multiplication for duration arrays.
 </p>
 <div class="ms-5">
@@ -445,7 +452,8 @@
  <var>C</var> is determined by the size compatibility of <var>A</var> and <var>B</var>.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/duration.m#L2065">duration</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/duration.m#L2065">duration</a>
+</p>
 </div>
         <div class="card rounded my-4">
           <div class="card-header card-header-mod">

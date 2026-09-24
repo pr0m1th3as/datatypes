@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -377,10 +386,8 @@
                 </ol>
               </nav>
 
-<dl>
-<dt><code><h5 class="fs">table: <var>tblB</var> = <b>rows2vars</b> (<var>tblA</var>)</code></h5></dt>
-<dt><code><h5 class="fs">table: <var>tblB</var> = <b>rows2vars</b> (<var>tblA</var>, <var>Name</var>, <var>Value</var>)</code></h5></dt>
-</dl>
+<p class="h5 fs"><code>table: <var>tblB</var> = <b>rows2vars</b> (<var>tblA</var>)</code></p>
+<p class="h5 fs fs-last"><code>table: <var>tblB</var> = <b>rows2vars</b> (<var>tblA</var>, <var>Name</var>, <var>Value</var>)</code></p>
 <p> Reorient table by swapping rows into variables.
 </p>
 <div class="ms-5">
@@ -423,7 +430,8 @@
 </li></ul>
 
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/table.m#L2156">table</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/table.m#L2173">table</a>
+</p>
 </div>
         <div class="card rounded my-4">
           <div class="card-header card-header-mod">

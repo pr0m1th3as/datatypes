@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -278,9 +287,7 @@
                 </ol>
               </nav>
 
-<dl>
-<dt><code><h5 class="fs">missing: <var>TF</var> = <b>le</b> (<var>A</var>, <var>B</var>)</code></h5></dt>
-</dl>
+<p class="h5 fs fs-last"><code>missing: <var>TF</var> = <b>le</b> (<var>A</var>, <var>B</var>)</code></p>
 <p> Less than or equal to for missing arrays.
 </p>
 <div class="ms-5">
@@ -295,7 +302,8 @@
  with missing arrays always returns <code>false</code>.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/missing.m#L413">missing</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/missing.m#L413">missing</a>
+</p>
 </div>
 
             </div>

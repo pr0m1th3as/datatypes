@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -390,7 +399,7 @@
               </div>
             </div>
             <div class="card-body">
-<dl><code><h5 class="description">datatypes: rowfilter</h5></code></dl>
+<p class="h5 description mb-3"><code>datatypes: rowfilter</code></p>
 <p> Subscript into a table or timetable by a condition on its variables.
 </p>
 <div class="ms-5">
@@ -415,7 +424,7 @@
   <a href="timetable.html">timetable</a>
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/rowfilter.m">rowfilter</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/rowfilter.m">rowfilter</a>
 </p>
 </div>
         <p class="lead my-3">The <code>rowfilter</code> class offers the following public methods:</p>
@@ -438,10 +447,8 @@ Create a row filter.
           </div>
           <div class="collapse multi-collapse" id="rowfilter_rowfilter">
             <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">rowfilter: <var>rf</var> = <b>rowfilter</b> (<var>tbl</var>)</code></h5></dt>
-<dt><code><h5 class="fs">rowfilter: <var>rf</var> = <b>rowfilter</b> (<var>varNames</var>)</code></h5></dt>
-</dl>
+<p class="h5 fs"><code>rowfilter: <var>rf</var> = <b>rowfilter</b> (<var>tbl</var>)</code></p>
+<p class="h5 fs fs-last"><code>rowfilter: <var>rf</var> = <b>rowfilter</b> (<var>varNames</var>)</code></p>
 <p> </p>
 <p> <code><var>rf</var> = rowfilter (<var>tbl</var>)</code> creates a filter that may be
  written against the variables of <var>tbl</var>, a table or a timetable.
@@ -486,9 +493,7 @@ Return the positions of the rows of <var>tbl</var> the filter selects.
           </div>
           <div class="collapse multi-collapse" id="rowfilter_rowIndices">
             <div class="border-bottom py-2">
-<dl>
-<dt><code><h5 class="fs">rowfilter: <var>ix</var> = <b>rowIndices</b> (<var>rf</var>, <var>tbl</var>)</code></h5></dt>
-</dl>
+<p class="h5 fs fs-last"><code>rowfilter: <var>ix</var> = <b>rowIndices</b> (<var>rf</var>, <var>tbl</var>)</code></p>
 <p> </p>
 
 

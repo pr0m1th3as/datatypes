@@ -92,9 +92,18 @@
       });
     </script>
     <style>
-    h5.fs {
+    .fs {
     margin-top: -0.15em;
     margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
     }
     h6:hover {
       color: gray;
@@ -427,12 +436,10 @@
                 </ol>
               </nav>
 
-<dl>
-<dt><code><h5 class="fs">duration: <var>sz</var> = <b>size</b> (<var>D</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: <var>dim_sz</var> = <b>size</b> (<var>D</var>, <var>dim</var>)</code></h5></dt>
-<dt><code><h5 class="fs">duration: <var>dim_sz</var> = <b>size</b> (<var>D</var>, <var>d1</var>, <var>d2</var>, &hellip;)</code></h5></dt>
-<dt><code><h5 class="fs">duration: [<var>rows</var>, <var>columns</var>, &hellip;, <var>dim_n_sz</var>] = <b>size</b> (&hellip;)</code></h5></dt>
-</dl>
+<p class="h5 fs"><code>duration: <var>sz</var> = <b>size</b> (<var>D</var>)</code></p>
+<p class="h5 fs"><code>duration: <var>dim_sz</var> = <b>size</b> (<var>D</var>, <var>dim</var>)</code></p>
+<p class="h5 fs"><code>duration: <var>dim_sz</var> = <b>size</b> (<var>D</var>, <var>d1</var>, <var>d2</var>, &hellip;)</code></p>
+<p class="h5 fs fs-last"><code>duration: [<var>rows</var>, <var>columns</var>, &hellip;, <var>dim_n_sz</var>] = <b>size</b> (&hellip;)</code></p>
 <p> Return the size of a duration array.
 </p>
 <div class="ms-5">
@@ -454,7 +461,8 @@
  arguments must equal the number of dimensions requested.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/a6e334e/inst/duration.m#L840">duration</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/duration.m#L840">duration</a>
+</p>
 </div>
 
             </div>
