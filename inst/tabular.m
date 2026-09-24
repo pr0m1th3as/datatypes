@@ -656,8 +656,19 @@ classdef (Abstract) tabular
             tbl = deleteSubs (this, s.subs{1}, s.subs{2});
             return;
           endif
-          [ixRow, ixVar, newLabels] = resolveRowVarRefs (this, s.subs{1}, ...
-                                                         s.subs{2});
+          [ixRow, ~, newLabels] = resolveRowVarRefs (this, s.subs{1}, ':');
+          [ixVar, newNames] = resolveAssignVarRef (this, s.subs{2});
+          if (islogical (ixRow))
+            ixRow = find (ixRow);
+          endif
+          oldHeight = height (this);
+          oldWidth = width (this);
+          ## An object with neither rows nor variables takes its height from
+          ## what is assigned to all of its rows.
+          if (oldHeight == 0 && oldWidth == 0 && ischar (s.subs{1})
+              && strcmp (s.subs{1}, ':'))
+            ixRow = 1:size (rhs, 1);
+          endif
           ## A row index past the end grows the object.  The variables grow
           ## by being assigned into, but the row labels are not indexed here
           ## and would be left behind, so the height they carry is worked out
@@ -683,6 +694,10 @@ classdef (Abstract) tabular
             error (strcat ("%s.subsasgn: input data mismatch indexed", ...
                            " dimensions."), clstype);
           endif
+          if (isa (rhs, 'timetable') && ! isa (this, 'timetable'))
+            error (strcat ("%s.subsasgn: input data type mismatch", ...
+                           " indexed variable type."), clstype);
+          endif
           if (newHeight > 0)
             ## The variables grow before anything is written into them, so
             ## that the rows the assignment passes over carry the fill the
@@ -697,40 +712,102 @@ classdef (Abstract) tabular
               tbl.VariableValues{i} = v;
             endfor
           endif
-          ## Handle different cases of input data
-          if (isa (rhs, 'table'))     # MATLAB compatible
-            rhs = table2cell (rhs);
-          endif
-          if (isa (rhs, 'cell'))      # MATLAB compatible
-            for i = 1:numel (ixVar)
-              varData = this.VariableValues{ixVar(i)};
+          ## The values for each variable assigned
+          vals = cell (1, numel (ixVar));
+          for i = 1:numel (ixVar)
+            if (isa (rhs, 'tabular'))       # MATLAB compatible
+              vals{i} = rhs.VariableValues{i};
+            elseif (iscell (rhs))           # MATLAB compatible
+              ## A cell variable takes each element as it is, or unwrapped
+              ## once where it comes in a cell of its own, as in MATLAB; any
+              ## other variable takes the elements stacked.
               col = rhs(:,i);
-              try
-                if (iscell (varData))
-                  varData(ixRow) = col;
-                else
-                  varData(ixRow) = vertcat (col{:});
-                endif
-              catch
-                error (strcat ("%s.subsasgn: input data type mismatch", ...
-                               " indexed variable type."), clstype);
-              end_try_catch
-              tbl.VariableValues{ixVar(i)} = varData;
-            endfor
-          else                        # Octave specific
-            for i = 1:numel (ixVar)
-              varData = this.VariableValues{ixVar(i)};
-              try
-                varData(ixRow) = rhs(:,i);
-              catch
-                error (strcat ("%s.subsasgn: input data type mismatch", ...
-                               " indexed variable type."), clstype);
-              end_try_catch
-              tbl.VariableValues{ixVar(i)} = varData;
-            endfor
-          endif
+              if (ixVar(i) <= oldWidth)
+                isCellVar = iscell (this.VariableValues{ixVar(i)});
+              else
+                isCellVar = any (cellfun (@(x) ischar (x) || iscell (x), col));
+              endif
+              if (isCellVar)
+                for k = 1:numel (col)
+                  if (iscell (col{k}) && isscalar (col{k}))
+                    col{k} = col{k}{1};
+                  endif
+                endfor
+                vals{i} = col;
+              else
+                try
+                  vals{i} = vertcat (col{:});
+                catch
+                  error (strcat ("%s.subsasgn: input data type mismatch", ...
+                                 " indexed variable type."), clstype);
+                end_try_catch
+              endif
+            else                            # Octave specific
+              vals{i} = rhs(:,i);
+            endif
+          endfor
+          ## The variables there are take their rows by assignment.  The
+          ## call is explicit because a nested table indexed here would take
+          ## the built-in assignment, which makes an array of tables.
+          sRows = struct ('type', '()', 'subs', {{ixRow, ':'}});
+          for i = find (ixVar <= oldWidth)
+            varData = this.VariableValues{ixVar(i)};
+            try
+              varData = subsasgn (varData, sRows, vals{i});
+            catch
+              error (strcat ("%s.subsasgn: input data type mismatch", ...
+                             " indexed variable type."), clstype);
+            end_try_catch
+            tbl.VariableValues{ixVar(i)} = varData;
+          endfor
           if (newHeight > 0 && ! labelsAdded)
             tbl = growRowLabels (tbl, newHeight);
+          endif
+          ## A timetable assigned into a timetable brings row times, which
+          ## must be those of the rows assigned; MATLAB pastes by position
+          ## and ignores them, which would put values at the wrong times.
+          if (isa (rhs, 'timetable'))
+            labels = getRowLabels (tbl);
+            rhsLabels = getRowLabels (rhs);
+            if (! isequaln (labels(ixRow), rhsLabels(:)))
+              error (strcat ("%s.subsasgn: the row times of the assigned", ...
+                             " timetable do not match the rows assigned;", ...
+                             " use synchronize to align them first."), ...
+                     clstype);
+            endif
+          endif
+          ## The variables named anew are built at full height, the rows not
+          ## assigned taking the fill their class gives, and added as any
+          ## new variable is, so that their properties follow.
+          H = height (tbl);
+          for j = 1:numel (newNames)
+            idx = find (ixVar == oldWidth + j);
+            proto = subsref (vals{idx(1)}, struct ('type', '()', ...
+                                                   'subs', {{[], ':'}}));
+            [col, errmsg] = padVariable (proto, H);
+            if (! isempty (errmsg))
+              error ("%s.subsasgn: %s", clstype, errmsg);
+            endif
+            try
+              for i = idx
+                col = subsasgn (col, sRows, vals{i});
+              endfor
+            catch
+              error (strcat ("%s.subsasgn: input data type mismatch", ...
+                             " indexed variable type."), clstype);
+            end_try_catch
+            tbl = setvar (tbl, newNames{j}, col);
+          endfor
+          ## Padding with defaults is reported, as in MATLAB
+          if (H > oldHeight && oldWidth > 0
+              && ! all (ismember (1:oldWidth, ixVar)))
+            warning (strcat ("%s.subsasgn: new rows were padded with", ...
+                             " default values in the variables not", ...
+                             " assigned."), clstype);
+          elseif (! isempty (newNames) && numel (unique (ixRow)) < H)
+            warning (strcat ("%s.subsasgn: new variables were padded with", ...
+                             " default values in the rows not assigned."), ...
+                     clstype);
           endif
 
         ## {} not used in Octave for assigning values
@@ -6882,6 +6959,62 @@ classdef (Abstract) tabular
       if (nargout > 1)
         varNames = repmat ({''}, size (ixVar));
         varNames(ixVar != 0) = this.VariableNames(ixVar(ixVar != 0));
+      endif
+    endfunction
+
+    ## Resolve the variable reference of an assignment, which may name
+    ## variables to create.  A name the object does not carry, an index past
+    ## the last variable and a logical mask longer than the width all name
+    ## new ones, which take the indices after the last variable in the order
+    ## they are named.  An index leaving a gap is refused, as in MATLAB.
+    ## NEWNAMES holds the names of the variables to create, in index order,
+    ## a new index taking the default name for its place.
+    function [ixVar, newNames] = resolveAssignVarRef (this, varRef)
+      clstype = class (this);
+      nvars = width (this);
+      newNames = cell (1, 0);
+      if (islogical (varRef) && isvector (varRef) && numel (varRef) > nvars)
+        varRef = find (varRef);
+      endif
+      if (isnumeric (varRef) && isvector (varRef) && ! isempty (varRef))
+        ixVar = varRef(:)';
+        if (any (ixVar < 1 | fix (ixVar) != ixVar))
+          ixVar = resolveVarRef (this, varRef);
+          return;
+        endif
+        ixNew = unique (ixVar(ixVar > nvars))(:)';
+        if (! isequal (ixNew, nvars + (1:numel (ixNew))))
+          error ("%s: cannot create a variable with a discontiguous index.", ...
+                 clstype);
+        endif
+        for k = ixNew
+          name = sprintf ('Var%d', k);
+          while (any (strcmp (name, [this.VariableNames, newNames, ...
+                                     this.DimensionNames])))
+            name = [name, '_1'];
+          endwhile
+          newNames{end+1} = name;
+        endfor
+      elseif (((ischar (varRef) && ! isequal (varRef, ':'))
+               || iscellstr (varRef) || isa (varRef, 'string'))
+              && isvector (cellstr (varRef)))
+        names = cellstr (varRef);
+        [tf, ixVar] = ismember (names, this.VariableNames);
+        ixVar = ixVar(:)';
+        for k = find (! tf(:)')
+          j = find (strcmp (names{k}, newNames), 1);
+          if (isempty (j))
+            if (any (strcmp (names{k}, this.DimensionNames)))
+              error ("%s: duplicate dimension and variable name: '%s'.", ...
+                     clstype, names{k});
+            endif
+            newNames{end+1} = names{k};
+            j = numel (newNames);
+          endif
+          ixVar(k) = nvars + j;
+        endfor
+      else
+        ixVar = resolveVarRef (this, varRef);
       endif
     endfunction
 

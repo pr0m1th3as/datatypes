@@ -49,6 +49,12 @@ classdef timetable < tabular
   ## variables exactly as it does for a @code{table}, and the row times go
   ## with the rows they label.  The row times themselves cannot be deleted.
   ##
+  ## Assigning to a subscripted timetable with parentheses creates
+  ## variables and rows as it does for a @code{table}.  A timetable assigned
+  ## this way must carry the row times of the rows it is assigned to, and
+  ## is refused otherwise, where MATLAB pastes its rows by position and
+  ## ignores their times; @code{synchronize} aligns two timetables first.
+  ##
   ## Besides the @code{timetable} constructor, you can also use
   ## @code{table2timetable} and @code{array2timetable} to create timetables
   ## from the respective data types.

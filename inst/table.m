@@ -49,6 +49,15 @@ classdef table < tabular
   ## variable keeps its height, so a five-row table displays as
   ## @qcode{5x0} rather than as empty.
   ##
+  ## Assigning to a subscripted table with parentheses takes another table
+  ## or a cell array with one element per row and variable assigned.  A
+  ## variable name the table does not carry, or the index after its last
+  ## variable, creates a new variable, named @qcode{Var@var{N}} when it is
+  ## given by index; an index that would leave a gap is refused.  Rows and
+  ## variables the assignment adds but does not fill take the default value
+  ## of their type, with a warning.  A table with neither rows nor variables
+  ## takes the height of what is assigned to it.
+  ##
   ## Besides the @code{table} constructor, you can also use @code{array2table},
   ## @code{cell2table}, and @code{struct2table} to create tables from the
   ## respective data types.
