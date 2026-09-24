@@ -2252,6 +2252,19 @@ classdef (Abstract) tabular
         return
       endif
 
+      ## Every new variable spans the rows of the table, as in MATLAB, where
+      ## 'setvar' would repeat a scalar down them.  A table with neither rows
+      ## nor variables is left to 'setvar'.
+      if (height (this) > 0 || width (this) > 0)
+        for i = 1:numel (args)
+          if (size (args{i}, 1) != height (this))
+            errmsg = sprintf (strcat ("each new variable must have as", ...
+                                      " many rows as the %s."), class (this));
+            return
+          endif
+        endfor
+      endif
+
       if (isempty (newVarNames))
         ## Create names for new variables
         ## The place the first new variable takes in the result, which is

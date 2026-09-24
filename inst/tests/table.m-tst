@@ -3228,6 +3228,10 @@
 %! M = mergevars (T, {'A', 'B'});
 %! assert_equal (M.Properties.VariableUnits, {''});
 
+## Test a table with rows and no variables takes a variable of its height
+%!test
+%! R = addvars (table ('Size', [3, 0], 'VariableTypes', {}), [1; 2; 3]);
+%! assert_equal (size (R), [3, 1]);
 ## Test a string scalar is added as a variable
 %!test
 %! T = table (1, 2, 'VariableNames', {'g', 'x'});
@@ -3252,14 +3256,21 @@
 %! addvars (tblA, Smoker, 'Bogus', 1);
 %!error <table.addvars: invalid optional paired argument.> ...
 %! addvars (tblA, 'abc', Smoker);
+%!error <table.addvars: each new variable must have as many rows as the table.> ...
+%! addvars (tblA, 1);
+%!error <table.addvars: each new variable must have as many rows as the table.> ...
+%! addvars (tblA, true (5, 1), 1);
+%!error <table.addvars: each new variable must have as many rows as the table.> ...
+%! addvars (table ('Size', [3, 0], 'VariableTypes', {}), [1; 2]);
 %!error <table.addvars: NEWNAMES does not match the number of new variables.> ...
-%! addvars (tblA, Smoker, 'NewVariableNames', {'A', 'B'});
+%! addvars (tblA, true (5, 1), 'NewVariableNames', {'A', 'B'});
 %!error <table.addvars: NEWNAMES contains duplicate names.> ...
-%! addvars (tblA, Smoker, Smoker, 'NewVariableNames', {'A', 'A'});
+%! addvars (tblA, true (5, 1), true (5, 1), 'NewVariableNames', {'A', 'A'});
 %!error <table.addvars: new variable name 'Height' already exists.> ...
-%! addvars (tblA, Smoker, 'NewVariableNames', {'Height'});
+%! addvars (tblA, true (5, 1), 'NewVariableNames', {'Height'});
 %!error <table.addvars: new variable names 'Height', 'Weight' already exist.> ...
-%! addvars (tblA, Smoker, Smoker, 'NewVariableNames', {'Height', 'Weight'});
+%! addvars (tblA, true (5, 1), true (5, 1), ...
+%!          'NewVariableNames', {'Height', 'Weight'});
 
 ## Test 'rename' method
 %!test

@@ -975,24 +975,19 @@ classdef timetable < tabular
           rest = rest(2:end);
         endif
       endif
+      errmsg = timeBaseError (spec, true);
+      if (! isempty (errmsg))
+        return
+      endif
 
       method = 'default';
-      if (! isempty (rest))
-        first = rest{1};
-        if (is_function_handle (first))
-          method = first;
-          rest = rest(2:end);
-        else
-          if (isa (first, 'string') && isscalar (first))
-            first = char (first);
-          endif
-          if (ischar (first) && isrow (first)
-              && ! any (strcmpi (first, optNames)))
-            method = lower (first);
-            rest = rest(2:end);
-          endif
+      if (retimeIsMethod (rest))
+        method = rest{1};
+        if (! is_function_handle (method))
+          method = lower (char (method));
         endif
-      elseif (iscell (spec))
+        rest = rest(2:end);
+      elseif (isempty (rest) && iscell (spec))
         errmsg = strcat ("the method must be one name or one function", ...
                          " handle for every timetable.");
         return
@@ -1003,20 +998,13 @@ classdef timetable < tabular
         return
       endif
 
-      dfValues = {missing, missing, 'extrap', missing, missing};
-      [tstep, srate, endVals, incEdge, konst, extra] = ...
-                    parsePairedArguments (optNames, dfValues, rest(:));
-      if (! isempty (extra))
-        name = extra{1};
-        if (isa (name, 'string') && isscalar (name))
-          name = char (name);
-        endif
-        if (! (ischar (name) && isrow (name)))
-          name = '<unknown>';
-        endif
-        errmsg = sprintf ("unknown option '%s'.", name);
+      errmsg = retimeOptions (rest, optNames);
+      if (! isempty (errmsg))
         return
       endif
+      dfValues = {missing, missing, 'extrap', missing, missing};
+      [tstep, srate, endVals, incEdge, konst] = ...
+                    parsePairedArguments (optNames, dfValues, rest(:));
       [endVals, incEdge, edgeGiven, errmsg] = retimeCheckOptions (endVals, ...
                                                                  incEdge);
       if (! isempty (errmsg))
@@ -1068,8 +1056,9 @@ classdef timetable < tabular
 
     ## The argument surface of 'retime': the target the caller named, the
     ## method if one was given, and the options.  The method is positional
-    ## and optional at once, so anything in its place that names an option is
-    ## read as one, which is how a call can leave the method out entirely.
+    ## and optional at once, so a name in its place is read as the method
+    ## only when it names one or nothing follows it, as in MATLAB, which is
+    ## how a call can leave the method out entirely.
     ## Returns an errmsg body for the caller to raise under its own name.
     function [tt, errmsg, warns] = retimeResult (this, args)
 
@@ -1082,41 +1071,29 @@ classdef timetable < tabular
       endif
       spec = args{1};
       rest = args(2:end);
+      errmsg = timeBaseError (spec, false);
+      if (! isempty (errmsg))
+        return
+      endif
 
       optNames = {'TimeStep', 'SampleRate', 'EndValues', 'IncludedEdge', ...
                   'Constant'};
       method = 'default';
-      if (! isempty (rest))
-        first = rest{1};
-        if (is_function_handle (first))
-          method = first;
-          rest = rest(2:end);
-        else
-          if (isa (first, 'string') && isscalar (first))
-            first = char (first);
-          endif
-          if (ischar (first) && isrow (first)
-              && ! any (strcmpi (first, optNames)))
-            method = lower (first);
-            rest = rest(2:end);
-          endif
+      if (retimeIsMethod (rest))
+        method = rest{1};
+        if (! is_function_handle (method))
+          method = lower (char (method));
         endif
+        rest = rest(2:end);
       endif
 
-      dfValues = {missing, missing, 'extrap', missing, missing};
-      [tstep, srate, endVals, incEdge, konst, extra] = ...
-                    parsePairedArguments (optNames, dfValues, rest(:));
-      if (! isempty (extra))
-        name = extra{1};
-        if (isa (name, 'string') && isscalar (name))
-          name = char (name);
-        endif
-        if (! (ischar (name) && isrow (name)))
-          name = '<unknown>';
-        endif
-        errmsg = sprintf ("unknown option '%s'.", name);
+      errmsg = retimeOptions (rest, optNames);
+      if (! isempty (errmsg))
         return
       endif
+      dfValues = {missing, missing, 'extrap', missing, missing};
+      [tstep, srate, endVals, incEdge, konst] = ...
+                    parsePairedArguments (optNames, dfValues, rest(:));
 
       [endVals, incEdge, edgeGiven, errmsg] = retimeCheckOptions (endVals, ...
                                                                  incEdge);
@@ -1413,10 +1390,7 @@ classdef timetable < tabular
         mv = repmat ({method}, 1, width (this));
         return
       endif
-      known = [{'fillwithmissing', 'fillwithconstant', 'previous', ...
-                'next', 'nearest', 'linear', 'spline', 'pchip', 'makima'}, ...
-               timetable.retimeAggregations()];
-      if (any (strcmp (method, known)))
+      if (any (strcmp (method, retimeKnownMethods ())))
         mv = repmat ({method}, 1, width (this));
         return
       endif
@@ -6004,8 +5978,6 @@ function [nt, errmsg] = retimeTimes (rt, spec, tstep, srate, isAgg, incEdge)
   ## nothing about a grid of points to compute a value for.
   binRight = isAgg && strcmpi (incEdge, 'right');
   binLeft = isAgg && ! binRight;
-  units = {'secondly', 'minutely', 'hourly', 'daily', 'weekly', ...
-           'monthly', 'quarterly', 'yearly'};
 
   ## A time vector is taken as it is, once it agrees with the row times about
   ## what kind of time they are.
@@ -6111,12 +6083,8 @@ function [nt, errmsg] = retimeTimes (rt, spec, tstep, srate, isAgg, incEdge)
     return
   endif
 
-  if (! any (strcmp (spec, units)))
-    errmsg = sprintf (strcat ("'%s' is not a time unit; use one of", ...
-                              " 'secondly', 'minutely', 'hourly',", ...
-                              " 'daily', 'weekly', 'monthly',", ...
-                              " 'quarterly' and 'yearly', a time vector,", ...
-                              " or 'regular'."), spec);
+  errmsg = timeBaseError (spec, false);
+  if (! isempty (errmsg))
     return
   endif
   [nt, errmsg] = unitGrid (rt, spec, binLeft, binRight);
@@ -6432,6 +6400,87 @@ endfunction
 ## Whether the method the caller named gathers the rows falling in each
 ## target bin, which is what decides where the grid of a time unit ends.  A
 ## function handle aggregates; naming no method at all fills.
+
+## The complaint about a time base given as text that names none, or empty
+## where it does.  'synchronize' has time bases of its own besides the time
+## units and 'regular' that 'retime' knows, and says so when it complains.
+function errmsg = timeBaseError (spec, forSync)
+  errmsg = '';
+  if (isa (spec, 'string') && isscalar (spec))
+    spec = char (spec);
+  endif
+  if (! (ischar (spec) && isrow (spec)))
+    return
+  endif
+  units = {'secondly', 'minutely', 'hourly', 'daily', 'weekly', ...
+           'monthly', 'quarterly', 'yearly', 'regular'};
+  bases = {'union', 'intersection', 'commonrange', 'first', 'last'};
+  if (forSync && ! any (strcmpi (spec, [units, bases])))
+    errmsg = sprintf (strcat ("'%s' is not a time base; use", ...
+                              " 'union', 'intersection', 'commonrange',", ...
+                              " 'first', 'last', 'regular', a time unit, or", ...
+                              " a time vector."), spec);
+  elseif (! forSync && ! any (strcmpi (spec, units)))
+    errmsg = sprintf (strcat ("'%s' is not a time unit; use one of", ...
+                              " 'secondly', 'minutely', 'hourly',", ...
+                              " 'daily', 'weekly', 'monthly',", ...
+                              " 'quarterly' and 'yearly', a time vector,", ...
+                              " or 'regular'."), spec);
+  endif
+endfunction
+
+## The complaint about the Name-Value arguments of 'retime' and
+## 'synchronize', or empty where there is none.  An unknown name is quoted,
+## so that a misspelt option can be found.
+function errmsg = retimeOptions (rest, optNames)
+  errmsg = '';
+  if (mod (numel (rest), 2) != 0)
+    errmsg = "name-value arguments must be in pairs.";
+    return
+  endif
+  for k = 1:2:numel (rest)
+    name = rest{k};
+    if (isa (name, 'string') && isscalar (name))
+      name = char (name);
+    endif
+    if (! (ischar (name) && isrow (name)))
+      errmsg = "invalid optional paired argument.";
+      return
+    elseif (! any (strcmpi (name, optNames)))
+      errmsg = sprintf ("unknown option '%s'.", name);
+      return
+    endif
+  endfor
+endfunction
+
+## Whether the argument after the time base is the method.  A name is read
+## as the method when it names one or when nothing follows it, as in MATLAB;
+## anywhere else it starts the Name-Value arguments.
+function out = retimeIsMethod (rest)
+  out = false;
+  if (isempty (rest))
+    return
+  endif
+  first = rest{1};
+  if (is_function_handle (first))
+    out = true;
+    return
+  endif
+  if (isa (first, 'string') && isscalar (first))
+    first = char (first);
+  endif
+  if (ischar (first) && isrow (first))
+    out = any (strcmpi (first, [{'default'}, retimeKnownMethods()])) ...
+          || numel (rest) == 1;
+  endif
+endfunction
+
+## The methods 'retime' and 'synchronize' know by name, 'default' aside.
+function out = retimeKnownMethods ()
+  out = [{'fillwithmissing', 'fillwithconstant', 'previous', 'next', ...
+          'nearest', 'linear', 'spline', 'pchip', 'makima'}, ...
+         timetable.retimeAggregations()];
+endfunction
 
 function out = retimeIsAggregation (method)
   out = is_function_handle (method) ...
@@ -6888,13 +6937,10 @@ function [nt, errmsg] = synchronizeBase (ops, spec, tstep, srate, isAgg, ...
       ## Anything left is a time unit or 'regular', and a complaint about it
       ## has to offer the time bases as well, which 'retime' knows nothing
       ## about.
-      [nt, errmsg] = retimeTimes (all, spec, tstep, srate, isAgg, ...
-                                  incEdge);
-      if (! isempty (errmsg) && ! isempty (strfind (errmsg, "is not a time")))
-        errmsg = sprintf (strcat ("'%s' is not a time base; use", ...
-                          " 'union', 'intersection', 'commonrange',", ...
-                          " 'first', 'last', 'regular', a time unit, or", ...
-                          " a time vector."), spec);
+      errmsg = timeBaseError (spec, true);
+      if (isempty (errmsg))
+        [nt, errmsg] = retimeTimes (all, spec, tstep, srate, isAgg, ...
+                                    incEdge);
       endif
   endswitch
 
