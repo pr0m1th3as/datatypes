@@ -2452,13 +2452,15 @@ classdef timetable < tabular
 
     ## -*- texinfo -*-
     ## @deftypefn  {timetable} {@var{ttB} =} rmmissing (@var{ttA})
-    ## @deftypefnx {timetable} {@var{ttB} =} rmmissing (@var{ttA}, @var{Name}, @var{Value})
+    ## @deftypefnx {timetable} {@var{ttB} =} rmmissing (@var{ttA}, @var{dim})
+    ## @deftypefnx {timetable} {@var{ttB} =} rmmissing (@dots{}, @var{Name}, @var{Value})
     ## @deftypefnx {timetable} {[@var{ttB}, @var{TF}] =} rmmissing (@dots{})
     ##
-    ## Remove the incomplete rows of a timetable.
+    ## Remove the incomplete rows or variables of a timetable.
     ##
     ## @code{@var{ttB} = rmmissing (@var{ttA})} removes every row holding a
-    ## missing value.
+    ## missing value.  @code{rmmissing (@var{ttA}, 2)} removes every variable
+    ## holding one instead, and keeps every row and its row time.
     ##
     ## @strong{A row whose row time is missing is removed whatever its
     ## variables hold}, and whatever @qcode{'DataVariables'} or
@@ -2469,11 +2471,15 @@ classdef timetable < tabular
     ##
     ## @qcode{'DataVariables'} names the variables to judge a row by, and
     ## @qcode{'MinNumMissing'} how many missing values a row must hold before
-    ## it goes.  Neither reaches the row times.
+    ## it goes, or with @var{dim} equal to 2 how many a variable must.
+    ## @qcode{'MissingLocations'} marks the missing values in place of
+    ## @code{ismissing}, as a logical matrix or a table, exactly as for
+    ## @code{table.rmmissing}.  None of them reaches the row times.
     ##
     ## @code{[@var{ttB}, @var{TF}] = rmmissing (@dots{})} also returns a
     ## logical column marking the rows that were removed, the ones dropped
-    ## for their row times included.
+    ## for their row times included, or with @var{dim} equal to 2 a logical
+    ## row marking the removed variables.
     ##
     ## The time step is read afresh from the rows that survive.
     ##

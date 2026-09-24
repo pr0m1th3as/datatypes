@@ -3303,7 +3303,7 @@ classdef (Abstract) tabular
     ## -*- texinfo -*- @deftypefn {tabular} {[@var{tbl}, @var{TF}, @var{errmsg}]
     ## =} rmmissingResult (@dots{})
     ##
-    ## The object with its incomplete rows removed.
+    ## The object with its incomplete rows or variables removed.
     ##
     ## Missing values belong to the variables, which a tabular object holds the
     ## same way whatever labels its rows.  @var{errmsg} carries the body of any
@@ -3315,17 +3315,18 @@ classdef (Abstract) tabular
       tbl = this;
       TF = [];
       errmsg = '';
-      ## A row whose label disqualifies it goes whatever the data
-      ## says, and whatever 'DataVariables' or 'MinNumMissing' say.
-      usable = usableRowLabels (this);
-      ## Handle simple input argument first
-      if (numel (varargin) == 0)
-        TF = any (ismissing (this), 2);
-        TF = TF | ! usable;
-        tbl = subsetrows (this, ! TF);
-        return;
-      endif
 
+      ## An optional DIM comes before any Name-Value pair
+      dim = 1;
+      if (! isempty (varargin) && (isnumeric (varargin{1})
+                                   || islogical (varargin{1})))
+        dim = varargin{1};
+        varargin(1) = [];
+        if (! (isscalar (dim) && (dim == 1 || dim == 2)))
+          errmsg = "DIM must be 1 or 2.";
+          return
+        endif
+      endif
       if (mod (numel (varargin), 2) != 0)
         errmsg = "name-value arguments must be in pairs.";
         return
@@ -3339,7 +3340,7 @@ classdef (Abstract) tabular
       [minNum, dVars, mLocs, args] = ...
                  parsePairedArguments (optNames, dfValues, varargin(:));
 
-      ## Validate optional paired arguments and operate accordingly
+      ## Validate optional paired arguments
       if (! isscalar (minNum) || fix (minNum) != minNum || minNum <= 0)
         errmsg = "'MinNumMissing' must be a positive integer.";
         return
@@ -3363,65 +3364,76 @@ classdef (Abstract) tabular
                          " non-existing variable: '%s'"), badname);
           return
         endif
-        tmpT = subsetvars (this, dIxVars);
+        dIxVars = dIxVars(:)';
       else
-        tmpT = this;
+        dIxVars = 1:width (this);
       endif
+      tmpT = subsetvars (this, dIxVars);
 
       if (! isempty (args))
         errmsg = "invalid optional paired argument.";
         return
       endif
 
-      if (! isempty (mLocs))
-        if (islogical (mLocs))
-          if (! isequal (size (mLocs), size (tmpT)))
-            errmsg = strcat ("'MissingLocations' must be", ...
+      ## One column per variable operated on, true where a row is missing
+      if (isempty (mLocs))
+        isMiss = ismissing (tmpT);
+      elseif (islogical (mLocs))
+        ## Sized as the whole table, as in MATLAB, or as the variables
+        ## operated on
+        if (isequal (size (mLocs), size (this)))
+          isMiss = mLocs(:,dIxVars);
+        elseif (isequal (size (mLocs), size (tmpT)))
+          isMiss = mLocs;
+        else
+          errmsg = strcat ("'MissingLocations' must be", ...
                            " a logical matrix of the same size as the", ...
                            " input table or the part of it referenced by", ...
                            " 'DataVariables'.");
-            return
-          endif
-          TF = sum (mLocs, 2) >= minNum;
-          TF = TF | ! usable;
-          tbl = subsetrows (this, ! TF);
-        elseif (isa (mLocs, 'table'))
-          if (! all (ismember (tmpT.VariableNames, mLocs.VariableNames)))
-            errmsg = strcat ("'MissingLocations' must be", ...
+          return
+        endif
+      elseif (isa (mLocs, 'table'))
+        if (! all (ismember (tmpT.VariableNames, mLocs.VariableNames)))
+          errmsg = strcat ("'MissingLocations' must be", ...
                            " a table with the same variable names as the", ...
                            " input table or the part of it referenced by", ...
                            " 'DataVariables'.");
+          return
+        endif
+        isMiss = false (rows (this), width (tmpT));
+        for jx = 1:width (tmpT)
+          kx = find (strcmp (tmpT.VariableNames{jx}, mLocs.VariableNames), 1);
+          varTF = mLocs.VariableValues{kx};
+          if (! islogical (varTF))
+            errmsg = strcat ("'MissingLocations' must", ...
+                             " be a table with logical variables.");
             return
           endif
-          TF = false (rows (this), 0);
-          for jx = 1:width (tmpT)
-            kx = find (strcmp (tmpT.VariableNames{jx}, mLocs.VariableNames), 1);
-            varTF = mLocs.VariableValues{kx};
-            if (! islogical (varTF))
-              errmsg = strcat ("'MissingLocations' must", ...
-                             " be a table with logical variables.");
-              return
-            endif
-            if (! isequal (size (varTF), size (tmpT.VariableValues{jx})))
-              errmsg = strcat ("'MissingLocations' must", ...
+          if (! isequal (size (varTF), size (tmpT.VariableValues{jx})))
+            errmsg = strcat ("'MissingLocations' must", ...
                              " be a table with the same variable sizes", ...
                              " as the input table or the part of it", ...
                              " referenced by 'DataVariables'.");
-              return
-            endif
-            TF = [TF, any(varTF, 2)];
-          endfor
-          TF = sum (TF, 2) >= minNum;
-          TF = TF | ! usable;
-          tbl = subsetrows (this, ! TF);
-        else
-          errmsg = "invalid data type for 'MissingLocations'.";
-          return
-        endif
+            return
+          endif
+          isMiss(:,jx) = any (varTF, 2);
+        endfor
       else
-        TF = sum (ismissing (tmpT), 2) >= minNum;
-        TF = TF | ! usable;
+        errmsg = "invalid data type for 'MissingLocations'.";
+        return
+      endif
+
+      if (dim == 1)
+        ## A row whose label disqualifies it goes whatever the data
+        ## says, and whatever 'DataVariables' or 'MinNumMissing' say.
+        TF = sum (isMiss, 2) >= minNum;
+        TF = TF | ! usableRowLabels (this);
         tbl = subsetrows (this, ! TF);
+      else
+        ## Row labels are not a variable and never remove one
+        TF = false (1, width (this));
+        TF(dIxVars) = sum (isMiss, 1) >= minNum;
+        tbl = subsetvars (this, find (! TF));
       endif
 
     endfunction

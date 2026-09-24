@@ -3085,17 +3085,26 @@ classdef table < tabular
 
     ## -*- texinfo -*-
     ## @deftypefn  {table} {@var{tbl} =} rmmissing (@var{tblA})
+    ## @deftypefnx {table} {@var{tbl} =} rmmissing (@var{tblA}, @var{dim})
     ## @deftypefnx {table} {@var{tbl} =} rmmissing (@dots{}, @var{Name}, @var{Value})
     ## @deftypefnx {table} {[@var{tbl}, @var{TF}] =} rmmissing (@dots{})
     ##
-    ## Remove missing table elements by rows.
+    ## Remove missing table elements by rows or by variables.
     ##
     ## @code{@var{tbl} = rmmissing (@var{tblA})} returns a table with the rows
     ## of @var{tblA} that contain at least one missing value removed.  Missing
     ## values are determined per variable according to its data type
     ## (@code{NaN} for numeric, @code{NaT} for @code{datetime}, @code{<missing>}
     ## for @code{string}, @code{<undefined>} for @code{categorical},
-    ## @code{@{''@}} for cellstr, etc.), as reported by @code{ismissing}.
+    ## @code{@{''@}} for cellstr, etc.), as reported by @code{ismissing}.  A
+    ## variable with several columns counts once in a row where any of its
+    ## columns is missing.
+    ##
+    ## @code{@var{tbl} = rmmissing (@var{tblA}, @var{dim})} removes rows when
+    ## @var{dim} is 1, the default, and variables when @var{dim} is 2.  With
+    ## @var{dim} equal to 2, a variable is removed when it holds a missing
+    ## value, and the options below count down each variable instead of
+    ## across each row.
     ##
     ## @code{@var{tbl} = rmmissing (@dots{}, @var{Name}, @var{Value})}
     ## customizes the operation with the following options:
@@ -3103,25 +3112,30 @@ classdef table < tabular
     ## @table @asis
     ## @item @qcode{'MinNumMissing'}
     ## A positive integer @var{n} (default @code{1}).  A row is removed only
-    ## when it has at least @var{n} variables with a missing value.
+    ## when it has at least @var{n} variables with a missing value, and with
+    ## @var{dim} equal to 2 a variable only when it is missing in at least
+    ## @var{n} rows.
     ##
     ## @item @qcode{'DataVariables'}
     ## Restrict the search for missing values to the indicated subset of table
     ## variables, using the same variable referencing as the other @code{table}
-    ## methods.  Variables outside the subset are not inspected, but all
-    ## variables are kept in the output.
+    ## methods.  Variables outside the subset are not inspected, so they are
+    ## kept in the output whatever they hold.
     ##
     ## @item @qcode{'MissingLocations'}
     ## Supply the missing-value locations explicitly instead of deriving them
-    ## with @code{ismissing}.  The value is either a logical matrix with one row
-    ## per row of the input and one column per inspected variable, or a
-    ## @code{table} of logical variables whose names and sizes match the
-    ## inspected variables.
+    ## with @code{ismissing}; the values the table holds are then not
+    ## consulted.  The value is either a logical matrix with one row per row of
+    ## the input and one column per variable of @var{tblA} or per inspected
+    ## variable, or a @code{table} of logical variables whose names and sizes
+    ## match the inspected variables.  Where both sizes agree, the columns are
+    ## taken in the order of the variables of @var{tblA}.
     ## @end table
     ##
     ## @code{[@var{tbl}, @var{TF}] = rmmissing (@dots{})} also returns a logical
-    ## column vector @var{TF}, with one element per row of @var{tblA}, that is
-    ## @qcode{true} for each removed row.
+    ## vector @var{TF} that is @qcode{true} for each removed row, a column with
+    ## one element per row of @var{tblA}, or with @var{dim} equal to 2 for each
+    ## removed variable, a row with one element per variable of @var{tblA}.
     ##
     ## @end deftypefn
     function [tbl, TF] = rmmissing (this, varargin)

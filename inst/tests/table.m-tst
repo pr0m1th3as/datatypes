@@ -5520,7 +5520,76 @@
 %! [R, TF] = rmmissing (T, 'DataVariables', 'a', 'MissingLocations', ML);
 %! assert_equal (TF, [false; true; false]);
 %! assert_equal (R.b, [4; 6]);
+%!test  # DIM 2 removes the variables holding a missing value
+%! M = table ([1; 2; 3; 4], [5; 6; 7; 8], [9; 10; 11; NaN], ...
+%!            'VariableNames', {'a', 'b', 'c'});
+%! [R, TF] = rmmissing (M, 2);
+%! assert_equal (R.Properties.VariableNames, {'a', 'b'});
+%! assert_equal (TF, [false, false, true]);
+%!test  # DIM 1 given explicitly, as a logical true
+%! M = table ([1; 2; 3; 4], [5; 6; 7; 8], [9; 10; 11; NaN], ...
+%!            'VariableNames', {'a', 'b', 'c'});
+%! [R, TF] = rmmissing (M, true);
+%! assert_equal (TF, [false; false; false; true]);
+%! assert_equal (height (R), 3);
+%!test  # DIM 2 with 'MissingLocations' ignores the values held
+%! M = table ([1; 2; 3; 4], [5; 6; 7; 8], [9; 10; 11; NaN], ...
+%!            'VariableNames', {'a', 'b', 'c'});
+%! L = logical ([1, 0, 0; 0, 1, 0; 0, 1, 0; 0, 0, 0]);
+%! [R, TF] = rmmissing (M, 2, 'MissingLocations', L);
+%! assert_equal (R.Properties.VariableNames, {'c'});
+%! assert_equal (TF, [true, true, false]);
+%!test  # DIM 2 with 'MinNumMissing' counts down each variable
+%! M = table ([1; 2; 3; 4], [5; 6; 7; 8], [9; 10; 11; NaN], ...
+%!            'VariableNames', {'a', 'b', 'c'});
+%! L = logical ([1, 0, 0; 0, 1, 0; 0, 1, 0; 0, 0, 0]);
+%! [R, TF] = rmmissing (M, 2, 'MissingLocations', L, 'MinNumMissing', 2);
+%! assert_equal (R.Properties.VariableNames, {'a', 'c'});
+%! assert_equal (TF, [false, true, false]);
+%!test  # DIM 1 with 'MissingLocations' ignores the values held
+%! M = table ([1; 2; 3; 4], [5; 6; 7; 8], [9; 10; 11; NaN], ...
+%!            'VariableNames', {'a', 'b', 'c'});
+%! L = logical ([1, 0, 0; 0, 1, 0; 0, 1, 0; 0, 0, 0]);
+%! [R, TF] = rmmissing (M, 1, 'MissingLocations', L);
+%! assert_equal (TF, [true; true; true; false]);
+%! assert_equal (R.a, 4);
+%!test  # 'MissingLocations' sized as the whole table with 'DataVariables'
+%! M = table ([1; 2; 3; 4], [5; 6; 7; 8], [9; 10; 11; NaN], ...
+%!            'VariableNames', {'a', 'b', 'c'});
+%! L = logical ([1, 0, 0; 0, 1, 0; 0, 1, 0; 0, 0, 1]);
+%! [R, TF] = rmmissing (M, 2, 'MissingLocations', L, ...
+%!                      'DataVariables', {'a', 'b'});
+%! assert_equal (R.Properties.VariableNames, {'c'});
+%! assert_equal (TF, [true, true, false]);
+%!test  # 'MissingLocations' sized as the 'DataVariables'
+%! M = table ([1; 2; 3; 4], [5; 6; 7; 8], [9; 10; 11; NaN], ...
+%!            'VariableNames', {'a', 'b', 'c'});
+%! L = logical ([0, 0; 0, 1; 0, 1; 0, 0]);
+%! [R, TF] = rmmissing (M, 2, 'MissingLocations', L, ...
+%!                      'DataVariables', {'a', 'b'});
+%! assert_equal (R.Properties.VariableNames, {'a', 'c'});
+%! assert_equal (TF, [false, true, false]);
+%!test  # a multicolumn variable counts once per row
+%! T = table ([1, NaN; 2, 3; NaN, NaN], [1; 2; 3], ...
+%!            'VariableNames', {'m', 'v'});
+%! [~, TF] = rmmissing (T, 2, 'MinNumMissing', 2);
+%! assert_equal (TF, [true, false]);
+%! [~, TF] = rmmissing (T, 2, 'MinNumMissing', 3);
+%! assert_equal (TF, [false, false]);
+%! [~, TF] = rmmissing (T, 1, 'MinNumMissing', 2);
+%! assert_equal (TF, [false; false; false]);
+%!test  # DIM 2 on an empty table
+%! T = table ('Size', [0, 2], 'VariableTypes', {'double', 'double'});
+%! [R, TF] = rmmissing (T, 2);
+%! assert_equal (size (R), [0, 2]);
+%! assert_equal (TF, [false, false]);
 ## Test input validation for 'rmmissing' method
+%!error <table.rmmissing: DIM must be 1 or 2.> ...
+%! rmmissing (table ([1; NaN]), 3);
+%!error <table.rmmissing: DIM must be 1 or 2.> ...
+%! rmmissing (table ([1; NaN]), [1, 2]);
+%!error <table.rmmissing: name-value arguments must be in pairs.> ...
+%! rmmissing (table ([1; NaN]), 2, 'MinNumMissing');
 %!error <table.rmmissing: name-value arguments must be in pairs.> ...
 %! rmmissing (table ([1; NaN]), 'MinNumMissing');
 %!error <table.rmmissing: 'MinNumMissing' must be a positive integer.> ...
