@@ -656,164 +656,21 @@ classdef (Abstract) tabular
             tbl = deleteSubs (this, s.subs{1}, s.subs{2});
             return;
           endif
-          [ixRow, ~, newLabels] = resolveRowVarRefs (this, s.subs{1}, ':');
-          [ixVar, newNames] = resolveAssignVarRef (this, s.subs{2});
-          if (islogical (ixRow))
-            ixRow = find (ixRow);
-          endif
-          oldHeight = height (this);
-          oldWidth = width (this);
-          ## An object with neither rows nor variables takes its height from
-          ## what is assigned to all of its rows.
-          if (oldHeight == 0 && oldWidth == 0 && ischar (s.subs{1})
-              && strcmp (s.subs{1}, ':'))
-            ixRow = 1:size (rhs, 1);
-          endif
-          ## A row index past the end grows the object.  The variables grow
-          ## by being assigned into, but the row labels are not indexed here
-          ## and would be left behind, so the height they carry is worked out
-          ## now and the labels are extended once the variables are in.
-          newHeight = growthHeight (this, ixRow);
-          ## A label the object does not carry names a row to add.  The rows
-          ## go on the end, in the order the reference named them, and take
-          ## the places the resolver left marked.
-          if (! isempty (newLabels))
-            nNew = size (newLabels, 1);
-            base = height (this);
-            ixRow(isnan (ixRow)) = (base + 1):(base + nNew);
-            labels = getRowLabels (this);
-            this = setRowLabels (this, [labels(:); newLabels(:)]);
-            tbl = this;
-            newHeight = max (newHeight, base + nNew);
-            labelsAdded = true;
-          else
-            labelsAdded = false;
-          endif
-          ## Check input data matches referenced elements
-          if (! isequal (size (rhs), [numel(ixRow), numel(ixVar)]))
-            error (strcat ("%s.subsasgn: input data mismatch indexed", ...
-                           " dimensions."), clstype);
-          endif
-          if (isa (rhs, 'timetable') && ! isa (this, 'timetable'))
-            error (strcat ("%s.subsasgn: input data type mismatch", ...
-                           " indexed variable type."), clstype);
-          endif
-          if (newHeight > 0)
-            ## The variables grow before anything is written into them, so
-            ## that the rows the assignment passes over carry the fill the
-            ## class gives rather than whatever indexed growth leaves, and a
-            ## variable the assignment does not name grows with the rest.
-            for i = 1:numel (this.VariableValues)
-              [v, errmsg] = padVariable (this.VariableValues{i}, newHeight);
-              if (! isempty (errmsg))
-                error ("%s.subsasgn: %s", clstype, errmsg);
-              endif
-              this.VariableValues{i} = v;
-              tbl.VariableValues{i} = v;
-            endfor
-          endif
-          ## The values for each variable assigned
-          vals = cell (1, numel (ixVar));
-          for i = 1:numel (ixVar)
-            if (isa (rhs, 'tabular'))       # MATLAB compatible
-              vals{i} = rhs.VariableValues{i};
-            elseif (iscell (rhs))           # MATLAB compatible
-              ## A cell variable takes each element as it is, or unwrapped
-              ## once where it comes in a cell of its own, as in MATLAB; any
-              ## other variable takes the elements stacked.
-              col = rhs(:,i);
-              if (ixVar(i) <= oldWidth)
-                isCellVar = iscell (this.VariableValues{ixVar(i)});
-              else
-                isCellVar = any (cellfun (@(x) ischar (x) || iscell (x), col));
-              endif
-              if (isCellVar)
-                for k = 1:numel (col)
-                  if (iscell (col{k}) && isscalar (col{k}))
-                    col{k} = col{k}{1};
-                  endif
-                endfor
-                vals{i} = col;
-              else
-                try
-                  vals{i} = vertcat (col{:});
-                catch
-                  error (strcat ("%s.subsasgn: input data type mismatch", ...
-                                 " indexed variable type."), clstype);
-                end_try_catch
-              endif
-            else                            # Octave specific
-              vals{i} = rhs(:,i);
-            endif
-          endfor
-          ## The variables there are take their rows by assignment.  The
-          ## call is explicit because a nested table indexed here would take
-          ## the built-in assignment, which makes an array of tables.
-          sRows = struct ('type', '()', 'subs', {{ixRow, ':'}});
-          for i = find (ixVar <= oldWidth)
-            varData = this.VariableValues{ixVar(i)};
-            try
-              varData = subsasgn (varData, sRows, vals{i});
-            catch
-              error (strcat ("%s.subsasgn: input data type mismatch", ...
-                             " indexed variable type."), clstype);
-            end_try_catch
-            tbl.VariableValues{ixVar(i)} = varData;
-          endfor
-          if (newHeight > 0 && ! labelsAdded)
-            tbl = growRowLabels (tbl, newHeight);
-          endif
-          ## A timetable assigned into a timetable brings row times, which
-          ## must be those of the rows assigned; MATLAB pastes by position
-          ## and ignores them, which would put values at the wrong times.
-          if (isa (rhs, 'timetable'))
-            labels = getRowLabels (tbl);
-            rhsLabels = getRowLabels (rhs);
-            if (! isequaln (labels(ixRow), rhsLabels(:)))
-              error (strcat ("%s.subsasgn: the row times of the assigned", ...
-                             " timetable do not match the rows assigned;", ...
-                             " use synchronize to align them first."), ...
-                     clstype);
-            endif
-          endif
-          ## The variables named anew are built at full height, the rows not
-          ## assigned taking the fill their class gives, and added as any
-          ## new variable is, so that their properties follow.
-          H = height (tbl);
-          for j = 1:numel (newNames)
-            idx = find (ixVar == oldWidth + j);
-            proto = subsref (vals{idx(1)}, struct ('type', '()', ...
-                                                   'subs', {{[], ':'}}));
-            [col, errmsg] = padVariable (proto, H);
-            if (! isempty (errmsg))
-              error ("%s.subsasgn: %s", clstype, errmsg);
-            endif
-            try
-              for i = idx
-                col = subsasgn (col, sRows, vals{i});
-              endfor
-            catch
-              error (strcat ("%s.subsasgn: input data type mismatch", ...
-                             " indexed variable type."), clstype);
-            end_try_catch
-            tbl = setvar (tbl, newNames{j}, col);
-          endfor
-          ## Padding with defaults is reported, as in MATLAB
-          if (H > oldHeight && oldWidth > 0
-              && ! all (ismember (1:oldWidth, ixVar)))
-            warning (strcat ("%s.subsasgn: new rows were padded with", ...
-                             " default values in the variables not", ...
-                             " assigned."), clstype);
-          elseif (! isempty (newNames) && numel (unique (ixRow)) < H)
-            warning (strcat ("%s.subsasgn: new variables were padded with", ...
-                             " default values in the rows not assigned."), ...
-                     clstype);
-          endif
+          tbl = assignSubs (this, s.subs, rhs, false);
 
-        ## {} not used in Octave for assigning values
         case '{}'
-          error (strcat ("%s.subsasgn: '{}' invalid indexing for", ...
-                         " assigning values. Use '()' instead."), clstype);
+          if (numel (s.subs) != 2)
+            error (strcat ("%s.subsasgn: '{}' indexing of %s", ...
+                           " requires exactly two arguments."), ...
+                   clstype, clstype);
+          endif
+          ## '{}' assigns contents and never deletes, as in MATLAB.
+          if (isempty (chain_s) && isa (rhs, 'double')
+              && isequal (size (rhs), [0, 0]))
+            error (strcat ("%s.subsasgn: '{}' indexing cannot delete; use", ...
+                           " '()' to delete rows or variables."), clstype);
+          endif
+          tbl = assignSubs (this, s.subs, rhs, true);
 
         case '.'
           ## A field name may be given as a string scalar, as in MATLAB.
@@ -7592,10 +7449,223 @@ classdef (Abstract) tabular
       tbl = setRowCount (tbl, n_rows);
     endfunction
 
+    ## The assignment behind '()' and '{}' indexing.  SUBS holds the row and
+    ## variable subscripts, which may name rows and variables to create.
+    ## '()' takes a tabular object, a cell array with one element per row and
+    ## variable, or an array with one column per variable; '{}' takes the
+    ## contents of the variables side by side, as '{}' indexing returns them.
+    function tbl = assignSubs (this, subs, rhs, isBrace)
+      clstype = class (this);
+      tbl = this;
+      [ixRow, ~, newLabels] = resolveRowVarRefs (this, subs{1}, ':');
+      [ixVar, newNames] = resolveAssignVarRef (this, subs{2});
+      if (islogical (ixRow))
+        ixRow = find (ixRow);
+      endif
+      oldHeight = height (this);
+      oldWidth = width (this);
+      ## An object with neither rows nor variables takes its height from
+      ## what is assigned to all of its rows.
+      if (oldHeight == 0 && oldWidth == 0 && ischar (subs{1})
+          && strcmp (subs{1}, ':'))
+        ixRow = 1:size (rhs, 1);
+      endif
+      ## A row index past the end grows the object.  The variables grow
+      ## by being assigned into, but the row labels are not indexed here
+      ## and would be left behind, so the height they carry is worked out
+      ## now and the labels are extended once the variables are in.
+      newHeight = growthHeight (this, ixRow);
+      ## A label the object does not carry names a row to add.  The rows
+      ## go on the end, in the order the reference named them, and take
+      ## the places the resolver left marked.
+      if (! isempty (newLabels))
+        nNew = size (newLabels, 1);
+        base = height (this);
+        ixRow(isnan (ixRow)) = (base + 1):(base + nNew);
+        labels = getRowLabels (this);
+        this = setRowLabels (this, [labels(:); newLabels(:)]);
+        tbl = this;
+        newHeight = max (newHeight, base + nNew);
+        labelsAdded = true;
+      else
+        labelsAdded = false;
+      endif
+      if (isBrace)
+        ## The value is the contents of the variables side by side, as
+        ## '{}' indexing returns them, so it is split by their columns.  A
+        ## variable named anew takes all of it when it is the only one
+        ## assigned and one column otherwise.
+        nv = numel (ixVar);
+        w = ones (1, nv);
+        for i = 1:nv
+          if (ixVar(i) <= oldWidth)
+            w(i) = size (this.VariableValues{ixVar(i)}, 2);
+          elseif (nv == 1)
+            w(i) = size (rhs, 2);
+          endif
+        endfor
+        if (isa (rhs, 'tabular') && nv != 1)
+          error (strcat ("%s.subsasgn: input data type mismatch", ...
+                         " indexed variable type."), clstype);
+        endif
+        if (! isscalar (rhs) || isa (rhs, 'tabular'))
+          if (size (rhs, 2) != sum (w))
+            error (strcat ("%s.subsasgn: the value assigned must have", ...
+                           " %d columns, one for each column of the", ...
+                           " variables assigned."), clstype, sum (w));
+          endif
+          if (size (rhs, 1) == 1 && numel (ixRow) != 1)
+            rhs = repmat (rhs, numel (ixRow), 1);
+          elseif (size (rhs, 1) != numel (ixRow))
+            error (strcat ("%s.subsasgn: the value assigned must have", ...
+                           " %d rows, one for each row assigned."), ...
+                   clstype, numel (ixRow));
+          endif
+        endif
+      else
+        ## Check input data matches referenced elements
+        if (! isequal (size (rhs), [numel(ixRow), numel(ixVar)]))
+          error (strcat ("%s.subsasgn: input data mismatch indexed", ...
+                         " dimensions."), clstype);
+        endif
+        if (isa (rhs, 'timetable') && ! isa (this, 'timetable'))
+          error (strcat ("%s.subsasgn: input data type mismatch", ...
+                         " indexed variable type."), clstype);
+        endif
+      endif
+      if (newHeight > 0)
+        ## The variables grow before anything is written into them, so
+        ## that the rows the assignment passes over carry the fill the
+        ## class gives rather than whatever indexed growth leaves, and a
+        ## variable the assignment does not name grows with the rest.
+        for i = 1:numel (this.VariableValues)
+          [v, errmsg] = padVariable (this.VariableValues{i}, newHeight);
+          if (! isempty (errmsg))
+            error ("%s.subsasgn: %s", clstype, errmsg);
+          endif
+          this.VariableValues{i} = v;
+          tbl.VariableValues{i} = v;
+        endfor
+      endif
+      ## The values for each variable assigned
+      vals = cell (1, numel (ixVar));
+      for i = 1:numel (ixVar)
+        if (isBrace)
+          if (numel (ixVar) == 1 || (isscalar (rhs) && ! isa (rhs, 'tabular')))
+            vals{i} = rhs;
+          else
+            c = [0, cumsum(w)];
+            vals{i} = rhs(:,(c(i)+1):c(i+1));
+          endif
+        elseif (isa (rhs, 'tabular'))   # MATLAB compatible
+          vals{i} = rhs.VariableValues{i};
+        elseif (iscell (rhs))           # MATLAB compatible
+          ## A cell variable takes each element as it is, or unwrapped
+          ## once where it comes in a cell of its own, as in MATLAB; any
+          ## other variable takes the elements stacked.
+          col = rhs(:,i);
+          if (ixVar(i) <= oldWidth)
+            isCellVar = iscell (this.VariableValues{ixVar(i)});
+          else
+            isCellVar = any (cellfun (@(x) ischar (x) || iscell (x), col));
+          endif
+          if (isCellVar)
+            for k = 1:numel (col)
+              if (iscell (col{k}) && isscalar (col{k}))
+                col{k} = col{k}{1};
+              endif
+            endfor
+            vals{i} = col;
+          else
+            try
+              vals{i} = vertcat (col{:});
+            catch
+              error (strcat ("%s.subsasgn: input data type mismatch", ...
+                             " indexed variable type."), clstype);
+            end_try_catch
+          endif
+        else                            # Octave specific
+          vals{i} = rhs(:,i);
+        endif
+      endfor
+      ## The variables there are take their rows by assignment.  The
+      ## call is explicit because a nested table indexed here would take
+      ## the built-in assignment, which makes an array of tables.
+      sRows = struct ('type', '()', 'subs', {{ixRow, ':'}});
+      for i = find (ixVar <= oldWidth)
+        varData = this.VariableValues{ixVar(i)};
+        ## The contents of a cell variable are cells, and Octave would put
+        ## anything else into every cell assigned, where MATLAB refuses.
+        if (isBrace && iscell (varData) && ! iscell (vals{i}))
+          error (strcat ("%s.subsasgn: input data type mismatch", ...
+                         " indexed variable type."), clstype);
+        endif
+        try
+          varData = subsasgn (varData, sRows, vals{i});
+        catch
+          error (strcat ("%s.subsasgn: input data type mismatch", ...
+                         " indexed variable type."), clstype);
+        end_try_catch
+        tbl.VariableValues{ixVar(i)} = varData;
+      endfor
+      if (newHeight > 0 && ! labelsAdded)
+        tbl = growRowLabels (tbl, newHeight);
+      endif
+      ## A timetable assigned into a timetable brings row times, which
+      ## must be those of the rows assigned; MATLAB pastes by position
+      ## and ignores them, which would put values at the wrong times.
+      if (! isBrace && isa (rhs, 'timetable'))
+        labels = getRowLabels (tbl);
+        rhsLabels = getRowLabels (rhs);
+        if (! isequaln (labels(ixRow), rhsLabels(:)))
+          error (strcat ("%s.subsasgn: the row times of the assigned", ...
+                         " timetable do not match the rows assigned;", ...
+                         " use synchronize to align them first."), ...
+                 clstype);
+        endif
+      endif
+      ## The variables named anew are built at full height, the rows not
+      ## assigned taking the fill their class gives, and added as any
+      ## new variable is, so that their properties follow.
+      H = height (tbl);
+      for j = 1:numel (newNames)
+        idx = find (ixVar == oldWidth + j);
+        proto = subsref (vals{idx(1)}, struct ('type', '()', ...
+                                               'subs', {{[], ':'}}));
+        [col, errmsg] = padVariable (proto, H);
+        if (! isempty (errmsg))
+          error ("%s.subsasgn: %s", clstype, errmsg);
+        endif
+        try
+          for i = idx
+            col = subsasgn (col, sRows, vals{i});
+          endfor
+        catch
+          error (strcat ("%s.subsasgn: input data type mismatch", ...
+                         " indexed variable type."), clstype);
+        end_try_catch
+        tbl = setvar (tbl, newNames{j}, col);
+      endfor
+      ## Padding with defaults is reported, as in MATLAB
+      if (H > oldHeight && oldWidth > 0
+          && ! all (ismember (1:oldWidth, ixVar)))
+        warning (strcat ("%s.subsasgn: new rows were padded with", ...
+                         " default values in the variables not", ...
+                         " assigned."), clstype);
+      elseif (! isempty (newNames) && numel (unique (ixRow)) < H)
+        warning (strcat ("%s.subsasgn: new variables were padded with", ...
+                         " default values in the rows not assigned."), ...
+                 clstype);
+      endif
+    endfunction
+
     ## Resolve subscripted reference for internal use called by subsasgn
     function out = single_subref (this, s)
       clstype = class (this);
       switch s.type
+        case '{}'
+          out = subsref (this, s);
+
         case '()'
           if (numel (s.subs) != 2)
             error (strcat ("%s.subsasgn: ()-indexing of %s requires", ...

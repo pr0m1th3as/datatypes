@@ -58,6 +58,14 @@ classdef table < tabular
   ## of their type, with a warning.  A table with neither rows nor variables
   ## takes the height of what is assigned to it.
   ##
+  ## Assigning with curly brackets writes the contents of the variables, as
+  ## reading with them returns them: an array whose columns are those of the
+  ## variables assigned, side by side, or a scalar that fills them all.  Each
+  ## variable converts what it is given as its own type does, so a cell
+  ## variable takes a cell array.  Variables and rows are created as with
+  ## parentheses, and assigning an empty matrix is refused, since curly
+  ## brackets never delete.
+  ##
   ## Besides the @code{table} constructor, you can also use @code{array2table},
   ## @code{cell2table}, and @code{struct2table} to create tables from the
   ## respective data types.

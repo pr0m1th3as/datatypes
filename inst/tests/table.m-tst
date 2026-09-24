@@ -7853,9 +7853,97 @@
 %!error <table.subsasgn: input data type mismatch indexed variable type.> ...
 %! T = table ([1;2;3], 'VariableNames', {'x'}); T(1,1) = {[1 2 3]};
 
-## 'subsasgn' with '{}' is not allowed for assigning values
-%!error <table.subsasgn: '{}' invalid indexing for assigning values. Use '\(\)' instead.> ...
-%! T = table ([1;2;3]); T{1,1} = 5;
+## 'subsasgn' with '{}' assigns the contents of the variables
+%!test
+%! P = table ([1; 2; 3], {'a'; 'b'; 'c'}, [4, 5; 6, 7; 8, 9], ...
+%!            'VariableNames', {'n', 's', 'm'});
+%! P{2,'n'} = 10;
+%! assert_equal (P.n, [1; 10; 3]);
+%! P{:,'n'} = 5;
+%! assert_equal (P.n, [5; 5; 5]);
+%! P{2,'s'} = {'x'};
+%! assert_equal (P.s, {'a'; 'x'; 'c'});
+%! P{2,{'n', 'm'}} = [1, 2, 3];
+%! assert_equal (P.n, [5; 1; 5]);
+%! assert_equal (P.m, [4, 5; 2, 3; 8, 9]);
+%! P{[1, 3],{'n', 'm'}} = [1, 2, 3; 4, 5, 6];
+%! assert_equal (P.m, [2, 3; 2, 3; 5, 6]);
+%!test
+%! P = table ([1; 2; 3], {'a'; 'b'; 'c'}, [4, 5; 6, 7; 8, 9], ...
+%!            'VariableNames', {'n', 's', 'm'});
+%! P{2,'s'}{1} = 'y';
+%! P{2,'m'}(2) = 99;
+%! assert_equal (P.s, {'a'; 'y'; 'c'});
+%! assert_equal (P.m(2,:), [6, 99]);
+%!test
+%! P = table ([1, 2; 3, 4]);
+%! P{:,:} = [5, 6; 7, 8];
+%! assert_equal (P.Var1, [5, 6; 7, 8]);
+%! P{:,:} = 0;
+%! assert_equal (P.Var1, zeros (2));
+%!test
+%! P = table (categorical ({'p'; 'q'}), string ({'u'; 'v'}), ...
+%!            hours ([1; 2]), [true; false], ...
+%!            'VariableNames', {'c', 'st', 'du', 'l'});
+%! P{2,'c'} = {'new'};
+%! assert_equal (cellstr (P.c), {'p'; 'new'});
+%! P{2,'st'} = 'x';
+%! assert_equal (P.st, string ({'u'; 'x'}));
+%! P{2,'du'} = 5;
+%! assert_equal (P.du, [hours(1); days(5)]);
+%! P{2,'l'} = 7;
+%! assert_equal (P.l, [true; true]);
+%!test
+%! P = table ([1; 2; 3], 'VariableNames', {'n'});
+%! P{:,'z'} = [4; 5; 6];
+%! P{:,3} = 'abc';
+%! assert_equal (P.Properties.VariableNames, {'n', 'z', 'Var3'});
+%! assert_equal (P.Var3, ['abc'; 'abc'; 'abc']);
+%!test
+%! warning ('off', 'all', 'local');
+%! P = table ([1; 2; 3], {'a'; 'b'; 'c'}, 'VariableNames', {'n', 's'});
+%! P{2,'z'} = 5;
+%! assert_equal (P.z, [0; 5; 0]);
+%! P{end+1,'n'} = 4;
+%! assert_equal (P.n, [1; 2; 3; 4]);
+%! assert_equal (P.s, {'a'; 'b'; 'c'; ''});
+%!test
+%! P = table ();
+%! P{:,'z'} = [1; 2; 3];
+%! assert_equal (size (P), [3, 1]);
+%!test
+%! N = table ([3; 4], [5; 6], 'VariableNames', {'p', 'q'});
+%! P = table ([1; 2], N, 'VariableNames', {'a', 'nt'});
+%! P{2,'nt'} = table (9, 9, 'VariableNames', {'p', 'q'});
+%! N = P.nt;
+%! assert_equal (N.q, [5; 9]);
+%!warning <table.subsasgn: new rows were padded with default values in the variables not assigned.> ...
+%! P = table ([1; 2; 3], [4; 5; 6]);
+%! P{4,'Var1'} = 4;
+%!error <table.subsasgn: '{}' indexing cannot delete; use '\(\)' to delete rows or variables.> ...
+%! P = table ([1; 2; 3]);
+%! P{2,:} = [];
+%!error <table.subsasgn: '{}' indexing of table requires exactly two arguments.> ...
+%! P = table ([1; 2; 3]);
+%! P{1} = 5;
+%!error <table.subsasgn: the value assigned must have 3 columns, one for each column of the variables assigned.> ...
+%! P = table ([1; 2], [3, 4; 5, 6]);
+%! P{2,:} = [1, 2];
+%!error <table.subsasgn: the value assigned must have 1 columns, one for each column of the variables assigned.> ...
+%! P = table (categorical ({'p'; 'q'}));
+%! P{2,1} = 'new';
+%!error <table.subsasgn: the value assigned must have 2 rows, one for each row assigned.> ...
+%! P = table ([1; 2; 3]);
+%! P{[1, 2],1} = [7; 8; 9];
+%!error <table.subsasgn: input data type mismatch indexed variable type.> ...
+%! P = table ({'a'; 'b'});
+%! P{2,1} = 5;
+%!error <table.subsasgn: input data type mismatch indexed variable type.> ...
+%! P = table ([1; 2]);
+%! P{2,1} = {5};
+%!error <table: cannot create a variable with a discontiguous index.> ...
+%! P = table ([1; 2; 3]);
+%! P{:,3} = [1; 2; 3];
 
 ## 'subsasgn' with '.' adds, replaces, and scalar-expands variables
 %!test  # add a new variable
