@@ -7617,7 +7617,8 @@ classdef (Abstract) tabular
       if (! isBrace && isa (rhs, 'timetable'))
         labels = getRowLabels (tbl);
         rhsLabels = getRowLabels (rhs);
-        if (! isequaln (labels(ixRow), rhsLabels(:)))
+        if (! strcmp (class (labels), class (rhsLabels))
+            || ! isequaln (labels(ixRow), rhsLabels(:)))
           error (strcat ("%s.subsasgn: the row times of the assigned", ...
                          " timetable do not match the rows assigned;", ...
                          " use synchronize to align them first."), ...
