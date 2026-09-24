@@ -1451,7 +1451,7 @@ classdef calendarDuration
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn {calendarDuration} {@var{C} =} minus (@var{A})
+    ## @deftypefn {calendarDuration} {@var{C} =} uminus (@var{A})
     ##
     ## Unary minus for calendarDuration arrays.
     ##

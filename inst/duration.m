@@ -2178,7 +2178,7 @@ classdef duration
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn {duration} {@var{C} =} times (@var{A}, @var{B})
+    ## @deftypefn {duration} {@var{C} =} mtimes (@var{A}, @var{B})
     ##
     ## Matrix multiplication for duration arrays.
     ##
