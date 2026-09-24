@@ -44,6 +44,11 @@
 %! [a, b, c, d] = size (A);
 %! assert_equal ([a, b, c, d], [2, 2, 1, 1]);
 %!assert_equal (size (categorical (NaN (2, 3, 4))), [2, 3, 4])
+%!assert_equal (size (categorical (cell (0, 1))), [0, 1])
+%!assert_equal (size (categorical (cell (1, 0))), [1, 0])
+%!assert_equal (size (categorical (cell (0, 3))), [0, 3])
+%!assert_equal (size (categorical (cell (2, 0))), [2, 0])
+%!assert_equal (size (categorical (cell (0, 1), {'a', 'b'})), [0, 1])
 %!assert_equal (categories (categorical), {})
 %!assert_equal (categories (categorical (NaN)), {})
 %!assert_equal (categories (categorical (NaN (3))), {})
@@ -789,6 +794,8 @@
 %!assert_equal (iscategory (categorical (1:3), {'1'; '2'}), [true; true])
 %!assert_equal (iscategory (categorical (1:3), {'1', '4', ...
 %!              '3'}), logical ([1, 0, 1]))
+%!assert_equal (size (iscategory (categorical (1:3), cell (0, 1))), [0, 1])
+%!assert_equal (size (iscategory (categorical (1:3), cell (1, 0))), [1, 0])
 %!test
 %! C = categorical ([], [1, 2, 3], {'A', 'B', 'C'});
 %! assert_equal (iscategory (C, 'A'), true);

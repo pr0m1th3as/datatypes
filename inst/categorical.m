@@ -455,8 +455,11 @@ classdef categorical
         endif
       endif
 
-      ## Associate input array with valueset
+      ## Associate input array with valueset; core 'ismember' returns 0x0
+      ## for any empty cell array of character vectors, so keep the shape
       [tf, loc] = ismember (x, valueset);
+      tf = reshape (tf, size (x));
+      loc = reshape (loc, size (x));
       maxc = intmax ('uint16');
       maxl = max (loc(:)) + sum (isnanvset);
       if (maxl > maxc)
@@ -1108,7 +1111,9 @@ classdef categorical
         error ("categorical.iscategory: CATNAMES input argument is required.");
       endif
       catnames = cellstr (catnames);
-      TF = ismember (catnames, this.cats);
+      ## Core 'ismember' returns 0x0 for any empty cell array of character
+      ## vectors, so keep the shape
+      TF = reshape (ismember (catnames, this.cats), size (catnames));
     endfunction
 
     ## -*- texinfo -*-
