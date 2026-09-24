@@ -200,7 +200,7 @@ classdef categorical
     ## categories can be combined/merged into a new array with set operations.
     ## @end itemize
     ##
-    ## @seealso{categories, discretize, iscategorical}
+    ## @seealso{categorical.categories, discretize, iscategorical}
     ## @end deftypefn
     function this = categorical (x, varargin)
 

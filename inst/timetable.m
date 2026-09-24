@@ -57,7 +57,7 @@ classdef timetable < tabular
   ## documented here; where one of them behaves differently for an event
   ## table, its own documentation says so.
   ##
-  ## @seealso{table, eventtable, istimetable, istabular, isregular,
+  ## @seealso{table, eventtable, istimetable, istabular, timetable.isregular,
   ## datetime, duration}
   ## @end deftp
 
@@ -1543,7 +1543,7 @@ classdef timetable < tabular
     ## @code{@var{tt} = timetable ()} returns an empty timetable with 0 rows
     ## and 0 variables.
     ##
-    ## @seealso{table.table2timetable, array2timetable, isregular}
+    ## @seealso{table.table2timetable, array2timetable, timetable.isregular}
     ## @end deftypefn
     function this = timetable (varargin)
 
@@ -2424,7 +2424,8 @@ classdef timetable < tabular
     ## @code{@var{TF} = ismissing (@var{tt}, @var{indicator})} treats the
     ## values in @var{indicator} as missing as well.
     ##
-    ## @seealso{anymissing, rmmissing, standardizeMissing, timetable}
+    ## @seealso{timetable.anymissing, timetable.rmmissing,
+    ## timetable.standardizeMissing, timetable}
     ## @end deftypefn
     function TF = ismissing (this, varargin)
       [TF, errmsg] = ismissingResult (this, varargin{:});
@@ -2443,7 +2444,7 @@ classdef timetable < tabular
     ## row times.  A timetable whose only missing value is a row time
     ## answers false here and still loses that row to @code{rmmissing}.
     ##
-    ## @seealso{ismissing, rmmissing, timetable}
+    ## @seealso{timetable.ismissing, timetable.rmmissing, timetable}
     ## @end deftypefn
     function TF = anymissing (this)
       TF = any (any (ismissing (this)));
@@ -2476,7 +2477,7 @@ classdef timetable < tabular
     ##
     ## The time step is read afresh from the rows that survive.
     ##
-    ## @seealso{ismissing, standardizeMissing, timetable}
+    ## @seealso{timetable.ismissing, timetable.standardizeMissing, timetable}
     ## @end deftypefn
     function [tbl, TF] = rmmissing (this, varargin)
       [tbl, TF, errmsg] = rmmissingResult (this, varargin{:});
@@ -2500,7 +2501,7 @@ classdef timetable < tabular
     ## times are not a data variable and are never rewritten, so the time
     ## step is unchanged.
     ##
-    ## @seealso{ismissing, rmmissing, timetable}
+    ## @seealso{timetable.ismissing, timetable.rmmissing, timetable}
     ## @end deftypefn
     function tbl = standardizeMissing (this, varargin)
       [tbl, errmsg] = standardizeMissingResult (this, varargin{:});
@@ -2543,7 +2544,8 @@ classdef timetable < tabular
     ## logical array marking what was filled.  The row times themselves are
     ## never filled and the time step is unchanged.
     ##
-    ## @seealso{ismissing, rmmissing, standardizeMissing, timetable}
+    ## @seealso{timetable.ismissing, timetable.rmmissing,
+    ## timetable.standardizeMissing, timetable}
     ## @end deftypefn
     function [tbl, TF] = fillmissing (this, varargin)
       [tbl, TF, errmsg] = fillmissingResult (this, varargin{:});
@@ -2583,7 +2585,7 @@ classdef timetable < tabular
     ## statistics; and everything else reports the count of missing values
     ## alone.  A variable of several columns reports one row per column.
     ##
-    ## @seealso{ismissing, timetable}
+    ## @seealso{timetable.ismissing, timetable}
     ## @end deftypefn
     function [varargout] = summary (this, varargin)
       if (! isempty (varargin))
@@ -2636,7 +2638,7 @@ classdef timetable < tabular
     ##
     ## The row times are untouched, so the time step is unchanged.
     ##
-    ## @seealso{removevars, movevars, timetable}
+    ## @seealso{timetable.removevars, timetable.movevars, timetable}
     ## @end deftypefn
     function tbl = addvars (this, varargin)
       ## Only the public method can read the caller's names.
@@ -2669,7 +2671,7 @@ classdef timetable < tabular
     ## nothing left to resolve to.  Deleting the variable by assigning an
     ## empty matrix does the same.
     ##
-    ## @seealso{addvars, movevars, timetable}
+    ## @seealso{timetable.addvars, timetable.movevars, timetable}
     ## @end deftypefn
     function tbl = removevars (this, varargin)
       [tbl, errmsg] = removevarsResult (this, varargin{:});
@@ -2693,7 +2695,7 @@ classdef timetable < tabular
     ## as the location, and they stay where they are whatever else is
     ## reordered.
     ##
-    ## @seealso{addvars, removevars, timetable}
+    ## @seealso{timetable.addvars, timetable.removevars, timetable}
     ## @end deftypefn
     function tbl = movevars (this, varargin)
       [tbl, errmsg] = movevarsResult (this, varargin{:});
@@ -2722,7 +2724,7 @@ classdef timetable < tabular
     ## MATLAB clears it instead and does not restore it when the variable is
     ## renamed back; see deviation D6.
     ##
-    ## @seealso{movevars, timetable}
+    ## @seealso{timetable.movevars, timetable}
     ## @end deftypefn
     function tbl = renamevars (this, varargin)
       [tbl, errmsg] = renamevarsResult (this, varargin{:});
@@ -2745,7 +2747,7 @@ classdef timetable < tabular
     ## The row times are not a data variable and cannot be converted; assign
     ## to @qcode{@var{tt}.Properties.RowTimes} to change them.
     ##
-    ## @seealso{renamevars, timetable}
+    ## @seealso{timetable.renamevars, timetable}
     ## @end deftypefn
     function tbl = convertvars (this, varargin)
       [tbl, errmsg] = convertvarsResult (this, varargin{:});
@@ -2782,7 +2784,7 @@ classdef timetable < tabular
     ## different variable under a different name.  MATLAB refuses the call
     ## instead, on the ground that the merged variable is no longer a column.
     ##
-    ## @seealso{splitvars, timetable}
+    ## @seealso{timetable.splitvars, timetable}
     ## @end deftypefn
     function tbl = mergevars (this, varargin)
       [tbl, errmsg] = mergevarsResult (this, varargin{:});
@@ -2810,7 +2812,7 @@ classdef timetable < tabular
     ##
     ## The row times are not a variable and cannot be split.
     ##
-    ## @seealso{mergevars, timetable}
+    ## @seealso{timetable.mergevars, timetable}
     ## @end deftypefn
     function tbl = splitvars (this, varargin)
       [tbl, errmsg] = splitvarsResult (this, varargin{:});
@@ -2858,7 +2860,7 @@ classdef timetable < tabular
     ## head of an hourly timetable is hourly and the head of a timetable
     ## whose spacing changes partway may not be.
     ##
-    ## @seealso{tail, sortrows, timetable}
+    ## @seealso{timetable.tail, sortrows, timetable}
     ## @end deftypefn
     function [varargout] = head (this, k)
       if (nargin < 2)
@@ -2899,7 +2901,7 @@ classdef timetable < tabular
     ## the last rows rather than the latest ones.  The time step is read
     ## afresh from the row times that are kept.
     ##
-    ## @seealso{head, sortrows, timetable}
+    ## @seealso{timetable.head, sortrows, timetable}
     ## @end deftypefn
     function [varargout] = tail (this, k)
       if (nargin < 2)
@@ -2985,7 +2987,7 @@ classdef timetable < tabular
     ## regular again, and sorting one that ran backwards turns its step from
     ## minus one hour to plus one.
     ##
-    ## @seealso{issortedrows, timetable}
+    ## @seealso{timetable.issortedrows, timetable}
     ## @end deftypefn
     function [tbl, index] = sortrows (this, varargin)
       [index, errmsg] = sortrowsIndex (this, varargin);
@@ -3077,7 +3079,7 @@ classdef timetable < tabular
     ## The time step is read afresh from the row times that are kept, so the
     ## default ranking of a regular timetable steps backwards.
     ##
-    ## @seealso{head, sortrows, timetable}
+    ## @seealso{timetable.head, sortrows, timetable}
     ## @end deftypefn
     function [tbl, ix] = topkrows (this, k, varargin)
       [ix, errmsg] = topkrowsIndex (this, k, varargin);
@@ -3106,7 +3108,7 @@ classdef timetable < tabular
     ## A @code{table} has no @code{issorted}, its row names being labels
     ## rather than an ordering.
     ##
-    ## @seealso{issortedrows, sortrows, timetable}
+    ## @seealso{timetable.issortedrows, sortrows, timetable}
     ## @end deftypefn
     function TF = issorted (this, varargin)
       if (nargin > 1)
@@ -3189,7 +3191,8 @@ classdef timetable < tabular
     ## A timetable whose row times are all missing has no range and answers
     ## false, and so does a reference naming no instant, such as a @code{NaT}.
     ##
-    ## @seealso{overlapsrange, withinrange, timerange, timetable}
+    ## @seealso{timetable.overlapsrange, timetable.withinrange, timerange,
+    ## timetable}
     ## @end deftypefn
     function [TF, whichRows] = containsrange (this, ref)
 
@@ -3232,7 +3235,8 @@ classdef timetable < tabular
     ## @var{ref}.  A timetable can overlap a range without any of its rows
     ## falling in it, the overlap being of the ranges and not of the rows.
     ##
-    ## @seealso{containsrange, withinrange, timerange, timetable}
+    ## @seealso{timetable.containsrange, timetable.withinrange, timerange,
+    ## timetable}
     ## @end deftypefn
     function [TF, whichRows] = overlapsrange (this, ref)
 
@@ -3282,7 +3286,8 @@ classdef timetable < tabular
     ## When @var{TF} is true they are all true, this being the one predicate
     ## for which the two answers agree.
     ##
-    ## @seealso{containsrange, overlapsrange, timerange, timetable}
+    ## @seealso{timetable.containsrange, timetable.overlapsrange, timerange,
+    ## timetable}
     ## @end deftypefn
     function [TF, whichRows] = withinrange (this, ref)
 
@@ -4123,7 +4128,7 @@ classdef timetable < tabular
     ## @qcode{'preserve'} keeps it as it is.
     ## @end table
     ##
-    ## @seealso{stack, timetable}
+    ## @seealso{timetable.stack, timetable}
     ## @end deftypefn
     function [tt2, index] = unstack (tt, vars, ivar, varargin)
       if (nargin < 3)
@@ -4305,7 +4310,8 @@ classdef timetable < tabular
     ## @qcode{VariableDescriptions} and @qcode{VariableContinuity} included,
     ## and the result carries the time step its new row times imply.
     ##
-    ## @seealso{timetable, isregular, fillmissing, synchronize}
+    ## @seealso{timetable, timetable.isregular, timetable.fillmissing,
+    ## timetable.synchronize}
     ## @end deftypefn
     function tt = retime (this, varargin)
       [tt, errmsg, warns] = retimeResult (this, varargin);
@@ -4343,7 +4349,8 @@ classdef timetable < tabular
     ## a character one a space, neither type having a missing value of its
     ## own.  Every property of the timetable survives.
     ##
-    ## @seealso{retime, synchronize, isregular, timetable}
+    ## @seealso{timetable.retime, timetable.synchronize, timetable.isregular,
+    ## timetable}
     ## @end deftypefn
     function tt = lag (this, n)
       if (nargin < 2)
@@ -4409,7 +4416,7 @@ classdef timetable < tabular
     ## three properties saying which variables describe the events must
     ## agree, and the operation is refused where they do not.
     ##
-    ## @seealso{retime, timetable, horzcat, isregular}
+    ## @seealso{timetable.retime, timetable, horzcat, timetable.isregular}
     ## @end deftypefn
     function tt = synchronize (varargin)
       names = cell (1, numel (varargin));
@@ -4504,7 +4511,7 @@ classdef timetable < tabular
     ## labels option may be combined with the @var{labels} form, which
     ## carries its own.
     ##
-    ## @seealso{eventtable, syncevents, timetable}
+    ## @seealso{eventtable, timetable.syncevents, timetable}
     ## @end deftypefn
     function [ET, TT2] = extractevents (this, arg, varargin)
 
@@ -4710,7 +4717,7 @@ classdef timetable < tabular
     ##
     ## The result keeps the event table it was synchronised from.
     ##
-    ## @seealso{extractevents, eventtable, timetable}
+    ## @seealso{timetable.extractevents, eventtable, timetable}
     ## @end deftypefn
     function TT2 = syncevents (this, varargin)
 
@@ -4858,7 +4865,7 @@ classdef timetable < tabular
     ## @qcode{@var{tt}.Properties.CustomProperties.@var{PropertyName}}.  The
     ## row times are not a variable and carry no entry of their own.
     ##
-    ## @seealso{rmprop, timetable}
+    ## @seealso{timetable.rmprop, timetable}
     ## @end deftypefn
     function tt = addprop (this, Names, Types)
       if (nargin < 3)
@@ -4881,7 +4888,7 @@ classdef timetable < tabular
     ## character vectors, or a string array.  A name matching no custom
     ## property is ignored rather than refused.
     ##
-    ## @seealso{addprop, timetable}
+    ## @seealso{timetable.addprop, timetable}
     ## @end deftypefn
     function tt = rmprop (this, Names)
       if (nargin < 2)
@@ -5047,7 +5054,8 @@ classdef timetable < tabular
     ## @code{categorical} variables are returned as cell arrays of character
     ## vectors and their values are not reconstructed.
     ##
-    ## @seealso{csv2timetable, timetable2ods, writetimetable, table.table2csv}
+    ## @seealso{csv2timetable, timetable.timetable2ods,
+    ## timetable.writetimetable, table.table2csv}
     ## @end deftypefn
     function timetable2csv (this, file, varargin)
       if (nargin < 2)
@@ -5140,7 +5148,8 @@ classdef timetable < tabular
     ## @code{categorical} variables are returned as cell arrays of character
     ## vectors and their values are not reconstructed.
     ##
-    ## @seealso{ods2timetable, timetable2csv, struct2ods, table.table2ods}
+    ## @seealso{ods2timetable, timetable.timetable2csv, struct2ods,
+    ## table.table2ods}
     ## @end deftypefn
     function timetable2ods (this, file, varargin)
       if (nargin < 2)
@@ -5295,7 +5304,8 @@ classdef timetable < tabular
     ## side of a repeated hour an instant falls on, so a timestamp inside a
     ## daylight-saving fold round-trips here and would not otherwise.
     ##
-    ## @seealso{readtimetable, timetable2ods, timetable2csv, table.writetable}
+    ## @seealso{readtimetable, timetable.timetable2ods,
+    ## timetable.timetable2csv, table.writetable}
     ## @end deftypefn
     function writetimetable (this, filename, varargin)
       if (nargin < 2)
