@@ -3228,6 +3228,30 @@
 %! M = mergevars (T, {'A', 'B'});
 %! assert_equal (M.Properties.VariableUnits, {''});
 
+## Test a table with neither rows nor variables takes the height of the
+## first variable given it
+%!test
+%! T = table ();
+%! T.x = [1; 2; 3];
+%! assert_equal (isequal (T, table ([1; 2; 3], 'VariableNames', {'x'})), true);
+%!test
+%! T = table ();
+%! T.x = 5;
+%! assert_equal (size (T), [1, 1]);
+%!test
+%! T = table ();
+%! T.x = 'abc';
+%! assert_equal (T.x, 'abc');
+%!test
+%! T = table ();
+%! T.Properties.Description = 'd';
+%! T.x = [1; 2];
+%! assert_equal (T.Properties.Description, 'd');
+%!test
+%! R = addvars (table (), [1; 2; 3], [4; 5; 6]);
+%! assert_equal (size (R), [3, 2]);
+%!error <table.addvars: each new variable must have as many rows as the table.> ...
+%! addvars (table (), [1; 2; 3], [4; 5]);
 ## Test a table with rows and no variables takes a variable of its height
 %!test
 %! R = addvars (table ('Size', [3, 0], 'VariableTypes', {}), [1; 2; 3]);

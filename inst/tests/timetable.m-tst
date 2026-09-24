@@ -1729,6 +1729,17 @@
 %!            datetime (2024, 1, 1) + hours (0:2)', ...
 %!            'VariableNames', {'m'}), 'm', 'NewVariableNames', {'x'});
 
+## Test a timetable with neither rows nor variables takes the height of the
+## first variable given it, with missing row times
+%!test
+%! E = timetable ();
+%! E.x = [1; 2; 3];
+%! assert_equal (size (E), [3, 1]);
+%! assert_equal (isnat (E.Properties.RowTimes), true (3, 1));
+%!test
+%! E = addvars (timetable (), [1; 2; 3]);
+%! assert_equal (size (E), [3, 1]);
+
 ## Test the shared branches of 'addvars' name the timetable
 %!error <timetable.addvars: name-value arguments must be in pairs.> ...
 %! addvars (TT, (1:6)', 'After');

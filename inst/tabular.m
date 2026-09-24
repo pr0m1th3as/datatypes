@@ -2254,10 +2254,14 @@ classdef (Abstract) tabular
 
       ## Every new variable spans the rows of the table, as in MATLAB, where
       ## 'setvar' would repeat a scalar down them.  A table with neither rows
-      ## nor variables is left to 'setvar'.
-      if (height (this) > 0 || width (this) > 0)
+      ## nor variables takes the height of the first.
+      if (! isempty (args))
+        nrows = height (this);
+        if (nrows == 0 && width (this) == 0)
+          nrows = size (args{1}, 1);
+        endif
         for i = 1:numel (args)
-          if (size (args{i}, 1) != height (this))
+          if (size (args{i}, 1) != nrows)
             errmsg = sprintf (strcat ("each new variable must have as", ...
                                       " many rows as the %s."), class (this));
             return
@@ -7388,12 +7392,15 @@ classdef (Abstract) tabular
     ## @end deftypefn
     function tbl = setvar (this, varRef, value)
       clstype = class (this);
-      ## Do scalar expansion if necessary
+      ## An object with neither rows nor variables takes its height from
+      ## the first variable given it, as in MATLAB, so nothing is expanded;
+      ## otherwise do scalar expansion if necessary
       n_rows = height (this);
-      val_is_scalar = (isscalar (value) || (ischar (value) && ...
-        (size (value, 1) == 1 || isequal (size (value), [0 0]))));
-      if (n_rows != 1 && (isscalar (value) || (ischar (value) &&
-          (size (value, 1) == 1 || isequal (size (value), [0 0])))))
+      if (n_rows == 0 && width (this) == 0)
+        n_rows = size (value, 1);
+        this = growRowLabels (this, n_rows);
+      elseif (n_rows != 1 && (isscalar (value) || (ischar (value) &&
+              (size (value, 1) == 1 || isequal (size (value), [0 0])))))
         if (ischar (value))
           value = {value};
         endif
