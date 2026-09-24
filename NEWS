@@ -1,32 +1,52 @@
-Summary of important user-visible changes for datatypes 1.4.2:
+Summary of important user-visible changes for datatypes 1.4.3:
 --------------------------------------------------------------
 
- This patch release installs on Octave 11.1.0 again, and fixes how infinite
- and missing values are written to and read from CSV, ODS and XLSX files.
+ This patch release completes assignment into tables and timetables, which
+ now create variables and accept `{}`, and makes the table methods refuse
+ Name-Value arguments they do not know.
 
- ** Version 1.4.1 could not be installed on Octave 11.1.0.
-    `datetime.SystemTimeZone` is now a static method, as in MATLAB, so
-    `methods ('datetime')` lists it and `properties ('datetime')` does not.
+ ** `()` assignment into a `table` or `timetable` creates the variables it
+    names anew, by name, by the next index or by a longer logical mask, as
+    MATLAB does.  Rows and variables it adds but does not fill take the
+    default value of their type, with a warning.
 
- ** `table2ods`, `timetable2ods`, `struct2ods`, `struct2xlsx`, `writetable`
-    and `writetimetable` write `Inf` and `-Inf` to ODS and XLSX as text, where
-    LibreOffice Calc loaded them as 0 and XLSX held an invalid value.  CSV
-    files carry `Inf` and `-Inf` instead of `inf` and `-inf`.
+ ** `duration` and `calendarDuration` variables are padded with zero when
+    rows are added, as in MATLAB, where they were padded with a missing
+    value.  Cellstr variables are padded with empty text, so that they stay
+    cellstr.
 
- ** `readtable`, `ods2table` and `ods2timetable` read a numeric column holding
-    text or error cells as MATLAB does: the text `Inf`, `-Inf` and `NaN` as
-    those numbers, any other text and every error cell as NaN.  Such a column
-    stopped with "nonconformant arguments", and XLSX error cells read as 0.
+ ** `{}` assignment writes the contents of the variables, as `{}` indexing
+    returns them, and creates variables and rows as `()` does.  It raised on
+    every table.  `{}` does not delete.
 
- ** `writetable`, `writetimetable` and `table2csv` end CSV rows in LF on every
-    platform, where Windows wrote CRLF.
+ ** `()` assignment of a cell array fills multicolumn and nested table
+    variables, unwraps a cell given for a cell variable, and takes a logical
+    row mask, where it raised or stored the wrong value.
 
- ** `datetime`: on Windows, a date more than about 5.88 million years from
-    1970 no longer wraps to a wrong date (#53).  In a time zone other than
-    `UTC`, components carrying the date past year 32767 give the right date,
-    and a day component beyond the 32-bit integer range is accepted, where
-    MATLAB refuses it.
+ ** A timetable assigned into a timetable with `()` must carry the row times
+    of the rows assigned, and is refused otherwise.  MATLAB pastes it by
+    position and ignores its row times.
 
- ** `'TimeZone', 'local'` on a system whose zone is `Etc/UTC` or another
-    fixed-offset name stores the zone as naming it directly does, `'+00:00'`
-    for `Etc/UTC`.
+ ** A `table` or `timetable` with neither rows nor variables takes the
+    height of the first variable assigned to it, where it raised.
+
+ ** `addcats`, `convertTo`, `struct2table`, and the `table` and `timetable`
+    methods `addvars`, `movevars`, `mergevars`, `rmmissing`,
+    `standardizeMissing`, `varfun`, `rowfun`, `stack`, `unstack` and
+    `rows2vars` raise an error on an unknown or unpaired Name-Value argument,
+    which they silently ignored.
+
+ ** `addvars` refuses a new variable whose rows do not match the table's,
+    where it repeated a scalar down every row, and reads a character vector
+    as the start of the Name-Value arguments, as MATLAB does.
+
+ ** `retime` and `synchronize` name an unknown option or time base in their
+    error, where a misplaced name was taken for the method or reported as
+    `'<unknown>'`.
+
+ ** `rmmissing (T, 2)` removes the variables holding missing values, and
+    `'MissingLocations'` may be sized as the whole table when
+    `'DataVariables'` is given, as MATLAB does.
+
+ ** `categorical` and `categorical.iscategory` keep the shape of an empty
+    cell array: `categorical (cell (0, 1))` is 0x1, not 0x0.
