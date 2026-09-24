@@ -2187,9 +2187,9 @@ classdef (Abstract) tabular
       ix_insert = tbl_width;
       AB_insert = true;   # after by default
 
-      ## The new variables end where the first name does, as in MATLAB
-      isName = cellfun (@(x) (ischar (x) && isrow (x)) ...
-                             || (isa (x, 'string') && isscalar (x)), varargin);
+      ## The new variables end at the first character vector, as in MATLAB;
+      ## a string scalar is a variable
+      isName = cellfun (@(x) ischar (x) && isrow (x), varargin);
       nvars = find ([isName, true], 1) - 1;
       args = varargin(1:nvars);
       pairs = varargin(nvars+1:end);
@@ -4692,13 +4692,25 @@ classdef (Abstract) tabular
       ## Define allowed vartypes (cellstr + numeric are checked in place)
       allowed = {'logical', 'string', 'categorical'};
 
-      ## Parse optional Name-Value paired arguments
+      if (mod (numel (args_in), 2) != 0)
+        errmsg = "name-value arguments must be in pairs.";
+        return;
+      endif
+
+      ## Parse optional paired arguments; empty 'GroupingVariables',
+      ## 'ConstantVariables', 'NewDataVariableNames' and
+      ## 'AggregationFunction' are resolved below
       optNames = {'GroupingVariables', 'ConstantVariables', ...
                   'NewDataVariableNames', 'AggregationFunction', ...
                   'VariableNamingRule'};
       dfValues = {[], [], [], [], 'modify'};
-      [groupVars, constVars, newVarNames, aggrFcn, rule] = ...
+      [groupVars, constVars, newVarNames, aggrFcn, rule, args] = ...
                   parsePairedArguments (optNames, dfValues, args_in(:));
+
+      if (! isempty (args))
+        errmsg = "invalid optional paired argument.";
+        return;
+      endif
 
       ## Get variables to unstack
       [ixVars, ~] = resolveVarRef (this, vars, 'lenient');

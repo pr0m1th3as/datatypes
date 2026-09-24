@@ -3228,6 +3228,11 @@
 %! M = mergevars (T, {'A', 'B'});
 %! assert_equal (M.Properties.VariableUnits, {''});
 
+## Test a string scalar is added as a variable
+%!test
+%! T = table (1, 2, 'VariableNames', {'g', 'x'});
+%! R = addvars (T, string ('abc'), 'NewVariableNames', 'n');
+%! assert_equal (R.n, string ('abc'));
 ## Test input validation for 'addvars' method
 %!error <table.addvars: name-value arguments must be in pairs.> ...
 %! addvars (tblA, Smoker, 'After');
@@ -4328,6 +4333,10 @@
 %!error <table.unstack: too few input arguments.> unstack (tblA);
 %!error <table.unstack: too few input arguments.> unstack (tblA, 'Height');
 %!error <table.unstack: too few input arguments.> unstack (tblA, [], 'Height');
+%!error <table.unstack: name-value arguments must be in pairs.> ...
+%! unstack (tblA, 'Height', 'Age', 'GroupingVariables');
+%!error <table.unstack: invalid optional paired argument.> ...
+%! unstack (tblA, 'Height', 'Age', 'Bogus', 1);
 %!error <table.unstack: VARS index a non-existing variable: 'some'> ...
 %! unstack (tblA, 'some', 'Height');
 %!error <table.unstack: VARS must not index nested tables.> ...
