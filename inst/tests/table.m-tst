@@ -7799,6 +7799,14 @@
 %! assert_equal (size (P), [4, 2]);
 %! assert_equal (P.n, [1; 2; 3; 0]);
 %! assert_equal (P.z, [0; 0; 0; 1]);
+%!test
+%! warning ('off', 'all', 'local');
+%! P = table (hours ([1; 2]), calmonths ([1; 2]), 'VariableNames', {'d', 'c'});
+%! P(4,'d') = {hours(9)};
+%! assert_equal (P.d, hours ([1; 2; 0; 9]));
+%! assert_equal (P.c, calmonths ([1; 2; 0; 0]));
+%! P(2,'e') = {minutes(5)};
+%! assert_equal (P.e, minutes ([0; 5; 0; 0]));
 %!warning <table.subsasgn: new variables were padded with default values in the rows not assigned.> ...
 %! P = table ([1; 2; 3], 'VariableNames', {'n'});
 %! P(2,'z') = {7};

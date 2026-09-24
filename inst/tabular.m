@@ -10944,9 +10944,11 @@ function n = growthHeight (this, ixRow)
 endfunction
 
 ## PROTO grown to N rows, the rows added taking the fill the class gives an
-## array grown by indexed assignment: zero for a numeric variable, as MATLAB
-## does, and the class's own missing value for one that has such a thing.
-## Returns an errmsg body for a type with neither.
+## array grown by indexed assignment: zero for a numeric, duration or
+## calendarDuration variable and false for a logical one, as MATLAB does,
+## and the class's own missing value for one that has such a thing.  A
+## cellstr variable takes empty text, where MATLAB puts an empty double, so
+## that it stays a cellstr.  Returns an errmsg body for a type with neither.
 
 function [v, errmsg] = padVariable (v, n)
   errmsg = '';
@@ -10966,6 +10968,10 @@ function [v, errmsg] = padVariable (v, n)
     pad = cell (k, w);
   elseif (ischar (v))
     pad = repmat (' ', k, w);
+  elseif (isa (v, 'duration'))
+    pad = seconds (zeros (k, w));
+  elseif (isa (v, 'calendarDuration'))
+    pad = calmonths (zeros (k, w));
   else
     [pad, errmsg] = missing_rows (v, k);
     if (! isempty (errmsg))
