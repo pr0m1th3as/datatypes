@@ -2337,17 +2337,20 @@ classdef datetime
 
       ## 'epochtime' is the only type taking Name/Value options.
       if (strcmp (dt, 'epochtime'))
-        [epochVal, ticks] = parsePairedArguments ({'Epoch', ...
-            'TicksPerSecond'}, ...
-                                                  {[], 1}, varargin(:));
-        if (! (isnumeric (ticks) && isscalar (ticks) && isreal (ticks) ...
-               && ticks > 0))
-          error (strcat ("datetime.convertTo: 'TicksPerSecond' must be a", ...
-                         " positive scalar."));
+        if (mod (numel (varargin), 2) != 0)
+          error (strcat ("datetime.convertTo: name-value", ...
+                         " arguments must be in pairs."));
         endif
-        if (isempty (epochVal))
-          epochMs = 0;
-        else
+
+        ## Parse optional paired arguments; an empty 'Epoch' stands for
+        ## 1970-01-01
+        optNames = {'Epoch', 'TicksPerSecond'};
+        dfValues = {[], 1};
+        [epochVal, ticks, args] = ...
+                   parsePairedArguments (optNames, dfValues, varargin(:));
+
+        ## Validate optional paired arguments
+        if (! isempty (epochVal))
           if (! (isa (epochVal, 'datetime') && isscalar (epochVal)))
             error ("datetime.convertTo: 'Epoch' must be a scalar datetime.");
           endif
@@ -2357,6 +2360,20 @@ classdef datetime
                            " must both be unzoned."));
           endif
           dtCheckLeapPair (this, epochVal, 'convertTo');
+        endif
+        if (! (isnumeric (ticks) && isscalar (ticks) && isreal (ticks) ...
+               && ticks > 0))
+          error (strcat ("datetime.convertTo: 'TicksPerSecond' must be a", ...
+                         " positive scalar."));
+        endif
+
+        if (! isempty (args))
+          error ("datetime.convertTo: invalid optional paired argument.");
+        endif
+
+        if (isempty (epochVal))
+          epochMs = 0;
+        else
           epochMs = round (epochBase (epochVal) * 1000);
         endif
         ms = round (epochBase (this) * 1000);

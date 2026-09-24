@@ -56,6 +56,9 @@ function tbl = struct2table (S, varargin)
   if (! isstruct (S))
     error ("struct2table: input array must be a structure.");
   endif
+  if (mod (numel (varargin), 2) != 0)
+    error ("struct2table: name-value arguments must be in pairs.");
+  endif
 
   ## Handle default value for AsArray
   if (isscalar (S))
@@ -64,11 +67,16 @@ function tbl = struct2table (S, varargin)
     default = true;
   endif
 
-  ## Parse optional Name-Value paired arguments
+  ## Parse optional paired arguments; 'AsArray' defaults to true for a
+  ## structure array and to false for a scalar structure
   optNames = {'AsArray', 'RowNames', 'DimensionNames'};
   dfValues = {default, {}, {"Row", "Variables"}};
   [AsArray, rowNames, dimNames, args] = ...
-                      parsePairedArguments (optNames, dfValues, varargin);
+                      parsePairedArguments (optNames, dfValues, varargin(:));
+
+  if (! isempty (args))
+    error ("struct2table: invalid optional paired argument.");
+  endif
 
   ## Get variable names from structure fields
   varNames = fieldnames (S);
@@ -180,6 +188,10 @@ endfunction
 %! assert_equal (size (tbl.B{1}), [2, 1]);
 
 %!error<struct2table: input array must be a structure.> struct2table ({1});
+%!error<struct2table: name-value arguments must be in pairs.> ...
+%! struct2table (struct ('a', 1), 'AsArray')
+%!error<struct2table: invalid optional paired argument.> ...
+%! struct2table (struct ('a', 1), 'Bogus', 1)
 %!error<struct2table: fields have different rows. Use 'AsArray' option.> ...
 %! struct2table (struct ('A', 1, 'B', [1; 2]));
 %!error<struct2table: 'RowNames' must match the rows in input structure.> ...

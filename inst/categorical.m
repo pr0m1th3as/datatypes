@@ -1932,6 +1932,10 @@ MP = lower (MP);
       elseif (isnumeric (newcats) || islogical (newcats))
         error ("categorical.addcats: NEWCATS cannot be numeric or logical.");
       endif
+      if (mod (numel (varargin), 2) != 0)
+        error (strcat ("categorical.addcats: name-value", ...
+                       " arguments must be in pairs."));
+      endif
 
       ## Convert to cellstring
       if (! iscellstr (newcats))
@@ -1955,15 +1959,21 @@ MP = lower (MP);
         error ("categorical.addcats: new category names already present.");
       endif
 
-      ## Parse optional Name-Value paired arguments
+      ## Parse optional paired arguments; an empty 'After' or 'Before'
+      ## appends the new categories at the end
       optNames = {'After', 'Before'};
       dfValues = {[], []};
-      [After, Before] = parsePairedArguments (optNames, dfValues, varargin(:));
+      [After, Before, args] = ...
+                 parsePairedArguments (optNames, dfValues, varargin(:));
 
-      ## Check optional Name-Value paired arguments
+      ## Validate optional paired arguments
       if (! isempty (After) && ! isempty (Before))
         error (strcat ("categorical.addcats: cannot specify both", ...
                        " 'After' and 'Before'."));
+      endif
+
+      if (! isempty (args))
+        error ("categorical.addcats: invalid optional paired argument.");
       endif
 
       ## Add categories

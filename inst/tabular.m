@@ -2187,13 +2187,25 @@ classdef (Abstract) tabular
       ix_insert = tbl_width;
       AB_insert = true;   # after by default
 
-      ## Parse optional Name-Value paired arguments
+      ## The new variables end where the first name does, as in MATLAB
+      isName = cellfun (@(x) (ischar (x) && isrow (x)) ...
+                             || (isa (x, 'string') && isscalar (x)), varargin);
+      nvars = find ([isName, true], 1) - 1;
+      args = varargin(1:nvars);
+      pairs = varargin(nvars+1:end);
+      if (mod (numel (pairs), 2) != 0)
+        errmsg = "name-value arguments must be in pairs.";
+        return
+      endif
+
+      ## Parse optional paired arguments; an empty 'After' and 'Before'
+      ## append the new variables after the last one
       optNames = {'After', 'Before', 'NewVariableNames'};
       dfValues = {[], [], []};
-      [After, Before, newVarNames, args] = ...
-                      parsePairedArguments (optNames, dfValues, varargin(:));
+      [After, Before, newVarNames, pairs] = ...
+                      parsePairedArguments (optNames, dfValues, pairs(:));
 
-      ## Check optional Name-Value paired arguments
+      ## Validate optional paired arguments
       if (! isempty (After) && ! isempty (Before))
         errmsg = "cannot use both 'After' and 'Before' options.";
         return
@@ -2234,6 +2246,12 @@ classdef (Abstract) tabular
           return
         endif
       endif
+
+      if (! isempty (pairs))
+        errmsg = "invalid optional paired argument.";
+        return
+      endif
+
       if (isempty (newVarNames))
         ## Create names for new variables
         ## The place the first new variable takes in the result, which is
@@ -2356,18 +2374,24 @@ classdef (Abstract) tabular
         errmsg = "too few input arguments.";
         return
       endif
+      if (mod (numel (varargin), 2) != 0)
+        errmsg = "name-value arguments must be in pairs.";
+        return
+      endif
 
       ## Add defaults
       tbl_width = width (this);
       ix_insert = tbl_width;
       AB_insert = true;   # after by default
 
-      ## Parse optional Name-Value paired arguments
+      ## Parse optional paired arguments; an empty 'After' and 'Before'
+      ## move the variables after the last one
       optNames = {'After', 'Before'};
       dfValues = {[], []};
-      [After, Before] = parsePairedArguments (optNames, dfValues, varargin(:));
+      [After, Before, args] = ...
+                 parsePairedArguments (optNames, dfValues, varargin(:));
 
-      ## Check optional Name-Value paired arguments
+      ## Validate optional paired arguments
       if (! isempty (After) && ! isempty (Before))
         errmsg = "cannot use both 'After' and 'Before' options.";
         return
@@ -2404,6 +2428,11 @@ classdef (Abstract) tabular
           errmsg = msg_error3;
           return
         endif
+      endif
+
+      if (! isempty (args))
+        errmsg = "invalid optional paired argument.";
+        return
       endif
 
       ## Get variables to be moved
@@ -2668,19 +2697,30 @@ classdef (Abstract) tabular
         return
       endif
 
-      ## Parse optional Name-Value paired arguments
+      if (mod (numel (varargin), 2) != 0)
+        errmsg = "name-value arguments must be in pairs.";
+        return
+      endif
+
+      ## Parse optional paired arguments; an empty 'NewVariableName' names
+      ## the merged variable after the place it takes
       optNames = {'NewVariableName', 'MergeAsTable'};
       dfValues = {[], false};
-      [newVarName, mergeAsTable] = parsePairedArguments (optNames, dfValues, ...
-                                                         varargin(:));
+      [newVarName, mergeAsTable, args] = ...
+                 parsePairedArguments (optNames, dfValues, varargin(:));
 
-      ## Check user input for 'MergeAsTable'
+      ## Validate optional paired arguments
       if (! isscalar (mergeAsTable))
         errmsg = "invalid input for 'MergeAsTable'.";
         return
       endif
       if (! (isbool (mergeAsTable) || ismember (mergeAsTable, [0, 1])))
         errmsg = "invalid input for 'MergeAsTable'.";
+        return
+      endif
+
+      if (! isempty (args))
+        errmsg = "invalid optional paired argument.";
         return
       endif
 
@@ -3286,13 +3326,20 @@ classdef (Abstract) tabular
         return;
       endif
 
-      ## Parse optional Name-Value paired arguments
+      if (mod (numel (varargin), 2) != 0)
+        errmsg = "name-value arguments must be in pairs.";
+        return
+      endif
+
+      ## Parse optional paired arguments; an empty 'DataVariables' stands
+      ## for every variable and an empty 'MissingLocations' for what
+      ## 'ismissing' finds
       optNames = {'MinNumMissing', 'DataVariables', 'MissingLocations'};
       dfValues = {1, [], []};
-      [minNum, dVars, mLocs] = parsePairedArguments (optNames, dfValues, ...
-                                                     varargin(:));
+      [minNum, dVars, mLocs, args] = ...
+                 parsePairedArguments (optNames, dfValues, varargin(:));
 
-      ## Check optional Name-Value paired arguments and operate accordingly
+      ## Validate optional paired arguments and operate accordingly
       if (! isscalar (minNum) || fix (minNum) != minNum || minNum <= 0)
         errmsg = "'MinNumMissing' must be a positive integer.";
         return
@@ -3320,6 +3367,12 @@ classdef (Abstract) tabular
       else
         tmpT = this;
       endif
+
+      if (! isempty (args))
+        errmsg = "invalid optional paired argument.";
+        return
+      endif
+
       if (! isempty (mLocs))
         if (islogical (mLocs))
           if (! isequal (size (mLocs), size (tmpT)))
@@ -3613,12 +3666,18 @@ classdef (Abstract) tabular
         return
       endif
 
-      ## Parse optional Name-Value paired arguments
+      if (mod (numel (varargin), 2) != 0)
+        errmsg = "name-value arguments must be in pairs.";
+        return
+      endif
+
+      ## Parse optional paired arguments; an empty 'DataVariables' stands
+      ## for every variable
       optNames = {'DataVariables'};
       dfValues = {[]};
-      dVars = parsePairedArguments (optNames, dfValues, varargin(:));
+      [dVars, args] = parsePairedArguments (optNames, dfValues, varargin(:));
 
-      ## Resolve targeted variables
+      ## Validate optional paired arguments and resolve targeted variables
       if (isempty (dVars))
         ixVars = 1:width (tblA);
       else
@@ -3640,6 +3699,11 @@ classdef (Abstract) tabular
                          " a non-existing variable: '%s'"), badname);
           return
         endif
+      endif
+
+      if (! isempty (args))
+        errmsg = "invalid optional paired argument.";
+        return
       endif
 
       ## Split the indicator into numeric and text indicator values
@@ -3722,16 +3786,30 @@ classdef (Abstract) tabular
         return;
       endif
 
-      ## Parse optional Name-Value paired arguments
+      if (mod (numel (args_in), 2) != 0)
+        errmsg = "name-value arguments must be in pairs.";
+        return;
+      endif
+
+      ## Parse optional paired arguments; empty 'InputVariables' and
+      ## 'GroupingVariables' are resolved below, and an empty
+      ## 'ErrorHandler' lets an error in FUNC through
       optNames = {'InputVariables', 'GroupingVariables', 'OutputFormat', ...
                   'ErrorHandler'};
       dfValues = {[], [], 'auto', []};
-      [inVars, grpVars, outFmt, errHandler] = ...
+      [inVars, grpVars, outFmt, errHandler, args] = ...
                   parsePairedArguments (optNames, dfValues, args_in(:));
+
+      ## Validate optional paired arguments
       outFmt = tabular.check_output_format (scope, outFmt, ...
                                             class (this));
       if (! isempty (errHandler) && ! is_function_handle (errHandler))
         errmsg = "'ErrorHandler' must be a function handle.";
+        return;
+      endif
+
+      if (! isempty (args))
+        errmsg = "invalid optional paired argument.";
         return;
       endif
 
@@ -5554,11 +5632,23 @@ classdef (Abstract) tabular
 
       dimName = '';
 
-      ## Parse optional Name-Value paired arguments
+      if (mod (numel (args_in), 2) != 0)
+        errmsg = "name-value arguments must be in pairs.";
+        return;
+      endif
+
+      ## Parse optional paired arguments; an empty 'DataVariables' stands
+      ## for every variable and an empty 'VariableNamesSource' names the
+      ## new variables after the rows
       optNames = {'DataVariables', 'VariableNamesSource', 'VariableNamingRule'};
       dfValues = {[], [], 'modify'};
-      [varRef, source, rule] = parsePairedArguments (optNames, dfValues, ...
-                                                     args_in(:));
+      [varRef, source, rule, args] = ...
+                 parsePairedArguments (optNames, dfValues, args_in(:));
+
+      if (! isempty (args))
+        errmsg = "invalid optional paired argument.";
+        return;
+      endif
 
       ## Check user input for 'DataVariables'
       if (! isempty (varRef))
@@ -5742,12 +5832,23 @@ classdef (Abstract) tabular
         return;
       endif
 
-      ## Parse optional Name-Value paired arguments
+      if (mod (numel (args_in), 2) != 0)
+        errmsg = "name-value arguments must be in pairs.";
+        return;
+      endif
+
+      ## Parse optional paired arguments; empty 'ConstantVariables',
+      ## 'NewDataVariableName' and 'IndexVariableName' are resolved below
       optNames = {'ConstantVariables', 'NewDataVariableName', ...
                   'IndexVariableName'};
       dfValues = {[], [], []};
-      [constVars, newVarName, idxVarName] = ...
+      [constVars, newVarName, idxVarName, args] = ...
                   parsePairedArguments (optNames, dfValues, args_in(:));
+
+      if (! isempty (args))
+        errmsg = "invalid optional paired argument.";
+        return;
+      endif
 
       ## Determine single- vs multi-group stacking.  Multiple groups of
       ## variables to stack are passed as a cell array of variable references
@@ -6275,13 +6376,24 @@ classdef (Abstract) tabular
         return;
       endif
 
-      ## Parse optional Name-Value paired arguments
+      if (mod (numel (args_in), 2) != 0)
+        errmsg = "name-value arguments must be in pairs.";
+        return;
+      endif
+
+      ## Parse optional paired arguments; empty 'InputVariables',
+      ## 'GroupingVariables', 'OutputVariableNames' and 'NumOutputs' are
+      ## resolved below, and an empty 'ErrorHandler' lets an error in FUNC
+      ## through
       optNames = {'InputVariables', 'GroupingVariables', ...
                   'OutputVariableNames', 'NumOutputs', 'SeparateInputs', ...
                   'ExtractCellContents', 'OutputFormat', 'ErrorHandler'};
       dfValues = {[], [], [], [], true, false, 'auto', []};
       [inVars, grpVars, outNames, numOut, sepIn, extractCell, outFmt, ...
-       errHandler] = parsePairedArguments (optNames, dfValues, args_in(:));
+       errHandler, extra] = parsePairedArguments (optNames, dfValues, ...
+                                                  args_in(:));
+
+      ## Validate optional paired arguments
       outFmt = tabular.check_output_format (scope, outFmt, ...
                                             class (this));
       if (! (isscalar (sepIn) && (islogical (sepIn) || isnumeric (sepIn))))
@@ -6297,6 +6409,11 @@ classdef (Abstract) tabular
       extractCell = logical (extractCell);
       if (! isempty (errHandler) && ! is_function_handle (errHandler))
         errmsg = "'ErrorHandler' must be a function handle.";
+        return;
+      endif
+
+      if (! isempty (extra))
+        errmsg = "invalid optional paired argument.";
         return;
       endif
 
