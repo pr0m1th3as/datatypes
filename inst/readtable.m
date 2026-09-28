@@ -89,7 +89,11 @@ function tbl = readtable (filename, varargin)
     error ("readtable: FILENAME must be a character vector or string scalar.");
   endif
   file = char (filename);
+  if (mod (numel (varargin), 2) != 0)
+    error ("readtable: name-value arguments must be in pairs.");
+  endif
 
+  ## Parse optional paired arguments
   optNames = {'FileType', 'ReadVariableNames', 'ReadRowNames', 'Delimiter', ...
               'NumHeaderLines', 'TextType', 'VariableNamingRule', 'Sheet', ...
               'Range', 'VariableNamesRow', 'RowNamesColumn', ...
@@ -101,7 +105,7 @@ function tbl = readtable (filename, varargin)
                               varargin(:));
   varNamesRow = __namesrow__ (varNamesRow, varNamesLine, 'readtable');
   if (! isempty (args))
-    error ("readtable: unknown option '%s'.", args{1});
+    error ("readtable: invalid optional paired argument.");
   endif
   if (isa (sheet, 'string'))
     sheet = char (sheet);
@@ -909,9 +913,11 @@ endfunction
 %!error <readtable: '.xlsb' Excel files are not supported; use '.xlsx', '.ods', or a text format.> ...
 %! readtable ('data.xlsb');
 
-## Error: an unknown option
-%!error <readtable: unknown option 'Bogus'.> ...
+## Error: an unknown option, and one without a value
+%!error <readtable: invalid optional paired argument.> ...
 %! readtable ([tempname() '.csv'], 'Bogus', 1);
+%!error <readtable: name-value arguments must be in pairs.> ...
+%! readtable ([tempname() '.csv'], 'Bogus');
 %!error <readtable: FILENAME must be a character vector or string scalar.> ...
 %! readtable (42)
 %!error <readtable: cannot infer the file type from '.zzz'; specify 'FileType'.> ...

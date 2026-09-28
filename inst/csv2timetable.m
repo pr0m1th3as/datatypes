@@ -64,6 +64,10 @@ function tt = csv2timetable (filename, varargin)
                    " cellstr, or string."));
   endif
 
+  if (mod (numel (varargin), 2) != 0)
+    error ("csv2timetable: name-value arguments must be in pairs.");
+  endif
+
   ## A timetable has no row names, so an option asking for them would be
   ## honoured by the reader and then discarded by the conversion, which is
   ## worse than saying so.
@@ -79,7 +83,16 @@ function tt = csv2timetable (filename, varargin)
     endif
   endfor
 
-  tbl = csv2table (filename, varargin{:});
+  ## The file is read by 'csv2table', whose complaints are about the call
+  ## made here and so are raised under this function's name.
+  try
+    tbl = csv2table (filename, varargin{:});
+  catch err
+    if (strncmp (err.message, "csv2table: ", 11))
+      error ("csv2timetable: %s", err.message(12:end));
+    endif
+    rethrow (err);
+  end_try_catch
   types = tbl.Properties.VariableTypes;
   if (! any (ismember (types, {'datetime', 'duration'})))
     error (strcat ("csv2timetable: the file has no datetime or duration", ...
@@ -261,6 +274,12 @@ endfunction
 ## Test 'RowNamesColumn' is refused
 %!error <csv2timetable: 'RowNamesColumn' is not supported; a timetable labels its rows by time.  Read a file whose rows are named with 'csv2table'.> ...
 %! csv2timetable ('none.csv', 'RowNamesColumn', 1)
+
+## Test an unknown option, and one without a value
+%!error <csv2timetable: invalid optional paired argument.> ...
+%! csv2timetable ('none.csv', 'Bogus', 1)
+%!error <csv2timetable: name-value arguments must be in pairs.> ...
+%! csv2timetable ('none.csv', 'Bogus')
 
 ## A file whose columns are all numeric, so nothing in it can label the rows.
 %!shared fnum

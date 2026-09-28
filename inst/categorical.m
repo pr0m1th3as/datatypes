@@ -3685,6 +3685,29 @@ MP = lower (MP);
       ## Force strings to character vectors
       [args{:}] = convertStringsToChars (args{:});
 
+      ## Only a dimension and a direction may remain, once each
+      for k = 1:numel (args)
+        arg = args{k};
+        if (isnumeric (arg))
+          if (! (isscalar (arg) && arg >= 1 && arg == fix (arg)))
+            error ("categorical.sort: DIM must be a positive integer.");
+          endif
+        elseif (ischar (arg) && isrow (arg))
+          if (! any (strcmpi (arg, {'ascend', 'descend'})))
+            error ("categorical.sort: invalid DIRECTION '%s'.", arg);
+          endif
+        else
+          error ("categorical.sort: invalid input argument.");
+        endif
+      endfor
+      if (sum (cellfun (@isnumeric, args)) > 1
+          || sum (cellfun (@ischar, args)) > 1)
+        error ("categorical.sort: invalid input argument.");
+      endif
+      if (numel (args) == 2 && ischar (args{1}))
+        error ("categorical.sort: DIM must precede DIRECTION.");
+      endif
+
       ## Get direction
       cid = cellfun (@ischar, args);
       if (any (cid))

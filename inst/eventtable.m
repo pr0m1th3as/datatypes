@@ -228,12 +228,22 @@ classdef eventtable < timetable
         return
       endif
 
+      ## Parse optional paired arguments
       optNames = {'EventLabels', 'EventLengths', 'EventEnds', ...
                   'EventLabelsVariable', 'EventLengthsVariable', ...
                   'EventEndsVariable'};
       dfValues = {missing, missing, missing, missing, missing, missing};
       [Labels, Lengths, Ends, LabelsVar, LengthsVar, EndsVar, args] = ...
         parsePairedArguments (optNames, dfValues, varargin(:));
+      ## The event times or their timetable come first, so text after them
+      ## is an option this constructor does not know.
+      if (numel (args) > 1
+          && any (cellfun (@(x) ischar (x) || isa (x, 'string'), args(2:end))))
+        if (mod (numel (varargin), 2) == 0)
+          error ("eventtable: name-value arguments must be in pairs.");
+        endif
+        error ("eventtable: invalid optional paired argument.");
+      endif
 
       if (numel (args) != 1)
         error (strcat ("eventtable: the event times or the timetable they", ...

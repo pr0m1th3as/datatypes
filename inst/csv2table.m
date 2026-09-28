@@ -182,6 +182,10 @@
 ## @end deftypefn
 function tbl = csv2table (name, varargin)
 
+  if (mod (numel (varargin), 2) != 0)
+    error ("csv2table: name-value arguments must be in pairs.");
+  endif
+
   ## The options are read before the file, both because the field delimiter is
   ## needed to read it and because whether the names and row names are wanted
   ## decides how its header block is used.
@@ -202,6 +206,9 @@ function tbl = csv2table (name, varargin)
    textType, datetimeType, durationTypes, hexType, delim, ...
    varNamesLine, args] = ...
              parsePairedArguments (optNames, dfValues, varargin(:));
+  if (! isempty (args))
+    error ("csv2table: invalid optional paired argument.");
+  endif
   varNamesRow = __namesrow__ (varNamesRow, varNamesLine, 'csv2table');
   if (isa (delim, 'string'))
     delim = char (delim);
@@ -230,7 +237,7 @@ function tbl = csv2table (name, varargin)
     error ("csv2table: NAME must be a character vector or a string scalar.");
   endif
   if (ischar (C))
-    error ("csv2table: %s.", C);
+    error ("csv2table: %s", C);
   endif
 
   ## Get first comment line (as saved by 'table2csv' method).  A generic CSV
@@ -1003,8 +1010,14 @@ endfunction
 %! csv2table (42);
 
 ## Test reading a non-existent file reports a clear error
-%!error <csv2table: cannot open file '.*' for reading.> ...
+%!error <csv2table: cannot open file '.*' for reading\.$> ...
 %! csv2table (fullfile (tempname (), 'no_such_file.csv'));
+
+## Test an unknown option, and one without a value
+%!error <csv2table: invalid optional paired argument.> ...
+%! csv2table ('no_such_file.csv', 'Bogus', 1);
+%!error <csv2table: name-value arguments must be in pairs.> ...
+%! csv2table ('no_such_file.csv', 'Bogus');
 
 ## Test the 'Delimiter' option selects the field separator
 %!test

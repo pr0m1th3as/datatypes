@@ -88,10 +88,18 @@ function [B, varargout] = groupsummary (A, groupvars, varargin)
   endif
   method = args{1};
   nvArgs = args(2:end);
+  if (mod (numel (nvArgs), 2) != 0)
+    error ("groupsummary: name-value arguments must be in pairs.");
+  endif
+
+  ## Parse optional paired arguments
   optNames = {'IncludeMissingGroups', 'IncludeEmptyGroups', 'IncludedEdge'};
   dfValues = {true, false, 'left'};
-  [incMiss, incEmpty, incEdge] = ...
+  [incMiss, incEmpty, incEdge, nvArgs] = ...
               parsePairedArguments (optNames, dfValues, nvArgs(:));
+  if (! isempty (nvArgs))
+    error ("groupsummary: invalid optional paired argument.");
+  endif
   if (! (isscalar (incMiss) && (islogical (incMiss) || isnumeric (incMiss))))
     error ("groupsummary: 'IncludeMissingGroups' must be a logical scalar.");
   endif
@@ -651,6 +659,10 @@ endfunction
 %! groupsummary ([1; 2], [1; 2], 'mean', 'IncludeMissingGroups', [1, 2])
 %!error <groupsummary: 'IncludeEmptyGroups' must be a logical scalar.> ...
 %! groupsummary ([1; 2], [1; 2], 'mean', 'IncludeEmptyGroups', [1, 2])
+%!error <groupsummary: invalid optional paired argument.> ...
+%! groupsummary ([1; 2], [1; 2], 'mean', 'Bogus', 1)
+%!error <groupsummary: name-value arguments must be in pairs.> ...
+%! groupsummary ([1; 2], [1; 2], 'mean', 'Bogus')
 %!error <groupsummary: a method is required for array input.> ...
 %! groupsummary ([1; 2], [1; 2], {})
 %!error <groupsummary: grouping variables must be vectors.> ...

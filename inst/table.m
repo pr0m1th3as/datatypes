@@ -799,13 +799,18 @@ classdef table < tabular
     ## @end deftypefn
     function TT = table2timetable (this, varargin)
 
-      ## Parse optional Name-Value paired arguments
+      if (mod (numel (varargin), 2) != 0)
+        error (strcat ("table.table2timetable: name-value arguments must", ...
+                       " be in pairs."));
+      endif
+
+      ## Parse optional paired arguments
       optNames = {'RowTimes', 'TimeStep', 'SampleRate', 'StartTime'};
       dfValues = {missing, missing, missing, missing};
       [RowTimes, TimeStep, SampleRate, StartTime, args] = ...
                   parsePairedArguments (optNames, dfValues, varargin(:));
       if (! isempty (args))
-        error ("table.table2timetable: unrecognized optional argument.");
+        error ("table.table2timetable: invalid optional paired argument.");
       endif
       given = [! isa(RowTimes, 'missing'), ! isa(TimeStep, 'missing'), ...
                ! isa(SampleRate, 'missing')];
@@ -990,12 +995,17 @@ classdef table < tabular
     ## @end deftypefn
     function table2csv (this, file, varargin)
       file = char (cellstr (file));
+      if (mod (numel (varargin), 2) != 0)
+        error ("table.table2csv: name-value arguments must be in pairs.");
+      endif
+
+      ## Parse optional paired arguments
       optNames = {'WriteVariableNames', 'WriteRowNames'};
       dfValues = {true, true};
       [writeVarNames, writeRowNames, args] = ...
               parsePairedArguments (optNames, dfValues, varargin(:));
       if (! isempty (args))
-        error ("table.table2csv: unknown option '%s'.", args{1});
+        error ("table.table2csv: invalid optional paired argument.");
       endif
       if (! (islogical (writeVarNames) && isscalar (writeVarNames)))
         error (strcat ("table.table2csv: 'WriteVariableNames' must be a", ...
@@ -1108,6 +1118,11 @@ classdef table < tabular
                        " '.fods' extension."));
       endif
 
+      if (mod (numel (varargin), 2) != 0)
+        error ("table.table2ods: name-value arguments must be in pairs.");
+      endif
+
+      ## Parse optional paired arguments
       optNames = {'Sheet', 'WriteMode', 'WriteVariableNames', ...
                   'WriteRowNames'};
       dfValues = {'Sheet1', '', true, true};
@@ -1122,7 +1137,7 @@ classdef table < tabular
                        " scalar."));
       endif
       if (! isempty (args))
-        error ("table.table2ods: unknown option '%s'.", args{1});
+        error ("table.table2ods: invalid optional paired argument.");
       endif
       if (isa (sheet, 'string'))
         sheet = char (sheet);
@@ -1238,7 +1253,11 @@ classdef table < tabular
                        " vector or string scalar."));
       endif
       file = char (filename);
+      if (mod (numel (varargin), 2) != 0)
+        error ("table.writetable: name-value arguments must be in pairs.");
+      endif
 
+      ## Parse optional paired arguments
       optNames = {'FileType', 'WriteVariableNames', 'WriteRowNames', ...
                   'Delimiter', 'QuoteStrings', 'Sheet', 'Range', 'WriteMode'};
       dfValues = {'', true, false, ',', 'minimal', '', '', ''};
@@ -1246,7 +1265,7 @@ classdef table < tabular
        range, writeMode, args] = ...
               parsePairedArguments (optNames, dfValues, varargin(:));
       if (! isempty (args))
-        error ("table.writetable: unknown option '%s'.", args{1});
+        error ("table.writetable: invalid optional paired argument.");
       endif
       if (isa (sheet, 'string'))
         sheet = char (sheet);

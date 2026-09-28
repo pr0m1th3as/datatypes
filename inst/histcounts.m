@@ -111,11 +111,11 @@ function [N, EDGES, BIN] = histcounts (X, varargin)
   limits = [];
   normalization = 'count';
   if (mod (numel (args), 2) != 0)
-    error ("histcounts: Name/Value arguments must appear in pairs.");
+    error ("histcounts: name-value arguments must be in pairs.");
   endif
   for k = 1:2:numel (args)
     if (! isTextScalar (args{k}))
-      error ("histcounts: option names must be character vectors.");
+      error ("histcounts: invalid optional paired argument.");
     endif
     name = charOf (args{k});
     value = args{k+1};
@@ -166,7 +166,7 @@ function [N, EDGES, BIN] = histcounts (X, varargin)
         endif
         normalization = lower (charOf (value));
       otherwise
-        error ("histcounts: unknown option '%s'.", name);
+        error ("histcounts: invalid optional paired argument.");
     endswitch
   endfor
 
@@ -584,9 +584,9 @@ endfunction
 %! histcounts ([1, 2, 3], 'BinLimits', [1, 2, 3]);
 %!error <histcounts: not enough input arguments.> ...
 %! histcounts ()
-%!error <histcounts: Name/Value arguments must appear in pairs.> ...
+%!error <histcounts: name-value arguments must be in pairs.> ...
 %! histcounts ([1, 2, 3], 'Normalization')
-%!error <histcounts: option names must be character vectors.> ...
+%!error <histcounts: invalid optional paired argument.> ...
 %! histcounts ([1, 2, 3], 5, 'Normalization', 'count', 7, 1)
-%!error <histcounts: unknown option 'Nope'.> ...
+%!error <histcounts: invalid optional paired argument.> ...
 %! histcounts ([1, 2, 3], 'Nope', 1)

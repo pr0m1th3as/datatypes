@@ -78,6 +78,10 @@ function tt = ods2timetable (filename, varargin)
                    " cellstr, or string."));
   endif
 
+  if (mod (numel (varargin), 2) != 0)
+    error ("ods2timetable: name-value arguments must be in pairs.");
+  endif
+
   ## A timetable has no row names, so an option asking for them would be
   ## honoured by the reader and then discarded by the conversion, which is
   ## worse than saying so.
@@ -115,7 +119,16 @@ function tt = ods2timetable (filename, varargin)
     args = [{'Sheet', pick{1}}, args];
   endif
 
-  [tbl, rowTimesName] = ods2table (file, args{:});
+  ## The sheet is read by 'ods2table', whose complaints are about the call
+  ## made here and so are raised under this function's name.
+  try
+    [tbl, rowTimesName] = ods2table (file, args{:});
+  catch err
+    if (strncmp (err.message, "ods2table: ", 11))
+      error ("ods2timetable: %s", err.message(12:end));
+    endif
+    rethrow (err);
+  end_try_catch
   if (isempty (rowTimesName))
     types = tbl.Properties.VariableTypes;
     if (! any (ismember (types, {'datetime', 'duration'})))
@@ -351,6 +364,18 @@ endfunction
 ## Test 'RowNamesColumn' is refused
 %!error <ods2timetable: 'RowNamesColumn' is not supported; a timetable labels its rows by time.  Read a sheet whose rows are named with 'ods2table'.> ...
 %! ods2timetable ('none.ods', 'RowNamesColumn', 1)
+
+## Test an unknown option, and one without a value
+%!error <ods2timetable: invalid optional paired argument.> ...
+%! fn = [tempname() '.ods'];
+%! timetable2ods (timetable (hours (1), 1), fn);
+%! unwind_protect
+%!   ods2timetable (fn, 'Bogus', 1);
+%! unwind_protect_cleanup
+%!   delete (fn);
+%! end_unwind_protect
+%!error <ods2timetable: name-value arguments must be in pairs.> ...
+%! ods2timetable ('none.ods', 'Bogus')
 
 ## Test an attached event table round-trips whole
 %!test

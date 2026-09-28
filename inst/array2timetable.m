@@ -61,14 +61,18 @@ function TT = array2timetable (A, varargin)
     error ("array2timetable: input array must be a 2-D array.");
   endif
 
-  ## Parse optional Name-Value paired arguments
+  if (mod (numel (varargin), 2) != 0)
+    error ("array2timetable: name-value arguments must be in pairs.");
+  endif
+
+  ## Parse optional paired arguments
   optNames = {'VariableNames', 'DimensionNames', 'RowTimes', 'TimeStep', ...
               'SampleRate', 'StartTime'};
   dfValues = {{}, {}, missing, missing, missing, missing};
   [varNames, dimNames, RowTimes, TimeStep, SampleRate, StartTime, args] = ...
                       parsePairedArguments (optNames, dfValues, varargin(:));
   if (! isempty (args))
-    error ("array2timetable: unrecognized optional argument.");
+    error ("array2timetable: invalid optional paired argument.");
   endif
 
   ## Handle variable names
@@ -166,8 +170,10 @@ endfunction
 
 %!error <array2timetable: input array must be a 2-D array.> ...
 %! array2timetable (ones (2, 2, 2), 'TimeStep', hours (1));
-%!error <array2timetable: unrecognized optional argument.> ...
+%!error <array2timetable: name-value arguments must be in pairs.> ...
 %! array2timetable ((1:3)', 'TimeStep', hours (1), 'Bogus');
+%!error <array2timetable: invalid optional paired argument.> ...
+%! array2timetable ((1:3)', 'TimeStep', hours (1), 'Bogus', 1);
 %!error <array2timetable: 'VariableNames' must match the columns in input array.> ...
 %! array2timetable ((1:3)', 'TimeStep', hours (1), ...
 %!                  'VariableNames', {'a', 'b'});

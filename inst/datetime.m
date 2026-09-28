@@ -772,6 +772,11 @@ classdef datetime
       [ConvertFrom, Epoch, Format, inputFormat, Locale, MixedFormats, ...
        PivotYear, TicksPerSecond, ...
        TimeZone, args] = parsePairedArguments (optNames, dfValues, varargin(:));
+      ## Only the first positional input can be text, so text after it is an
+      ## option this constructor does not know.
+      if (any (cellfun (@(x) ischar (x) || isa (x, 'string'), args(2:end))))
+        error ("datetime: invalid optional paired argument.");
+      endif
       if (! ((islogical (MixedFormats) || isnumeric (MixedFormats))
              && isscalar (MixedFormats)))
         error ("datetime: 'MixedFormats' must be a logical scalar.");

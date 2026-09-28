@@ -620,17 +620,23 @@ classdef string
                        " a string array, or cell array of character vectors."));
       endif
 
-      ## Parse optional Name-Value paired arguments
+      if (mod (numel (varargin), 2) != 0)
+        error ("string.count: name-value arguments must be in pairs.");
+      endif
+
+      ## Parse optional paired arguments
       optNames = {'IgnoreCase'};
       dfValues = {false};
-      [IgnoreCase, arg] = parsePairedArguments (optNames, dfValues, ...
-                                                varargin(:));
+      [IgnoreCase, args] = parsePairedArguments (optNames, dfValues, ...
+                                                 varargin(:));
 
-      ## Check optional Name-Value paired arguments
+      ## Validate optional paired arguments
       if (! (islogical (IgnoreCase) && isscalar (IgnoreCase)))
         error ("string.count: 'IgnoreCase' must be a logical scalar.");
-      elseif (! isempty (arg))
-        error ("string.count: unrecognized input argument.");
+      endif
+
+      if (! isempty (args))
+        error ("string.count: invalid optional paired argument.");
       endif
 
       ## Accumulate the number of occurences of each pattern in each element
@@ -745,17 +751,23 @@ classdef string
                        " character vectors."));
       endif
 
-      ## Parse optional Name-Value paired arguments
+      if (mod (numel (varargin), 2) != 0)
+        error ("string.contains: name-value arguments must be in pairs.");
+      endif
+
+      ## Parse optional paired arguments
       optNames = {'IgnoreCase'};
       dfValues = {false};
-      [IgnoreCase, arg] = parsePairedArguments (optNames, dfValues, ...
-                                                varargin(:));
+      [IgnoreCase, args] = parsePairedArguments (optNames, dfValues, ...
+                                                 varargin(:));
 
-      ## Check optional Name-Value paired arguments
+      ## Validate optional paired arguments
       if (! (islogical (IgnoreCase) && isscalar (IgnoreCase)))
         error ("string.contains: 'IgnoreCase' must be a logical scalar.");
-      elseif (! isempty (arg))
-        error ("string.contains: unrecognized input argument.");
+      endif
+
+      if (! isempty (args))
+        error ("string.contains: invalid optional paired argument.");
       endif
 
       ## Check for the occurence of each pattern in the nonmissing elements of
@@ -806,17 +818,23 @@ classdef string
                        " character vectors."));
       endif
 
-      ## Parse optional Name-Value paired arguments
+      if (mod (numel (varargin), 2) != 0)
+        error ("string.endsWith: name-value arguments must be in pairs.");
+      endif
+
+      ## Parse optional paired arguments
       optNames = {'IgnoreCase'};
       dfValues = {false};
-      [IgnoreCase, arg] = parsePairedArguments (optNames, dfValues, ...
-                                                varargin(:));
+      [IgnoreCase, args] = parsePairedArguments (optNames, dfValues, ...
+                                                 varargin(:));
 
-      ## Check optional Name-Value paired arguments
+      ## Validate optional paired arguments
       if (! (islogical (IgnoreCase) && isscalar (IgnoreCase)))
         error ("string.endsWith: 'IgnoreCase' must be a logical scalar.");
-      elseif (! isempty (arg))
-        error ("string.endsWith: unrecognized input argument.");
+      endif
+
+      if (! isempty (args))
+        error ("string.endsWith: invalid optional paired argument.");
       endif
 
       ## Reverse str and pattern
@@ -868,17 +886,23 @@ classdef string
                        " character vectors."));
       endif
 
-      ## Parse optional Name-Value paired arguments
+      if (mod (numel (varargin), 2) != 0)
+        error ("string.startsWith: name-value arguments must be in pairs.");
+      endif
+
+      ## Parse optional paired arguments
       optNames = {'IgnoreCase'};
       dfValues = {false};
-      [IgnoreCase, arg] = parsePairedArguments (optNames, dfValues, ...
-                                                varargin(:));
+      [IgnoreCase, args] = parsePairedArguments (optNames, dfValues, ...
+                                                 varargin(:));
 
-      ## Check optional Name-Value paired arguments
+      ## Validate optional paired arguments
       if (! (islogical (IgnoreCase) && isscalar (IgnoreCase)))
         error ("string.startsWith: 'IgnoreCase' must be a logical scalar.");
-      elseif (! isempty (arg))
-        error ("string.startsWith: unrecognized input argument.");
+      endif
+
+      if (! isempty (args))
+        error ("string.startsWith: invalid optional paired argument.");
       endif
 
       ## For each pattern, trim all elements of the input string array to the
@@ -927,17 +951,23 @@ classdef string
                        " character vectors."));
       endif
 
-      ## Parse optional Name-Value paired arguments
+      if (mod (numel (varargin), 2) != 0)
+        error ("string.matches: name-value arguments must be in pairs.");
+      endif
+
+      ## Parse optional paired arguments
       optNames = {'IgnoreCase'};
       dfValues = {false};
-      [IgnoreCase, arg] = parsePairedArguments (optNames, dfValues, ...
-                                                varargin(:));
+      [IgnoreCase, args] = parsePairedArguments (optNames, dfValues, ...
+                                                 varargin(:));
 
-      ## Check optional Name-Value paired arguments
+      ## Validate optional paired arguments
       if (! (islogical (IgnoreCase) && isscalar (IgnoreCase)))
         error ("string.matches: 'IgnoreCase' must be a logical scalar.");
-      elseif (! isempty (arg))
-        error ("string.matches: unrecognized input argument.");
+      endif
+
+      if (! isempty (args))
+        error ("string.matches: invalid optional paired argument.");
       endif
 
       ## Check for the matching of each pattern in the nonmissing elements of
@@ -2375,11 +2405,15 @@ MP = lower (MP);
                        " both numeric positions or both text patterns."));
       endif
 
-      ## Parse the optional 'Boundaries' Name/Value pair
-      [bounds, rem] = parsePairedArguments ({'Boundaries'}, {dfBounds}, ...
-                                            varargin);
-      if (! isempty (rem))
-        error ("string.eraseBetween: invalid optional arguments.");
+      if (mod (numel (varargin), 2) != 0)
+        error ("string.eraseBetween: name-value arguments must be in pairs.");
+      endif
+
+      ## Parse optional paired arguments
+      [bounds, args] = parsePairedArguments ({'Boundaries'}, {dfBounds}, ...
+                                             varargin(:));
+      if (! isempty (args))
+        error ("string.eraseBetween: invalid optional paired argument.");
       endif
       if (isa (bounds, 'string'))
         bounds = char (bounds);
@@ -2672,10 +2706,15 @@ MP = lower (MP);
                        " patterns."));
       endif
 
-      [bounds, rem] = parsePairedArguments ({'Boundaries'}, {dfBounds}, ...
-                                            varargin);
-      if (! isempty (rem))
-        error ("string.extractBetween: invalid optional arguments.");
+      if (mod (numel (varargin), 2) != 0)
+        error ("string.extractBetween: name-value arguments must be in pairs.");
+      endif
+
+      ## Parse optional paired arguments
+      [bounds, args] = parsePairedArguments ({'Boundaries'}, {dfBounds}, ...
+                                             varargin(:));
+      if (! isempty (args))
+        error ("string.extractBetween: invalid optional paired argument.");
       endif
       if (isa (bounds, 'string'))
         bounds = char (bounds);
@@ -2983,11 +3022,15 @@ MP = lower (MP);
                        " patterns."));
       endif
 
-      ## Parse the optional 'Boundaries' Name/Value pair
-      [bounds, rem] = parsePairedArguments ({'Boundaries'}, {dfBounds}, ...
-                                            varargin);
-      if (! isempty (rem))
-        error ("string.replaceBetween: invalid optional arguments.");
+      if (mod (numel (varargin), 2) != 0)
+        error ("string.replaceBetween: name-value arguments must be in pairs.");
+      endif
+
+      ## Parse optional paired arguments
+      [bounds, args] = parsePairedArguments ({'Boundaries'}, {dfBounds}, ...
+                                             varargin(:));
+      if (! isempty (args))
+        error ("string.replaceBetween: invalid optional paired argument.");
       endif
       if (isa (bounds, 'string'))
         bounds = char (bounds);
@@ -3144,6 +3187,29 @@ MP = lower (MP);
 
       ## Force strings to character vectors
       [args{:}] = convertStringsToChars (args{:});
+
+      ## Only a dimension and a direction may remain, once each
+      for k = 1:numel (args)
+        arg = args{k};
+        if (isnumeric (arg))
+          if (! (isscalar (arg) && arg >= 1 && arg == fix (arg)))
+            error ("string.sort: DIM must be a positive integer.");
+          endif
+        elseif (ischar (arg) && isrow (arg))
+          if (! any (strcmpi (arg, {'ascend', 'descend'})))
+            error ("string.sort: invalid DIRECTION '%s'.", arg);
+          endif
+        else
+          error ("string.sort: invalid input argument.");
+        endif
+      endfor
+      if (sum (cellfun (@isnumeric, args)) > 1
+          || sum (cellfun (@ischar, args)) > 1)
+        error ("string.sort: invalid input argument.");
+      endif
+      if (numel (args) == 2 && ischar (args{1}))
+        error ("string.sort: DIM must precede DIRECTION.");
+      endif
 
       ## Get direction
       cid = cellfun (@ischar, args);

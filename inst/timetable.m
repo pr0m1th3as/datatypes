@@ -4510,20 +4510,21 @@ classdef timetable < tabular
         error ("timetable.extractevents: too few input arguments.");
       endif
 
+      if (mod (numel (varargin), 2) != 0)
+        error (strcat ("timetable.extractevents: name-value arguments", ...
+                       " must be in pairs."));
+      endif
+
+      ## Parse optional paired arguments
       optNames = {'EventLabels', 'EventLabelsVariable', 'EventLengths', ...
                   'EventLengthsVariable', 'EventEnds', 'EventEndsVariable', ...
                   'EventDataVariables', 'PreserveEventVariables'};
       dfValues = repmat ({missing}, 1, numel (optNames));
       [Labels, LabelsVar, Lengths, LengthsVar, Ends, EndsVar, DataVars, ...
-       Preserve, rem] = parsePairedArguments (optNames, dfValues, varargin(:));
-      if (! isempty (rem))
-        name = rem{1};
-        if (! (ischar (name) || isa (name, 'string')))
-          name = '(non-text)';
-        endif
-        error (strcat ("timetable.extractevents: unknown option '%s'; it", ...
-                       " must be one of %s."), char (name), ...
-               strjoin (strcat ("'", optNames, "'"), ", "));
+       Preserve, args] = parsePairedArguments (optNames, dfValues, varargin(:));
+      if (! isempty (args))
+        error (strcat ("timetable.extractevents: invalid optional paired", ...
+                       " argument."));
       endif
 
       ## A length and an end say the same thing two ways, and so do labels
@@ -4986,11 +4987,16 @@ classdef timetable < tabular
     ## @end deftypefn
     function tbl = timetable2table (this, varargin)
 
-      ## Parse optional Name-Value paired arguments
+      if (mod (numel (varargin), 2) != 0)
+        error (strcat ("timetable.timetable2table: name-value arguments", ...
+                       " must be in pairs."));
+      endif
+
+      ## Parse optional paired arguments
       [ConvertRowTimes, args] = parsePairedArguments ({'ConvertRowTimes'}, ...
                                                       {true}, varargin(:));
       if (! isempty (args))
-        error ("timetable.timetable2table: unrecognized optional argument.");
+        error ("timetable.timetable2table: invalid optional paired argument.");
       endif
       if (! (isscalar (ConvertRowTimes) && (islogical (ConvertRowTimes)
                                             || isnumeric (ConvertRowTimes))))
@@ -5121,12 +5127,18 @@ classdef timetable < tabular
                        " vector, cellstr, or string."));
       endif
       file = char (cellstr (file));
+      if (mod (numel (varargin), 2) != 0)
+        error (strcat ("timetable.timetable2csv: name-value arguments must", ...
+                       " be in pairs."));
+      endif
+
+      ## Parse optional paired arguments
       optNames = {'WriteVariableNames'};
       dfValues = {true};
       [writeVarNames, args] = ...
               parsePairedArguments (optNames, dfValues, varargin(:));
       if (! isempty (args))
-        error ("timetable.timetable2csv: unknown option '%s'.", args{1});
+        error ("timetable.timetable2csv: invalid optional paired argument.");
       endif
       if (! (islogical (writeVarNames) && isscalar (writeVarNames)))
         error (strcat ("timetable.timetable2csv: 'WriteVariableNames' must", ...
@@ -5229,12 +5241,18 @@ classdef timetable < tabular
                        " or '.fods' extension."));
       endif
 
+      if (mod (numel (varargin), 2) != 0)
+        error (strcat ("timetable.timetable2ods: name-value arguments must", ...
+                       " be in pairs."));
+      endif
+
+      ## Parse optional paired arguments
       optNames = {'Sheet', 'WriteMode', 'WriteVariableNames'};
       dfValues = {'Sheet1', '', true};
       [sheet, writeMode, writeVarNames, args] = ...
               parsePairedArguments (optNames, dfValues, varargin(:));
       if (! isempty (args))
-        error ("timetable.timetable2ods: unknown option '%s'.", args{1});
+        error ("timetable.timetable2ods: invalid optional paired argument.");
       endif
       if (! (islogical (writeVarNames) && isscalar (writeVarNames)))
         error (strcat ("timetable.timetable2ods: 'WriteVariableNames' must", ...
@@ -5375,11 +5393,17 @@ classdef timetable < tabular
       endif
       file = char (filename);
 
+      if (mod (numel (varargin), 2) != 0)
+        error (strcat ("timetable.writetimetable: name-value arguments", ...
+                       " must be in pairs."));
+      endif
       if (any (strcmpi (varargin(1:2:end), 'WriteRowNames')))
         error (strcat ("timetable.writetimetable: 'WriteRowNames' is not", ...
                        " supported; a timetable labels its rows by time.", ...
                        "  Write a table with row names using 'writetable'."));
       endif
+
+      ## Parse optional paired arguments
       optNames = {'FileType', 'WriteVariableNames', 'Delimiter', ...
                   'QuoteStrings', 'Sheet', 'Range', 'WriteMode'};
       dfValues = {'', true, ',', 'minimal', '', '', ''};
@@ -5387,7 +5411,8 @@ classdef timetable < tabular
        writeMode, args] = ...
               parsePairedArguments (optNames, dfValues, varargin(:));
       if (! isempty (args))
-        error ("timetable.writetimetable: unknown option '%s'.", args{1});
+        error (strcat ("timetable.writetimetable: invalid optional paired", ...
+                       " argument."));
       endif
       if (! (islogical (writeVarNames) && isscalar (writeVarNames)))
         error (strcat ("timetable.writetimetable: 'WriteVariableNames'", ...
@@ -6507,8 +6532,7 @@ function errmsg = timeBaseError (spec, forSync)
 endfunction
 
 ## The complaint about the Name-Value arguments of 'retime' and
-## 'synchronize', or empty where there is none.  An unknown name is quoted,
-## so that a misspelt option can be found.
+## 'synchronize', or empty where there is none.
 function errmsg = retimeOptions (rest, optNames)
   errmsg = '';
   if (mod (numel (rest), 2) != 0)
@@ -6520,11 +6544,8 @@ function errmsg = retimeOptions (rest, optNames)
     if (isa (name, 'string') && isscalar (name))
       name = char (name);
     endif
-    if (! (ischar (name) && isrow (name)))
+    if (! (ischar (name) && isrow (name) && any (strcmpi (name, optNames))))
       errmsg = "invalid optional paired argument.";
-      return
-    elseif (! any (strcmpi (name, optNames)))
-      errmsg = sprintf ("unknown option '%s'.", name);
       return
     endif
   endfor

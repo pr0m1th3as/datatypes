@@ -160,6 +160,12 @@
 %!error <eventtable: the event times or the timetable they come from must be given exactly once.> ...
 %! eventtable ('EventLabels', "a");
 
+## Test an unknown option, and one without a value
+%!error <eventtable: invalid optional paired argument.> ...
+%! eventtable (hours (1), 'Bogus', 1);
+%!error <eventtable: name-value arguments must be in pairs.> ...
+%! eventtable (hours (1), 'Bogus');
+
 ## Test a length and an end together
 %!error <eventtable: specify either the event lengths or the event ends, but not both.> ...
 %! eventtable (datetime (2024, 1, 1), 'EventLengths', hours (1), ...
@@ -1201,11 +1207,15 @@
 %! TT = timetable (t, (1:4)', 'VariableNames', {'v'});
 %! extractevents (TT, g, 'PreserveEventVariables', true);
 
-## Test an option name that is none of the eight
-%!error <timetable.extractevents: unknown option 'NoSuchOption'; it must be one of 'EventLabels', 'EventLabelsVariable', 'EventLengths', 'EventLengthsVariable', 'EventEnds', 'EventEndsVariable', 'EventDataVariables', 'PreserveEventVariables'.> ...
+## Test an option name that is none of the eight, and one without a value
+%!error <timetable.extractevents: invalid optional paired argument.> ...
 %! t = datetime (2024, 1, 1) + hours ((0:3))';
 %! TT = timetable (t, (1:4)', 'VariableNames', {'v'});
 %! extractevents (TT, [2; 3], 'NoSuchOption', 1);
+%!error <timetable.extractevents: name-value arguments must be in pairs.> ...
+%! t = datetime (2024, 1, 1) + hours ((0:3))';
+%! TT = timetable (t, (1:4)', 'VariableNames', {'v'});
+%! extractevents (TT, [2; 3], 'NoSuchOption');
 
 ## Test too few input arguments
 %!error <timetable.extractevents: too few input arguments.> ...

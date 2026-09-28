@@ -67,6 +67,10 @@ function tt = readtimetable (filename, varargin)
                    " cellstr, or string."));
   endif
 
+  if (mod (numel (varargin), 2) != 0)
+    error ("readtimetable: name-value arguments must be in pairs.");
+  endif
+
   ## A timetable has no row names, so an option asking for them would be
   ## honoured by the reader and then discarded by the conversion, which is
   ## worse than saying so.
@@ -84,7 +88,16 @@ function tt = readtimetable (filename, varargin)
 
   ## 'RowTimes' is ours to act on and 'readtable' knows nothing of it.
   [rowTimes, args] = parsePairedArguments ({'RowTimes'}, {[]}, varargin(:));
-  tbl = readtable (filename, args{:});
+  ## The file is read by 'readtable', whose complaints are about the call
+  ## made here and so are raised under this function's name.
+  try
+    tbl = readtable (filename, args{:});
+  catch err
+    if (strncmp (err.message, "readtable: ", 11))
+      error ("readtimetable: %s", err.message(12:end));
+    endif
+    rethrow (err);
+  end_try_catch
 
   ## A column written in RFC 9557 form arrives as text, no reader having a
   ## type for it; every entry of a column must parse, a column being one
@@ -272,6 +285,12 @@ endfunction
 ## Test 'RowNamesColumn' is refused
 %!error <readtimetable: 'RowNamesColumn' is not supported; a timetable labels its rows by time.  Read a file whose rows are named with 'readtable'.> ...
 %! readtimetable ('none.csv', 'RowNamesColumn', 1)
+
+## Test an unknown option, and one without a value
+%!error <readtimetable: invalid optional paired argument.> ...
+%! readtimetable ('none.csv', 'Bogus', 1)
+%!error <readtimetable: name-value arguments must be in pairs.> ...
+%! readtimetable ('none.csv', 'Bogus')
 
 ## Test 'WriteRowNames' is refused by the writer
 %!error <timetable.writetimetable: 'WriteRowNames' is not supported; a timetable labels its rows by time.  Write a table with row names using 'writetable'.> ...

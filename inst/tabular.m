@@ -1691,12 +1691,12 @@ classdef (Abstract) tabular
       direction = {'ascend'};
       dir_given = false;
 
-      ## Parse optional Name-Value paired arguments
+      ## Parse optional paired arguments
       optNames = {'MissingPlacement', 'ComparisonMethod'};
       dfValues = {'auto', 'auto'};
       [MP, CM, args] = parsePairedArguments (optNames, dfValues, varargin(:));
 
-      ## Check optional Name-Value paired arguments
+      ## Validate optional paired arguments
       if (! ismember (MP, {'auto', 'first', 'last'}))
         errmsg = strcat ("'MissingPlacement' parameter can", ...
                        " be either 'auto', 'first', or 'last'.");
@@ -1708,10 +1708,11 @@ classdef (Abstract) tabular
         return
       endif
 
-      ## Parse extra arguments
+      ## Only VARS and DIRECTION may remain; anything after them is an
+      ## option this method does not know.
       nargs = numel (args);
       if (nargs > 2)
-        errmsg = "invalid number of input arguments.";
+        errmsg = "invalid optional paired argument.";
         return
       endif
       if (nargs > 1)
@@ -3498,7 +3499,6 @@ classdef (Abstract) tabular
           return
       endswitch
 
-      ## Parse optional Name-Value paired arguments
       ## Where the rows sit, which decides how far apart a gap's neighbours
       ## are and what an interpolation runs against.  Read before anything is
       ## filled, so a timetable that cannot say is refused whatever the method.
@@ -3507,6 +3507,12 @@ classdef (Abstract) tabular
         return
       endif
 
+      if (mod (numel (rest), 2) != 0)
+        errmsg = "name-value arguments must be in pairs.";
+        return
+      endif
+
+      ## Parse optional paired arguments
       optNames = {'DataVariables', 'EndValues', 'ReplaceValues'};
       dfValues = {[], 'extrap', true};
       [dVars, endVals, replace, extra] = parsePairedArguments (optNames, ...
@@ -3526,10 +3532,8 @@ classdef (Abstract) tabular
           else
             errmsg = "'SamplePoints' is not supported yet.";
           endif
-        elseif (ischar (name) && isrow (name))
-          errmsg = sprintf ("unknown option '%s'.", name);
         else
-          errmsg = "unknown optional argument.";
+          errmsg = "invalid optional paired argument.";
         endif
         return
       endif
@@ -4230,15 +4234,20 @@ classdef (Abstract) tabular
         return;
       endif
 
-      ## Parse Name/Value options
+      if (mod (numel (args_in), 2) != 0)
+        errmsg = "name-value arguments must be in pairs.";
+        return;
+      endif
+
+      ## Parse optional paired arguments
       optNames = {'Keys', 'LeftKeys', 'RightKeys', 'LeftVariables', ...
                   'RightVariables', 'KeepOneCopy'};
       dfValues = {[], [], [], [], [], []};
       [Keys, LeftKeys, RightKeys, LeftVariables, RightVariables, ...
-       KeepOneCopy, rem] = parsePairedArguments (optNames, dfValues, ...
-                                                 args_in(:));
-      if (! isempty (rem))
-        errmsg = 'invalid optional input argument.';
+       KeepOneCopy, args] = parsePairedArguments (optNames, dfValues, ...
+                                                  args_in(:));
+      if (! isempty (args))
+        errmsg = "invalid optional paired argument.";
         return;
       endif
 
@@ -4320,14 +4329,19 @@ classdef (Abstract) tabular
         return;
       endif
 
-      ## Parse Name/Value options
+      if (mod (numel (args_in), 2) != 0)
+        errmsg = "name-value arguments must be in pairs.";
+        return;
+      endif
+
+      ## Parse optional paired arguments
       optNames = {'Keys', 'LeftKeys', 'RightKeys', 'LeftVariables', ...
                   'RightVariables'};
       dfValues = {[], [], [], [], []};
-      [Keys, LeftKeys, RightKeys, LeftVariables, RightVariables, rem] = ...
+      [Keys, LeftKeys, RightKeys, LeftVariables, RightVariables, args] = ...
         parsePairedArguments (optNames, dfValues, args_in(:));
-      if (! isempty (rem))
-        errmsg = 'invalid optional input argument.';
+      if (! isempty (args))
+        errmsg = "invalid optional paired argument.";
         return;
       endif
 
@@ -4473,14 +4487,19 @@ classdef (Abstract) tabular
         return;
       endif
 
-      ## Parse Name/Value options
+      if (mod (numel (args_in), 2) != 0)
+        errmsg = "name-value arguments must be in pairs.";
+        return;
+      endif
+
+      ## Parse optional paired arguments
       optNames = {'Keys', 'LeftKeys', 'RightKeys', 'LeftVariables', ...
                   'RightVariables', 'Type', 'MergeKeys'};
       dfValues = {[], [], [], [], [], 'full', false};
       [Keys, LeftKeys, RightKeys, LeftVariables, RightVariables, Type, ...
-       MergeKeys, rem] = parsePairedArguments (optNames, dfValues, args_in(:));
-      if (! isempty (rem))
-        errmsg = 'invalid optional input argument.';
+       MergeKeys, args] = parsePairedArguments (optNames, dfValues, args_in(:));
+      if (! isempty (args))
+        errmsg = "invalid optional paired argument.";
         return;
       endif
 
@@ -5167,7 +5186,12 @@ classdef (Abstract) tabular
       errmsg = '';
       scope = sprintf ('%s.pivot', class (T));
 
-      ## Parse Name-Value options; unrecognised names land in REST.
+      if (mod (numel (args_in), 2) != 0)
+        errmsg = "name-value arguments must be in pairs.";
+        return;
+      endif
+
+      ## Parse optional paired arguments
       optNames = {'Columns', 'Rows', 'DataVariable', 'Method', ...
                   'IncludeMissingGroups', 'IncludeEmptyGroups', ...
                   'IncludeTotals', 'RowLabelPlacement', 'OutputFormat', ...
@@ -5175,20 +5199,11 @@ classdef (Abstract) tabular
       dfValues = {[], [], [], [], true, false, false, 'variable', 'flat', ...
                   'none', 'none', 'left'};
       [colvars, rowvars, datavar, method, incMiss, incEmpty, incTot, ...
-       rowPlace, outFmt, colBin, rowBin, incEdge, rest] = ...
+       rowPlace, outFmt, colBin, rowBin, incEdge, args] = ...
                   parsePairedArguments (optNames, dfValues, args_in(:));
-      if (! isempty (rest))
-        bad = rest{1};
-        if (isa (bad, 'string'))
-          bad = char (bad);
-        endif
-        if (ischar (bad) && isrow (bad))
-          errmsg = sprintf ("unrecognised option '%s'.", bad);
-          return;
-        else
-          errmsg = "invalid optional arguments.";
-          return;
-        endif
+      if (! isempty (args))
+        errmsg = "invalid optional paired argument.";
+        return;
       endif
 
       ## Validate the IncludedEdge binning and OutputFormat options.

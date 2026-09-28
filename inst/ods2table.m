@@ -105,6 +105,11 @@ function [tbl, rowTimesName] = ods2table (filename, varargin)
   ## case it names the variable that column became.
   rowTimesName = '';
 
+  if (mod (numel (varargin), 2) != 0)
+    error ("ods2table: name-value arguments must be in pairs.");
+  endif
+
+  ## Parse optional paired arguments
   optNames = {'Sheet', 'ReadVariableNames', 'ReadRowNames', ...
               'VariableNamesRow', 'RowNamesColumn'};
   ## A sheet with no metadata says nothing about which column holds row names,
@@ -137,7 +142,7 @@ function [tbl, rowTimesName] = ods2table (filename, varargin)
     rowNamesCol = 0;
   endif
   if (! isempty (args))
-    error ("ods2table: unknown option '%s'.", args{1});
+    error ("ods2table: invalid optional paired argument.");
   endif
   if (! (isempty (sheet) || (ischar (sheet) && isrow (sheet)) ...
          || (isa (sheet, 'string') && isscalar (sheet)) ...
@@ -1310,8 +1315,10 @@ endfunction
 %! unwind_protect_cleanup
 %!   delete (fn);
 %! end_unwind_protect
-%!error <ods2table: unknown option 'Nope'.> ...
+%!error <ods2table: invalid optional paired argument.> ...
 %! ods2table ('x.ods', 'Nope', 1)
+%!error <ods2table: name-value arguments must be in pairs.> ...
+%! ods2table ('x.ods', 'Nope')
 ## a categorical or calendarDuration column is written as text and warns on
 ## the way back, the strings not being converted to the original type
 %!warning <ods2table: 'categorical' strings are not converted.> ...
