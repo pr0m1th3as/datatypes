@@ -60,11 +60,18 @@ classdef table < tabular
   ##
   ## Assigning with curly brackets writes the contents of the variables, as
   ## reading with them returns them: an array whose columns are those of the
-  ## variables assigned, side by side, or a scalar that fills them all.  Each
-  ## variable converts what it is given as its own type does, so a cell
-  ## variable takes a cell array.  Variables and rows are created as with
-  ## parentheses, and assigning an empty matrix is refused, since curly
-  ## brackets never delete.
+  ## variables assigned, side by side, and whose rows are the rows assigned,
+  ## or a scalar that fills them all.  A single new variable also takes one
+  ## row as every one of its rows.  Each variable converts what it is given
+  ## as its own type does, so a cell variable takes a cell array and a
+  ## @qcode{double} variable reads text as numbers.  Variables and rows are
+  ## created as with parentheses, a table with neither rows nor variables
+  ## takes one variable for each column, and assigning an empty matrix is
+  ## refused, since curly brackets never delete.
+  ##
+  ## Assigning to @code{@var{tbl}.Variables}, the second dimension name,
+  ## writes every variable as curly brackets over the whole table do, but
+  ## takes only a value with one row for each row of the table.
   ##
   ## Besides the @code{table} constructor, you can also use @code{array2table},
   ## @code{cell2table}, and @code{struct2table} to create tables from the

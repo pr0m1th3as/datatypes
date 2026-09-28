@@ -196,8 +196,9 @@ classdef categorical
     ## categorical arrays.  Setting @qcode{"Protected"} to @qcode{true} prevents
     ## from assigning new values that do not correspond to existing categories.
     ## When @qcode{false}, assigning new values to the array automatically
-    ## updates the categories. Hence, categorical arrays with different sets of
-    ## categories can be combined/merged into a new array with set operations.
+    ## adds the categories of the values assigned.  Hence, categorical arrays
+    ## with different sets of categories can be combined/merged into a new
+    ## array with set operations.
     ## @end itemize
     ##
     ## @seealso{categorical.categories, discretize, iscategorical}
@@ -4811,9 +4812,9 @@ MP = lower (MP);
             this.isMissing(s.subs{:}) = val.isMissing;
             return;
           endif
-          ## No constrains, add new categories as necessary and bump code
-          ## indexing to reflect the changes in category list of assigned
-          ## categorical array
+          ## No constrains, add the new categories the assigned values use
+          ## and bump code indexing to reflect the changes in category list
+          ## of assigned categorical array
           n_cats = numel (val.cats);
           maxcat = numel (this.cats);
           idx = cell (2, n_cats);
@@ -4824,6 +4825,9 @@ MP = lower (MP);
             if (! isempty (new_code))
               idx{1,j} = val.code == j;
               idx{2,j} = new_code;
+            elseif (! any (val.code(:) == j))
+              idx{1,j} = false (size (val.code));
+              idx{2,j} = 0;
             else
               idx{1,j} = val.code == j;
               idx{2,j} = maxcat + n_code + 1;

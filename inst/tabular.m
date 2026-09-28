@@ -77,7 +77,8 @@ classdef (Abstract) tabular
     ## However, if the table contains row names, then the first element of the
     ## @qcode{DimensionNames} corresponds to the row names.  The second name
     ## returns the variables joined into one array, as @code{table2array} joins
-    ## them.
+    ## them, and assigning to it writes them all, as curly brackets over the
+    ## whole table do.
     ##
     ## @end deftp
     DimensionNames = {'Row', 'Variables'}
@@ -1182,6 +1183,18 @@ classdef (Abstract) tabular
                        clstype, clstype, s.subs);
               endif
             endif
+
+          elseif (isequal (s.subs, this.DimensionNames{2}))
+            ## The variable dimension name writes the contents of every
+            ## variable, as '{}' over all of them does, but a value that is
+            ## not one row for each row of the object is refused.
+            if (size (rhs, 1) != height (this)
+                && ! (height (this) == 0 && width (this) == 0))
+              error (strcat ("%s.subsasgn: the value assigned to '%s' must", ...
+                             " have %d rows, one for each row of the %s."), ...
+                     clstype, s.subs, height (this), clstype);
+            endif
+            tbl = assignSubs (this, {':', ':'}, rhs, true);
 
           else
             ## Everything else is indexing a variable name (existing of new),
@@ -7455,6 +7468,13 @@ classdef (Abstract) tabular
       if (oldHeight == 0 && oldWidth == 0 && ischar (subs{1})
           && strcmp (subs{1}, ':'))
         ixRow = 1:size (rhs, 1);
+        ## and its variables, one for each column, from what '{}' assigns
+        ## to all of them.
+        if (isBrace && ischar (subs{2}) && strcmp (subs{2}, ':'))
+          ixVar = 1:size (rhs, 2);
+          newNames = arrayfun (@(k) sprintf ("Var%d", k), ixVar, ...
+                               "UniformOutput", false);
+        endif
       endif
       ## A row index past the end grows the object.  The variables grow
       ## by being assigned into, but the row labels are not indexed here
@@ -7500,7 +7520,10 @@ classdef (Abstract) tabular
                            " %d columns, one for each column of the", ...
                            " variables assigned."), clstype, sum (w));
           endif
-          if (size (rhs, 1) == 1 && numel (ixRow) != 1)
+          ## A single variable named anew takes a row as every one of its
+          ## rows, as in MATLAB; anywhere else the rows must match.
+          if (size (rhs, 1) == 1 && numel (ixRow) != 1 && nv == 1
+              && ixVar(1) > oldWidth)
             rhs = repmat (rhs, numel (ixRow), 1);
           elseif (size (rhs, 1) != numel (ixRow))
             error (strcat ("%s.subsasgn: the value assigned must have", ...
@@ -7585,6 +7608,10 @@ classdef (Abstract) tabular
         if (isBrace && iscell (varData) && ! iscell (vals{i}))
           error (strcat ("%s.subsasgn: input data type mismatch", ...
                          " indexed variable type."), clstype);
+        endif
+        ## Text converts to the numbers it reads as, and only into a double.
+        if (isBrace && isa (varData, 'double') && isa (vals{i}, 'string'))
+          vals{i} = double (vals{i});
         endif
         try
           varData = subsasgn (varData, sRows, vals{i});
@@ -7678,7 +7705,7 @@ classdef (Abstract) tabular
           elseif isequal (s.subs, this.DimensionNames{1})
             out = getRowLabels (this);
           elseif isequal (s.subs, this.DimensionNames{2})
-            out = this.VariableNames;
+            out = varsAsArray (this, 'subsref');
           ## Everything else is indexing an existing variable name
           else
             out = getvar (this, s.subs);
