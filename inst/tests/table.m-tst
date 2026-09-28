@@ -6027,6 +6027,12 @@
 %!test  # a missing variable is missing in every row
 %! T = table ([missing; missing], [1; 2], 'VariableNames', {'M', 'K'});
 %! assert_equal (ismissing (T), [true, false; true, false]);
+%!test  # a nested table variable is never missing, as in MATLAB
+%! T = table (table ([1; NaN]), [1; 2], 'VariableNames', {'N', 'K'});
+%! assert_equal (ismissing (T), false (2, 2));
+%! assert_equal (ismissing (T, NaN), false (2, 2));
+%! assert_equal (size (rmmissing (T)), [2, 2]);
+%! assert_equal (anymissing (T), false);
 %!test  # a character vector indicator is one text value for a cellstr
 %! assert_equal (ismissing (table ({'a'; 'b'}), 'a'), [true; false]);
 %! assert_equal (ismissing (table ({'a'; 'b'}, [5; 1]), {'b', 5}), ...

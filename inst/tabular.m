@@ -3044,10 +3044,10 @@ classdef (Abstract) tabular
       if (isempty (indicator))
         for i = 1:width (this)
           tmpVar = this.VariableValues{i};
-          if (isa (tmpVar, 'table'))
-            varTF = ismissing (tmpVar, 'OutputFormat', 'logical');
-            varTF = any (varTF, 2);
-            this.VariableValues{i} = varTF;
+          if (isa (tmpVar, 'tabular'))
+            ## A nested table is one value per row and never missing, what
+            ## it holds notwithstanding, as in MATLAB.
+            this.VariableValues{i} = false (rows (tmpVar), 1);
           elseif (any (isa (tmpVar, {'calendarDuration', 'categorical', ...
                                      'datetime', 'duration', 'string'})))
             varTF = ismissing (tmpVar);
@@ -3223,8 +3223,8 @@ classdef (Abstract) tabular
         TF_false = false (rows (this), 1);
         for i = 1:width (this)
           tmpVar = this.VariableValues{i};
-          if (isa (tmpVar, 'table'))
-            varTF = ismissing (tmpVar, indicator, 'OutputFormat', 'logical');
+          if (isa (tmpVar, 'tabular'))
+            varTF = TF_false;
           elseif (isa (tmpVar, 'calendarDuration'))
             if (nan_calendarDuration)
               varTF = ismissing (tmpVar);

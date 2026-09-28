@@ -3125,8 +3125,10 @@ classdef table < tabular
     ## @var{indicator} can be either a vector of specific data type, in which
     ## case all other data types in table @var{tbl} are ignored, or a cell array
     ## containing mixed types of data types, in which case they match the data
-    ## types of the variables in table @var{tbl}.  Missing values specified by
-    ## @var{indicator} also apply to nested tables.
+    ## types of the variables in table @var{tbl}.
+    ##
+    ## A nested table variable is never missing, whatever it holds, with or
+    ## without @var{indicator}, as in MATLAB.
     ##
     ## Besides the explicit data type match between @var{indicator} and
     ## @var{tbl}, the following additional data types matches apply.
