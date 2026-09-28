@@ -2623,8 +2623,11 @@ classdef table < tabular
     ## appears in both tables, a suffix derived from each input's argument name
     ## is appended to the conflicting names (for inputs named @var{tblL} and
     ## @var{tblR}, the suffixes @qcode{'_tblL'} and @qcode{'_tblR'}; when an
-    ## input has no name, @qcode{'_left'} and @qcode{'_right'} are used).  The
-    ## row names of @var{tblL}, if any, are preserved.
+    ## input has no name, @qcode{'_left'} and @qcode{'_right'} are used).
+    ## When both inputs have the same name, as when a table is joined with
+    ## itself, the left names are numbered as well (@qcode{'_T_1'} beside
+    ## @qcode{'_T'}), as in MATLAB.
+    ## The row names of @var{tblL}, if any, are preserved.
     ##
     ## @code{@var{tbl} = join (@var{tblL}, @var{tblR}, @var{Name}, @var{Value})}
     ## customizes the join with the following options:
@@ -2694,6 +2697,9 @@ classdef table < tabular
     ## @var{tblL} and @var{tblR}, the suffixes @qcode{'_tblL'} and
     ## @qcode{'_tblR'}; when an input has no name, @qcode{'_left'} and
     ## @qcode{'_right'} are used).
+    ## When both inputs have the same name, as when a table is joined with
+    ## itself, the left names are numbered as well (@qcode{'_T_1'} beside
+    ## @qcode{'_T'}), as in MATLAB.
     ##
     ## @code{@var{tbl} = innerjoin (@var{tblL}, @var{tblR}, @var{Name},
     ## @var{Value})} customizes the join with the following options:
@@ -2758,8 +2764,12 @@ classdef table < tabular
     ## from both tables, conflicting names receive a suffix derived from each
     ## input's argument name (for inputs named @var{tblL} and @var{tblR}, the
     ## suffixes @qcode{'_tblL'} and @qcode{'_tblR'}; when an input has no name,
-    ## @qcode{'_left'} and @qcode{'_right'} are used).  See @qcode{'MergeKeys'}
-    ## to combine the keys into single columns instead.
+    ## @qcode{'_left'} and @qcode{'_right'} are used).
+    ## When both inputs have the same name, as when a table is joined with
+    ## itself, the left names are numbered as well (@qcode{'_T_1'} beside
+    ## @qcode{'_T'}), as in MATLAB.
+    ## See @qcode{'MergeKeys'} to combine the keys into single columns
+    ## instead.
     ##
     ## @code{@var{tbl} = outerjoin (@var{tblL}, @var{tblR}, @var{Name},
     ## @var{Value})} customizes the join with the following options:

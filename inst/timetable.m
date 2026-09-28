@@ -1302,8 +1302,7 @@ classdef timetable < tabular
         if (nOld == 0 || nNew == 0
             || any (strcmp (mv{j}, {'fillwithmissing', 'fillwithconstant'})))
           if (nOld > 0 && nNew > 0
-              && (islogical (src) || ischar (src)
-                  || (iscell (src) && ! iscellstr (src))))
+              && (islogical (src) || (iscell (src) && ! iscellstr (src))))
             errmsg = sprintf (strcat ("the 'fillwithmissing' method needs", ...
                               " a variable with a missing value, and", ...
                               " '%s' is of class '%s'."), ...
@@ -4246,7 +4245,9 @@ classdef timetable < tabular
     ## by the same rule.
     ##
     ## @var{method} says how a row that the old times do not carry takes its
-    ## value.  @qcode{'fillwithmissing'} leaves it missing;
+    ## value.  @qcode{'fillwithmissing'} leaves it missing, a character
+    ## variable blank, where MATLAB puts @code{char (0)}, and a logical or
+    ## cell variable, which has no missing value, is refused;
     ## @qcode{'previous'}, @qcode{'next'} and @qcode{'nearest'} copy a
     ## neighbouring value; and @qcode{'linear'}, @qcode{'spline'},
     ## @qcode{'pchip'} and @qcode{'makima'} interpolate, which restricts the
@@ -4408,7 +4409,9 @@ classdef timetable < tabular
     ## renamed for the timetable they came from, so @var{a} from @var{tt1}
     ## and @var{tt2} become @code{a_tt1} and @code{a_tt2}.  An operand that
     ## is an expression rather than a variable is known by its place in the
-    ## call.
+    ## call.  Operands with the same name, as a timetable synchronized with
+    ## itself, number the later names (@code{a_tt}, @code{a_tt_1}), as in
+    ## MATLAB.
     ##
     ## Where an operand is an @code{eventtable}, or carries one on its
     ## @qcode{Events} property, the result is an event table too and the
@@ -7003,6 +7006,31 @@ function ops = synchronizeRename (ops, names)
     endfor
     o.Properties.VariableNames = vn;
     ops{k} = o;
+  endfor
+
+  ## Operands under one name still clash; the later ones are numbered, as in
+  ## MATLAB.
+  final = cellfun (@(o) o.Properties.VariableNames, ops, ...
+                   "UniformOutput", false);
+  taken = [final{:}];
+  seen = {};
+  for k = 1:numel (ops)
+    vn = final{k};
+    for j = 1:numel (vn)
+      if (any (strcmp (vn{j}, seen)))
+        m = 1;
+        while (any (strcmp (sprintf ("%s_%d", vn{j}, m), [taken, seen])))
+          m++;
+        endwhile
+        vn{j} = sprintf ("%s_%d", vn{j}, m);
+      endif
+      seen{end+1} = vn{j};
+    endfor
+    if (! isequal (vn, final{k}))
+      o = ops{k};
+      o.Properties.VariableNames = vn;
+      ops{k} = o;
+    endif
   endfor
 
 endfunction

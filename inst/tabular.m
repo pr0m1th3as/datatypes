@@ -4419,6 +4419,10 @@ classdef (Abstract) tabular
         return;
       endif
       [lsuf, rsuf] = tabular.join_suffixes (nameL, nameR);
+      ## Both operands under one name still clash; MATLAB numbers the left.
+      if (strcmp (lsuf, rsuf))
+        lsuf = [lsuf, '_1'];
+      endif
       lNames = Lpart.VariableNames;
       rNames = Rpart.VariableNames;
       for i = find (ismember (lNames, shared))
@@ -8614,6 +8618,8 @@ classdef (Abstract) tabular
         k = 'calendarDuration';
       elseif (isnumeric (col) || islogical (col))
         k = 'numeric';
+      elseif (isa (col, 'tabular'))
+        k = 'tabular';
       else
         k = '';
       endif
@@ -8680,6 +8686,26 @@ classdef (Abstract) tabular
         case 'numeric'
           lp = double (lcol);
           rp = double (rcol);
+        case 'tabular'
+          ## A nested table keys on its own variables, matched by name
+          lnames = subsref (lcol, substruct ('.', 'Properties')).VariableNames;
+          rnames = subsref (rcol, substruct ('.', 'Properties')).VariableNames;
+          if (! isequal (sort (lnames), sort (rnames)))
+            errmsg = "key variables have incompatible types.";
+            return;
+          endif
+          for j = 1:numel (lnames)
+            [a, b, errmsg] = tabular.key_col_proxy ( ...
+                  subsref (lcol, substruct ('.', lnames{j})), ...
+                  subsref (rcol, substruct ('.', lnames{j})));
+            if (! isempty (errmsg))
+              lp = [];
+              rp = [];
+              return;
+            endif
+            lp = [lp, a];
+            rp = [rp, b];
+          endfor
       endswitch
       if (size (lp, 2) != size (rp, 2))
         lp = [];
@@ -8971,7 +8997,9 @@ classdef (Abstract) tabular
         return;
       endif
       k = tabular.key_kind (col);
-      if (isempty (k))
+      ## A nested table keys a join or a set operation, but does not group,
+      ## as in MATLAB.
+      if (isempty (k) || strcmp (k, 'tabular'))
         errmsg = sprintf ("unsupported grouping variable type '%s'.", ...
                           class (col));
         return;
@@ -11174,6 +11202,14 @@ function [v, errmsg] = padVariable (v, n)
     pad = seconds (zeros (k, w));
   elseif (isa (v, 'calendarDuration'))
     pad = calmonths (zeros (k, w));
+  elseif (isa (v, 'tabular'))
+    ## A nested table grows by rows of its own variables' defaults
+    [pad, errmsg] = tabular_rows (v, k, @default_rows);
+    if (! isempty (errmsg))
+      return;
+    endif
+    v = vertcat (v, pad);
+    return;
   else
     [pad, errmsg] = missing_rows (v, k);
     if (! isempty (errmsg))
@@ -11209,6 +11245,17 @@ function [v, errmsg] = set_var_missing (v, mask)
     v(mask,:) = 0;
   elseif (isfloat (v))
     v(mask,:) = NaN;
+  elseif (ischar (v))
+    v(mask,:) = ' ';
+  elseif (isstruct (v))
+    v(mask) = empty_struct (v);
+  elseif (isa (v, 'missing'))
+    v(mask) = missing;
+  elseif (isa (v, 'tabular'))
+    [rows_missing, errmsg] = tabular_rows (v, sum (mask), @missing_rows);
+    if (isempty (errmsg))
+      v = subsasgn (v, substruct ('()', {find(mask), ':'}), rows_missing);
+    endif
   else
     errmsg = sprintf (strcat ("cannot create missing values for a variable", ...
                               " of type '%s'."), class (v));
@@ -11246,10 +11293,57 @@ function [col, errmsg] = missing_rows (proto, n)
     col = zeros (n, w, class (proto));
   elseif (isfloat (proto))
     col = NaN (n, w);
+  elseif (ischar (proto))
+    col = repmat (' ', n, w);
+  elseif (isstruct (proto))
+    col = repmat (empty_struct (proto), n, 1);
+  elseif (isa (proto, 'missing'))
+    col = repmat (missing, n, w);
+  elseif (isa (proto, 'tabular'))
+    [col, errmsg] = tabular_rows (proto, n, @missing_rows);
   else
     errmsg = sprintf (strcat ("cannot create missing values for a variable", ...
                               " of type '%s'."), class (proto));
   endif
+endfunction
+
+## N rows shaped as the nested table PROTO, each of its variables filled by
+## FILLFN (VAR, N): missing values or defaults.  The rows are built through
+## the table's own indexing, which indexing inside the class bypasses.
+function [col, errmsg] = tabular_rows (proto, n, fillfn)
+  errmsg = '';
+  col = [];
+  if (height (proto) == 0)
+    errmsg = sprintf (strcat ("cannot create rows for an empty nested", ...
+                              " %s."), class (proto));
+    return;
+  endif
+  col = subsref (proto, substruct ('()', {ones(n, 1), ':'}));
+  props = subsref (proto, substruct ('.', 'Properties'));
+  names = props.VariableNames;
+  for j = 1:numel (names)
+    v = subsref (col, substruct ('.', names{j}));
+    [v, errmsg] = fillfn (v, n);
+    if (! isempty (errmsg))
+      return;
+    endif
+    col = subsasgn (col, substruct ('.', names{j}), v);
+  endfor
+endfunction
+
+## N rows of the default value of the variable V, as growing it gives.
+function [pad, errmsg] = default_rows (v, n)
+  [p, errmsg] = padVariable (v, rows (v) + n);
+  pad = [];
+  if (isempty (errmsg))
+    pad = rowsof (p, rows (v) + (1:n));
+  endif
+endfunction
+
+## A struct with the fields of S, each empty.
+function e = empty_struct (s)
+  f = fieldnames (s);
+  e = cell2struct (cell (numel (f), 1), f, 1);
 endfunction
 
 ## Format a datetime column as a column cell of ISO 8601 strings for
