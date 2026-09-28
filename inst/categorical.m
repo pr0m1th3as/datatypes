@@ -4299,8 +4299,11 @@ MP = lower (MP);
     ## @code{@var{C} = cat (@var{dim}, @var{A}, @var{B}, @dots{})} concatenates
     ## categorical arrays @var{A}, @var{B}, @dots{} along dimension @var{dim}.
     ## All input arrays must have the same size except along the operating
-    ## dimension @var{dim}.  Any of the input arrays may also be string arrays
-    ## or cell arrays of character vectors of compatible size.
+    ## dimension @var{dim}.  Any of the input arrays may also be character
+    ## vectors, string arrays or cell arrays of character vectors of compatible
+    ## size, whose texts name categories, or missing values, which are
+    ## undefined.  Empty arrays are ignored.  A numeric or logical array is
+    ## refused, since a number could name a category or its code.
     ##
     ## If any input array is an ordinal categorical array, then all inputs must
     ## be ordinal categorical arrays with the same set and ordering of
@@ -4314,8 +4317,27 @@ MP = lower (MP);
     ##
     ## @end deftypefn
     function out = cat (dim, varargin)
-      ## Remove empty cell inputs
-      varargin(cellfun (@(x) isempty (x) && iscell (x), varargin)) = [];
+      ## Remove empty cell and numeric inputs, which add nothing
+      varargin(cellfun (@(x) isempty (x) && (iscell (x) || isnumeric (x)), ...
+                        varargin)) = [];
+      ## Only text and missing values join a categorical array, as in MATLAB;
+      ## a number could name a category or its code, and is refused.
+      for i = 1:numel (varargin)
+        x = varargin{i};
+        if (ischar (x) && ! (isrow (x) || isempty (x)))
+          error (strcat ("categorical.cat: cannot concatenate a character", ...
+                         " matrix with a categorical array; use a cell", ...
+                         " array of character vectors."));
+        elseif (iscell (x) && ! iscellstr (x))
+          error (strcat ("categorical.cat: cannot concatenate a cell array", ...
+                         " with a categorical array unless it holds only", ...
+                         " character vectors."));
+        elseif (! (iscategorical (x) || ischar (x) || iscellstr (x)
+                   || isa (x, 'string') || isa (x, 'missing')))
+          error (strcat ("categorical.cat: cannot concatenate a '%s' array", ...
+                         " with a categorical array."), class (x));
+        endif
+      endfor
       if (numel (varargin) == 1)
         out = varargin{1};
         return;
@@ -4440,8 +4462,11 @@ MP = lower (MP);
     ## the syntax @code{@var{B} = [@var{A}, @var{B}, @dots{}]} and horizontally
     ## concatenates the categorical arrays @var{A}, @var{B}, @dots{}.  All input
     ## arrays must have the same size except along the second dimension.  Any of
-    ## the input arrays may also be string arrays or cell arrays of character
-    ## vectors of compatible size.
+    ## the input arrays may also be character vectors, string arrays or cell
+    ## arrays of character vectors of compatible size, whose texts name
+    ## categories, or missing values, which are undefined.  Empty arrays are
+    ## ignored.  A numeric or logical array is refused, since a number could
+    ## name a category or its code.
     ##
     ## If any input array is an ordinal categorical array, then all inputs must
     ## be ordinal categorical arrays with the same set and ordering of
@@ -4467,8 +4492,11 @@ MP = lower (MP);
     ## the syntax @code{@var{B} = [@var{A}; @var{B}; @dots{}]} and vertically
     ## concatenates the categorical arrays @var{A}, @var{B}, @dots{}.  All input
     ## arrays must have the same size except along the first dimension.  Any of
-    ## the input arrays may also be string arrays or cell arrays of character
-    ## vectors of compatible size.
+    ## the input arrays may also be character vectors, string arrays or cell
+    ## arrays of character vectors of compatible size, whose texts name
+    ## categories, or missing values, which are undefined.  Empty arrays are
+    ## ignored.  A numeric or logical array is refused, since a number could
+    ## name a category or its code.
     ##
     ## If any input array is an ordinal categorical array, then all inputs must
     ## be ordinal categorical arrays with the same set and ordering of
