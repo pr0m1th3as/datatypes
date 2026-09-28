@@ -10193,6 +10193,13 @@ function [p, badtype] = valueProxy (v, CM)
   elseif (isa (v, 'string'))
     c = cellstr (v);
     [~, ~, p] = __unique__ (c, 'rows');
+    ## A missing string has no value, so it keys as NaN: it equals nothing
+    ## and sorts as missing values do.  An empty string is a value.
+    miss = any (ismissing (v), 2);
+    if (any (miss))
+      p = double (p);
+      p(miss) = NaN;
+    endif
   elseif (iscellstr (v))
     [~, ~, p] = __unique__ (v, 'rows');
   elseif (ischar (v))

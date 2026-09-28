@@ -1684,7 +1684,9 @@ classdef table < tabular
     ## Unique rows in a table.
     ##
     ## @code{@var{tblB} = unique (@var{tblA})} returns the unique rows of table
-    ## @var{tblA} in sorted order.
+    ## @var{tblA} in sorted order.  A row holding a missing value
+    ## (@qcode{NaN}, @qcode{NaT}, @qcode{<undefined>} or @qcode{<missing>})
+    ## equals no other row, so each such row is kept; empty text is a value.
     ##
     ## @code{@var{tblB} = unique (@var{tblA}, @var{setOrder})} returns the
     ## unique rows of table @var{tblA} in a specified order.  @var{setOrder} can
@@ -2618,6 +2620,12 @@ classdef table < tabular
     ## of values, and every key combination in @var{tblL} must be present in
     ## @var{tblR}.
     ##
+    ## A key holding a missing value (@qcode{NaN}, @qcode{NaT},
+    ## @qcode{<undefined>} or @qcode{<missing>}) matches no other key.  Empty
+    ## text, an empty character vector in a cellstr or a blank row of a
+    ## character matrix, is a value and matches empty text, where MATLAB
+    ## matches it with nothing; @code{ismissing} still flags it as missing.
+    ##
     ## By default @var{tbl} contains all the variables of @var{tblL} followed by
     ## the non-key variables of @var{tblR}.  Whenever a non-key variable name
     ## appears in both tables, a suffix derived from each input's argument name
@@ -2690,6 +2698,12 @@ classdef table < tabular
     ## combination.  The rows of @var{tbl} are sorted by the values of the key
     ## variables, and any row names are dropped.
     ##
+    ## A key holding a missing value (@qcode{NaN}, @qcode{NaT},
+    ## @qcode{<undefined>} or @qcode{<missing>}) matches no other key.  Empty
+    ## text, an empty character vector in a cellstr or a blank row of a
+    ## character matrix, is a value and matches empty text, where MATLAB
+    ## matches it with nothing; @code{ismissing} still flags it as missing.
+    ##
     ## By default @var{tbl} contains all the variables of @var{tblL} followed by
     ## the non-key variables of @var{tblR}.  Whenever a non-key variable name
     ## appears in both tables, a suffix derived from each input's argument name
@@ -2758,6 +2772,12 @@ classdef table < tabular
     ## @var{tblR} share the same key combination, then @var{tbl} contains all
     ## @math{m*n} pairings for that combination.  The rows of @var{tbl} are
     ## sorted by the values of the key variables and any row names are dropped.
+    ##
+    ## A key holding a missing value (@qcode{NaN}, @qcode{NaT},
+    ## @qcode{<undefined>} or @qcode{<missing>}) matches no other key.  Empty
+    ## text, an empty character vector in a cellstr or a blank row of a
+    ## character matrix, is a value and matches empty text, where MATLAB
+    ## matches it with nothing; @code{ismissing} still flags it as missing.
     ##
     ## By default @var{tbl} contains all the variables of @var{tblL} followed
     ## by all the variables of @var{tblR}.  Because the key variables are kept
