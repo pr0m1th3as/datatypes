@@ -6622,6 +6622,8 @@
 %! timetable ((1:3)', (1:2)', 'TimeStep', hours (1));
 
 ## Test a variable may not have more than two dimensions
+%!error <timetable: a variable cannot be a function handle; only a cell array can hold one.> ...
+%! timetable (hours (1), @sin);
 %!error <timetable: variable values must not have more than 2 dimensions: input 1 'Var1' has 3.> ...
 %! timetable (ones (2, 2, 2), 'TimeStep', hours (1));
 
@@ -6676,6 +6678,8 @@
 %! TT.Properties.TimeStep = calmonths (1);
 
 ## Test an unknown property is refused
+%!error <timetable.subsasgn: a variable cannot be a function handle; only a cell array can hold one.> ...
+%! TT = timetable (hours (1), 1); TT.f = @sin;
 %!error <timetable.subsasgn: unknown timetable property 'Nope'.> ...
 %! TT = timetable ((1:3)', 'TimeStep', hours (1)); ...
 %! TT.Properties.Nope = 1;

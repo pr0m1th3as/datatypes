@@ -26,7 +26,8 @@
 ## a variable in @var{tbl}.  The contents of each column are concatenated into
 ## their common data type (i.e. if a column of @var{C} contains explicitly
 ## @qcode{double} numbers, then the corresponding variable in @var{tbl} is of
-## the same type), otherwise they are added as a column of cells.
+## the same type), otherwise they are added as a column of cells.  A column
+## holding function handles always becomes a column of cells.
 ##
 ## @code{@var{tbl} = cell2table (@var{C}, @var{Name}, @var{Value})} specifies
 ## optional parameters for creating the table @var{tbl} with the following
@@ -72,7 +73,7 @@ function tbl = cell2table (C, varargin)
   varValues = cell (1, varN);
   for ix = 1:varN
     tmp = C(:,ix);
-    if (iscellstr (tmp))
+    if (iscellstr (tmp) || any (cellfun (@is_function_handle, tmp)))
       varValues{ix} = tmp;
     else
       ## Try to concatenate into array
@@ -183,6 +184,10 @@ endfunction
 %! assert_equal (tbl.A, {'R1'; 'R2'});
 %! assert_equal (class (tbl.B), 'string');
 %! assert_equal (cellstr (tbl.B), {'1', ''; '3', '4'});
+%!test  # a column of function handles stays a cell variable
+%! tbl = cell2table ({@sin, 1; @cos, 2});
+%! assert_equal (class (tbl.Var1), 'cell');
+%! assert_equal (func2str (tbl.Var1{2}), 'cos');
 
 %!error<cell2table: input array must be a 2-D cell array.> ...
 %! cell2table (cell (3, 3, 3));

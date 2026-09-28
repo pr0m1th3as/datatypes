@@ -1679,6 +1679,11 @@ classdef timetable < tabular
                          " names (%d) and variable values (%d)."), ...
                  numel (VariableNames), numel (args));
         endif
+        ## Only a cell variable can hold a function handle
+        if (any (cellfun (@is_function_handle, args)))
+          error (strcat ("timetable: a variable cannot be a function", ...
+                         " handle; only a cell array can hold one."));
+        endif
         ## Check size of input variables
         nrows = [];
         if (! isempty (args))

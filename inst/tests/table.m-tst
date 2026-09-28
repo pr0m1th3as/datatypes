@@ -339,6 +339,10 @@
 %! table (Age, Age, Height, Height);
 %!error <table: inconsistent number of variable names \(1\) and variable values \(2\).> ...
 %! table ([1; 2], [3; 4], "VariableNames", {"A"});
+%!error <table: a variable cannot be a function handle; only a cell array can hold one.> ...
+%! table (@sin, 1);
+%!error <table: a variable cannot be a function handle; only a cell array can hold one.> ...
+%! table (1, @sin, 'VariableNames', {'a', 'b'});
 %!error <table: variable values must not have more than 2 dimensions: input 1 'A' has 3.> ...
 %! table (ones (2, 2, 2), [1; 2], "VariableNames", {"A", "B"});
 %!error <table: variable values must not have more than 2 dimensions: input 2 'B' has 3.> ...
@@ -832,9 +836,9 @@
 %!test  # an object of any other class is placed in its cell as it is
 %! C = table2cell (table (inputParser ()));
 %! assert_equal (class (C{1}), 'inputParser');
-%!test  # a function handle variable is returned, not called
-%! C = table2cell (table (@sin));
-%! assert_equal (func2str (C{1}), 'sin');
+%!test  # a cell variable of function handles gives the handles
+%! C = table2cell (table ({@sin; @cos}));
+%! assert_equal (func2str (C{2}), 'cos');
 ## Test input validation for 'table2cell' method
 %!error <table.table2cell: cannot convert variables of 'containers.Map' type.> ...
 %! table2cell (table (containers.Map ({'a', 'b'}, {1, 2})));
@@ -3653,6 +3657,8 @@
 %!test
 %! R = addvars (table (), [1; 2; 3], [4; 5; 6]);
 %! assert_equal (size (R), [3, 2]);
+%!error <table.addvars: a variable cannot be a function handle; only a cell array can hold one.> ...
+%! addvars (table (1), @sin);
 %!error <table.addvars: each new variable must have as many rows as the table.> ...
 %! addvars (table (), [1; 2; 3], [4; 5]);
 ## Test a table with rows and no variables takes a variable of its height
@@ -4331,6 +4337,8 @@
 %! assert_equal (class (R.A), 'duration');
 %! assert_equal (hours (R.A), [1; 2; 3]);
 ## Test input validation for 'convertvars' method
+%!error <table.convertvars: a variable cannot be a function handle; only a cell array can hold one.> ...
+%! convertvars (table (1, 'VariableNames', {'a'}), 'a', @(x) @sin);
 %!error <table.convertvars: too few input arguments.> convertvars (tblA);
 %!error <table.convertvars: too few input arguments.> ...
 %! convertvars (tblA, "Height");
@@ -8242,6 +8250,12 @@
 %! N = P.nt;
 %! assert_equal (N.p, [3; 8]);
 
+%!test  # a function handle assigned with '()' makes a cell variable
+%! P = table (1);
+%! P(:,'f') = {@sin};
+%! assert_equal (class (P.f), 'cell');
+%! assert_equal (func2str (P.f{1}), 'sin');
+
 ## Test input validation for 'subsasgn' with '()' indexing
 %!error <table: cannot create a variable with a discontiguous index.> ...
 %! P = table ([1; 2; 3]);
@@ -8494,6 +8508,14 @@
 ## Test input validation for 'subsasgn' with '.' indexing
 %!error <table.subsasgn: '.' index argument must be a character vector.> ...
 %! T = table ([1;2;3]); subsasgn (T, struct ('type', '.', 'subs', 5), 1);
+%!error <table.subsasgn: a variable cannot be a function handle; only a cell array can hold one.> ...
+%! T = table (1); T.f = @sin;
+%!error <table.subsasgn: a variable cannot be a function handle; only a cell array can hold one.> ...
+%! T = table (1); T.Var1 = @sin;
+%!error <table.subsasgn: a variable cannot be a function handle; only a cell array can hold one.> ...
+%! T = table (1); T{:,'f'} = @sin;
+%!error <table.subsasgn: a variable cannot be a function handle; only a cell array can hold one.> ...
+%! T = table (1); T{1,'Var1'} = @sin;
 %!error <table.subsasgn: input value and table height mismatch.> ...
 %! T = table ([1;2;3], 'VariableNames', {'x'}); T.y = [4;5];
 %!error <table.subsasgn: the value assigned to 'Variables' must have 2 rows, one for each row of the table.> ...

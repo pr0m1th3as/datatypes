@@ -2286,6 +2286,11 @@ classdef (Abstract) tabular
       endif
 
       ## Append the new variables
+      if (any (cellfun (@is_function_handle, args)))
+        errmsg = strcat ("a variable cannot be a function handle; only a", ...
+                         " cell array can hold one.");
+        return
+      endif
       tbl = this;
       for i = 1:numel (args)
         tbl = setvar (tbl, newVarNames{i}, args{i});
@@ -2621,6 +2626,11 @@ classdef (Abstract) tabular
                  varNames{i});
           return
         end_try_catch
+        if (is_function_handle (newVarValue))
+          errmsg = strcat ("a variable cannot be a function handle; only", ...
+                           " a cell array can hold one.");
+          return
+        endif
         if (size (newVarValue, 1) != height (this))
           errmsg = sprintf (strcat ("specified DATATYPE", ...
                          " conversion on '%s' does not return the", ...
@@ -7299,10 +7309,6 @@ classdef (Abstract) tabular
         varVal = this.VariableValues{i};
         if (iscell (varVal) && columns (varVal) == 1)
           C(:,i) = varVal;
-        elseif (is_function_handle (varVal))
-          ## A handle cannot form an array, so it is the only row there is,
-          ## and indexing it would call the function.
-          C(:,i) = {varVal};
         elseif (isnumeric (varVal) || islogical (varVal) || ischar (varVal)
                 || iscell (varVal))
           C(:,i) = num2cell (varVal, 2);
@@ -7381,6 +7387,10 @@ classdef (Abstract) tabular
     ## @end deftypefn
     function tbl = setvar (this, varRef, value)
       clstype = class (this);
+      if (is_function_handle (value))
+        error (strcat ("%s.subsasgn: a variable cannot be a function", ...
+                       " handle; only a cell array can hold one."), clstype);
+      endif
       ## An object with neither rows nor variables takes its height from
       ## the first variable given it, as in MATLAB, so nothing is expanded;
       ## otherwise do scalar expansion if necessary
@@ -7496,6 +7506,10 @@ classdef (Abstract) tabular
       else
         labelsAdded = false;
       endif
+      if (isBrace && is_function_handle (rhs))
+        error (strcat ("%s.subsasgn: a variable cannot be a function", ...
+                       " handle; only a cell array can hold one."), clstype);
+      endif
       if (isBrace)
         ## The value is the contents of the variables side by side, as
         ## '{}' indexing returns them, so it is split by their columns.  A
@@ -7576,7 +7590,8 @@ classdef (Abstract) tabular
           if (ixVar(i) <= oldWidth)
             isCellVar = iscell (this.VariableValues{ixVar(i)});
           else
-            isCellVar = any (cellfun (@(x) ischar (x) || iscell (x), col));
+            isCellVar = any (cellfun (@(x) ischar (x) || iscell (x) ...
+                                           || is_function_handle (x), col));
           endif
           if (isCellVar)
             for k = 1:numel (col)
@@ -8888,7 +8903,8 @@ classdef (Abstract) tabular
         ok = only ({'cell'});
       elseif (has ('calendarDuration'))
         ok = only ({'calendarDuration', 'duration', 'float', 'logical', ...
-                    'missing'}) && ! any (cellfun (@(x) isa (x, 'single'), vals));
+                    'missing'}) ...
+             && ! any (cellfun (@(x) isa (x, 'single'), vals));
       elseif (has ('duration'))
         ok = only ({'duration', 'float', 'logical', 'missing'}) ...
              && ! any (cellfun (@(x) isa (x, 'single'), vals));
