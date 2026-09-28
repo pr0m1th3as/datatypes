@@ -7889,11 +7889,15 @@ classdef (Abstract) tabular
       endif
     endfunction
 
-    ## Prepare table for printing
+    ## Prepare table for printing.  Each variable becomes one or more display
+    ## columns: 'display_texts' says what each cell reads and how it aligns,
+    ## and the widths and the row pattern are worked out here, the same way
+    ## for every type.  A nested table or timetable is laid out under its
+    ## variable's name at the first level, with a timetable's row times first.
     function [colData, rowSpat, T] = resolve_table_for_printing ...
                                      (this, colData, rowSpat, T)
-      ## Get recursion for nested tables
-      #n = numel (T);
+      ## Recursing into a nested object, every column is at least as wide as
+      ## the name of the variable holding it.
       if (numel (T.nestedV) > 0)
         nested = true;
         minLen = T.varNLen(end);
@@ -7902,264 +7906,43 @@ classdef (Abstract) tabular
         minLen = 1;
       endif
       colgap = "    ";
-      ## Start parsing table variables
+      ## The row times of a nested timetable lead its variables.
+      if (nested && ! isempty (rowLabelHeader (this)))
+        head = rowLabelHeader (this);
+        texts = rowLabelStrings (this);
+        T.varName = [T.varName, {head}];
+        T.varNLen = [T.varNLen, length(head)];
+        optLen = max ([length(head); cellfun(@length, texts(:)); minLen]);
+        T.optLen = [T.optLen, optLen];
+        colData = [colData, texts(:)];
+        rowSpat = [rowSpat, sprintf("%%-%ds", optLen), colgap];
+      endif
       for v = 1:width (this)
-        ## Get variable name
-        T.varName = [T.varName, this.VariableNames(v)];
-        ## Get length of variable name
         varNLen = length (this.VariableNames{v});
+        T.varName = [T.varName, this.VariableNames(v)];
         T.varNLen = [T.varNLen, varNLen];
-        ## Get max length from data
         data = this.VariableValues{v};
-        cols = size (data)(2);
-        ## Numeric
-        if (isnumeric (data))
-          numfun = @(x) sprintf ("%g", x);
-          if (cols > 1)
-            colLen = zeros (1, cols);
-            rowSpat_c = "";
-            for c = 1:cols
-              ## Prepare data values to char vector
-              tmpData = arrayfun (numfun, data(:,c), 'UniformOutput', false);
-              colData = [colData, tmpData];
-              ## Get max length and append row string pattern
-              colLen(c) = max (cellfun (@length, tmpData));
-              rowSpat_c = [rowSpat_c, sprintf("%%+%ds", colLen(c)), colgap];
-            endfor
-            dataLen = sum (colLen + 4) - 4;
-            optLen = max ([varNLen, dataLen, minLen]);
-            T.optLen = [T.optLen, optLen];
-            prePad = repmat (" ", [1, optLen-dataLen]);
-            rowSpat = [rowSpat, prePad, rowSpat_c];
-          else
-            ## Prepare data values to char vector
-            tmpData = arrayfun (numfun, data, 'UniformOutput', false);
-            colData = [colData, tmpData];
-            ## Get max length and append row string pattern
-            dataLen = max (cellfun (@length, tmpData));
-            optLen = max ([varNLen, dataLen, minLen]);
-            T.optLen = [T.optLen, optLen];
-            rowSpat = [rowSpat, sprintf("%%+%ds", optLen), colgap];
-          endif
-        ## Logical
-        elseif (islogical (data))
-          if (cols > 1)
-            rowSpat_c = "";
-            for c = 1:cols
-              tmpData = repmat ({'false'}, size (data(:,c)));
-              tmpData(data(:,c)) = "true";
-              colData = [colData, tmpData];
-              colLen(c) = 5;
-              rowSpat_c = [rowSpat_c, "%-5s", colgap];
-            endfor
-            dataLen = sum (colLen + 4) - 4;
-            optLen = max ([varNLen, dataLen, minLen]);
-            T.optLen = [T.optLen, optLen];
-            prePad = repmat (" ", [1, optLen-dataLen]);
-            rowSpat = [rowSpat, prePad, rowSpat_c];
-          else
-            tmpData = repmat ({'false'}, size (data));
-            tmpData(data) = "true";
-            colData = [colData, tmpData];
-            dataLen = 5;
-            optLen = max ([varNLen, dataLen, minLen]);
-            T.optLen = [T.optLen, optLen];
-            rowSpat = [rowSpat, sprintf("%%-%ds", optLen), colgap];
-          endif
-        ## Categorical
-        elseif (isa (data, {'categorical'}))
-          if (cols > 1)
-            colLen = zeros (1, cols);
-            rowSpat_c = "";
-            for c = 1:cols
-              tmpData = dispstrings (data(:,c));
-              colData = [colData, tmpData];
-              colLen(c) = max (cellfun (@length, tmpData));
-              rowSpat_c = [rowSpat_c, sprintf("%%+%ds", colLen(c)), colgap];
-            endfor
-            dataLen = sum (colLen + 4) - 4;
-            optLen = max ([varNLen, dataLen, minLen]);
-            T.optLen = [T.optLen, optLen];
-            prePad = repmat (" ", [1, optLen-dataLen]);
-            rowSpat = [rowSpat, prePad, rowSpat_c];
-          else
-            tmpData = dispstrings (data);
-            colData = [colData, tmpData];
-            dataLen = max (cellfun (@length, tmpData));
-            optLen = max ([varNLen, dataLen, minLen]);
-            T.optLen = [T.optLen, optLen];
-            rowSpat = [rowSpat, sprintf("%%+%ds", optLen), colgap];
-          endif
-        ## Datetime, duration, calendarDuration
-        elseif (any (isa (data, {'datetime', 'duration', 'calendarDuration'})))
-          if (cols > 1)
-            colLen = zeros (1, cols);
-            rowSpat_c = "";
-            for c = 1:cols
-              tmpData = dispstrings (data(:,c));
-              colData = [colData, tmpData];
-              colLen(c) = max (cellfun (@length, tmpData));
-              rowSpat_c = [rowSpat_c, sprintf("%%+%ds", colLen(c)), colgap];
-            endfor
-            dataLen = sum (colLen + 4) - 4;
-            optLen = max ([varNLen, dataLen]);
-            T.optLen = [T.optLen, optLen, minLen];
-            prePad = repmat (" ", [1, optLen-dataLen]);
-            rowSpat = [rowSpat, prePad, rowSpat_c];
-          else
-            tmpData = dispstrings (data);
-            colData = [colData, tmpData];
-            dataLen = max (cellfun (@length, tmpData));
-            optLen = max ([varNLen, dataLen, minLen]);
-            T.optLen = [T.optLen, optLen];
-            rowSpat = [rowSpat, sprintf("%%+%ds", optLen), colgap];
-          endif
-        ## String
-        elseif (isa (data, 'string'))
-          if (cols > 1)
-            colLen = zeros (1, cols);
-            rowSpat_c = "";
-            for c = 1:cols
-              tmpData = dispstrings (data(:,c));
-              colData = [colData, tmpData];
-              colLen(c) = max (cellfun (@length, tmpData));
-              rowSpat_c = [rowSpat_c, sprintf("%%-%ds", colLen(c)), colgap];
-            endfor
-            dataLen = sum (colLen + 4) - 4;
-            optLen = max ([varNLen, dataLen, minLen]);
-            T.optLen = [T.optLen, optLen];
-            prePad = repmat (" ", [1, optLen-dataLen]);
-            rowSpat = [rowSpat, prePad, rowSpat_c];
-          else
-            tmpData = dispstrings (data);
-            colData = [colData, tmpData];
-            dataLen = max (cellfun (@length, tmpData));
-            optLen = max ([varNLen, dataLen, minLen]);
-            T.optLen = [T.optLen optLen];
-            rowSpat = [rowSpat, sprintf("%%-%ds", optLen), colgap];
-          endif
-        ## Missing
-        elseif (isa (data, 'missing'))
-          if (cols > 1)
-            colLen = zeros (1, cols);
-            rowSpat_c = "";
-            for c = 1:cols
-              tmpData = dispstrings (data(:,c));
-              colData = [colData, tmpData];
-              colLen(c) = max (cellfun (@length, tmpData));
-              rowSpat_c = [rowSpat_c, sprintf("%%-%ds", colLen(c)), colgap];
-            endfor
-            dataLen = sum (colLen + 4) - 4;
-            optLen = max ([varNLen, dataLen, minLen]);
-            T.optLen = [T.optLen, optLen];
-            prePad = repmat (" ", [1, optLen-dataLen]);
-            rowSpat = [rowSpat, prePad, rowSpat_c];
-          else
-            tmpData = dispstrings (data);
-            colData = [colData, tmpData];
-            dataLen = max (cellfun (@length, tmpData));
-            optLen = max ([varNLen, dataLen, minLen]);
-            T.optLen = [T.optLen, optLen];
-            rowSpat = [rowSpat, sprintf("%%-%ds", optLen), colgap];
-          endif
-        ## Character vectors
-        elseif (ischar (data))
-          fcn = @(x) sprintf ("'%s'", x); ## add '' unlike MATLAB display
-          tmpData = cell (rows (data), 1);
-          for r = 1:rows (data)
-            tmpData(r) = fcn (data(r,:));
-          endfor
-          colData = [colData, tmpData];
-          dataLen = max (cellfun (@length, tmpData));
-          optLen = max ([varNLen, dataLen, minLen]);
-          T.optLen = [T.optLen, optLen];
-          rowSpat = [rowSpat, sprintf("%%-%ds", optLen), colgap];
-        ## Cell array of character vectors
-        elseif (iscellstr (data))
-          fcn = @(x) sprintf ("'%s'", x); ## add '' for MATLAB like display
-          if (cols > 1)
-            colLen = zeros (1, cols);
-            rowSpat_c = "";
-            for c = 1:cols
-              tmpData = cellfun (fcn, data(:,c), 'UniformOutput', false);
-              colData = [colData, tmpData];
-              colLen(c) = max (cellfun (@length, tmpData)) + 2;
-              rowSpat_c = [rowSpat_c, sprintf("{%%-%ds}", ...
-                                      colLen(c) - 4), colgap];
-            endfor
-            dataLen = sum (colLen + 4) - 4;
-            optLen = max ([varNLen, dataLen, minLen]);
-            T.optLen = [T.optLen, optLen];
-            prePad = repmat (" ", [1, optLen-dataLen]);
-            rowSpat = [rowSpat, prePad, rowSpat_c];
-          else
-            tmpData = cellfun (fcn, data, 'UniformOutput', false);
-            colData = [colData, tmpData];
-            dataLen = max (cellfun (@length, tmpData)) + 2;
-            optLen = max ([varNLen, dataLen, minLen]);
-            T.optLen = [T.optLen, optLen];
-            rowSpat = [rowSpat, sprintf("{%%-%ds}", optLen - 2), colgap];
-          endif
-        ## Cell array of mixed values
-        elseif (iscell (data))
-          if (cols > 1)
-            colLen = zeros (1, cols);
-            rowSpat_c = "";
-            for c = 1:cols
-              [tmpData, colLen(c)]  = mixedcell2str (data(:,c), varNLen);
-              colData = [colData, tmpData];
-              rowSpat_c = [rowSpat_c, sprintf("%%-%ds", colLen(c)), colgap];
-            endfor
-            dataLen = sum (colLen + 4) - 4;  # +2 due to extra {}
-            optLen = max ([varNLen, dataLen, minLen]);
-            T.optLen = [T.optLen, optLen];
-            prePad = repmat (" ", [1, optLen-dataLen]);
-            rowSpat = [rowSpat, prePad, rowSpat_c];
-          else
-            [tmpData, optLen]  = mixedcell2str (data, varNLen);
-            T.optLen = [T.optLen, max([optLen, minLen])];
-            colData = [colData, tmpData];
-            rowSpat = [rowSpat, sprintf("%%-%ds", optLen), colgap];
-          endif
-        ## Structures
-        elseif (isa (data, 'struct'))
-          if (cols > 1)
-            rowSpat_c = "";
-            for c = 1:cols
-              tmpData = repmat ({'<struct>'}, size (data(:,c)));
-              colData = [colData, tmpData];
-              colLen(c) = 8;
-              rowSpat_c = [rowSpat_c, "%-8s", colgap];
-            endfor
-            dataLen = sum (colLen + 4) - 4;
-            optLen = max ([TvarNLen, dataLen, minLen]);
-            T.optLen = [T.optLen, optLen];
-            prePad = repmat (" ", [1, optLen-dataLen]);
-            rowSpat = [rowSpat, prePad, rowSpat_c];
-          else
-            tmpData = repmat ({'<struct>'}, size (data));
-            colData = [colData, tmpData];
-            optLen = max ([varNLen, 8, minLen]);
-            T.optLen = [T.optLen, optLen];
-            rowSpat = [rowSpat, sprintf("%%-%ds", optLen), colgap];
-          endif
-        ## Tables (nested)
-        elseif (isa (data, 'table'))
-          if (nested)
-            tmpData = repmat ({'<table>'}, [height(data), 1]);
-            colData = [colData, tmpData];
-            optLen = max ([varNLen, 7, minLen]);
-            T.optLen = [T.optLen, optLen];
-            rowSpat = [rowSpat, sprintf("%%-%ds", optLen), colgap];
-          else
-            ## Increment structure array, add referenced variable, and
-            ## recurse with nested table
-            T.nestedV = [T.nestedV width(data)];
-            T.parentV = [T.parentV v];
-            [colData, rowSpat, T] = resolve_table_for_printing ...
-                                    (data, colData, rowSpat, T);
-          endif
+        if (isa (data, 'tabular') && ! nested)
+          nsub = width (data) + ! isempty (rowLabelHeader (data));
+          T.nestedV = [T.nestedV, nsub];
+          T.parentV = [T.parentV, v];
+          [colData, rowSpat, T] = resolve_table_for_printing ...
+                                  (data, colData, rowSpat, T);
+          continue;
         endif
+        [texts, align, W] = display_texts (data, varNLen);
+        colData = [colData, texts];
+        if (columns (texts) == 1)
+          optLen = max ([varNLen, W, minLen]);
+          rowSpat = [rowSpat, cellpattern(align, optLen), colgap];
+        else
+          dataLen = sum (W + 4) - 4;
+          optLen = max ([varNLen, dataLen, minLen]);
+          pats = arrayfun (@(w) [cellpattern(align, w), colgap], W, ...
+                           "UniformOutput", false);
+          rowSpat = [rowSpat, repmat(" ", [1, optLen-dataLen]), pats{:}];
+        endif
+        T.optLen = [T.optLen, optLen];
       endfor
     endfunction
 
@@ -10968,7 +10751,114 @@ endfunction
 
 ## Special function to convert a mixed cell array to cellstr array
 ## that keeps MATLAB like formatting for each type of element
+## The text of each cell of the variable DATA in a table display, one
+## column of TEXTS for each display column, with how they align and how wide
+## each column's widest text is.  VARLEN is the width of the variable's name,
+## which a cell array's texts are padded to.  A value with no text form is
+## shown as one placeholder per row naming its size and class.
+function [texts, align, W] = display_texts (data, varLen)
+  nc = columns (data);
+  texts = cell (rows (data), 0);
+  W = [];
+  if (isnumeric (data))
+    align = 'right';
+    for c = 1:nc
+      if (isinteger (data))
+        t = arrayfun (@__intstr__, data(:,c), "UniformOutput", false);
+      elseif (iscomplex (data))
+        ## A zero part is written unsigned
+        re = real (data(:,c));
+        re(re == 0) = 0;
+        im = imag (data(:,c));
+        im(im == 0) = 0;
+        t = arrayfun (@(a, b) sprintf ("%g%+gi", a, b), re, im, ...
+                      "UniformOutput", false);
+      else
+        t = arrayfun (@(x) sprintf ("%g", x), data(:,c), ...
+                      "UniformOutput", false);
+      endif
+      [texts, W] = addtexts (texts, W, t);
+    endfor
+  elseif (islogical (data))
+    align = 'left';
+    for c = 1:nc
+      t = repmat ({'false'}, size (data(:,c)));
+      t(data(:,c)) = {'true'};
+      texts = [texts, t];
+      W = [W, 5];
+    endfor
+  elseif (ischar (data))
+    align = 'left';
+    t = cell (rows (data), 1);
+    for r = 1:rows (data)
+      t{r} = sprintf ("'%s'", data(r,:));
+    endfor
+    [texts, W] = addtexts (texts, W, t);
+  elseif (iscellstr (data))
+    align = 'brace';
+    for c = 1:nc
+      t = cellfun (@(x) sprintf ("'%s'", x), data(:,c), "UniformOutput", false);
+      [texts, W] = addtexts (texts, W, t);
+      W(end) += 2 * (rows (data) > 0);
+    endfor
+  elseif (iscell (data))
+    align = 'left';
+    for c = 1:nc
+      [t, w] = mixedcell2str (data(:,c), varLen);
+      texts = [texts, t];
+      W = [W, w];
+    endfor
+  elseif (isobject (data) && ! isa (data, 'tabular') && hasdispstrings (data))
+    if (any (isa (data, {'categorical', 'datetime', 'duration', ...
+                         'calendarDuration'})))
+      align = 'right';
+    else
+      align = 'left';
+    endif
+    for c = 1:nc
+      [texts, W] = addtexts (texts, W, dispstrings (data(:,c)));
+    endfor
+  else
+    ## Structures, nested objects beyond the first level, and any class with
+    ## no text form
+    align = 'left';
+    if (isa (data, 'tabular'))
+      nc = width (data);
+    endif
+    t = repmat ({sprintf("<1x%d %s>", nc, class (data))}, [rows(data), 1]);
+    [texts, W] = addtexts (texts, W, t);
+  endif
+endfunction
+
+## Append the column of texts T to TEXTS and its widest text to W, which is
+## zero with no rows.
+function [texts, W] = addtexts (texts, W, t)
+  texts = [texts, t(:)];
+  W = [W, max([0; cellfun(@length, t(:))])];
+endfunction
+
+## Whether the class of the object X defines a 'dispstrings' method, hidden
+## or not.
+function tf = hasdispstrings (x)
+  ml = metaclass (x).MethodList;
+  tf = any (cellfun (@(m) strcmp (m.Name, 'dispstrings'), ml));
+endfunction
+
+## The row pattern for one display column of width W: numbers and the like
+## align right, text left, and a cellstr's texts sit in braces.
+function pat = cellpattern (align, w)
+  switch (align)
+    case 'right'
+      pat = sprintf ("%%+%ds", w);
+    case 'left'
+      pat = sprintf ("%%-%ds", w);
+    otherwise
+      pat = sprintf ("{%%-%ds}", w - 2);
+  endswitch
+endfunction
+
 function [outData, optLen]  = mixedcell2str (data, varLen)
+  out_str = repmat ({''}, size (data));
   ## Preallocate indexes to avoid truncation when last elements are 0
   idx_cell = logical (zeros (size (data)));
   idx_charvec = idx_cell;
@@ -11074,11 +10964,11 @@ function [outData, optLen]  = mixedcell2str (data, varLen)
     out_str(idx_numeric) = (cellfun (sf, data(idx_numeric), ...
                             'UniformOutput', false));
     ## 'object' arrays
-    tmp = cell2mat (cellfun (@isstring, data(me), 'UniformOutput', false)) == 1;
-    idx_string(me) = tmp;
+    tmp = cell2mat (cellfun (@isobject, data(me), 'UniformOutput', false)) == 1;
+    idx_object(me) = tmp;
     sf = @(x) sprintf (strcat (strjoin (repmat ({'%d'}, 1, ndims (x)), 'x'), ...
                                ' %s'), size (x), class (x));
-    out_str(idx_string) = (cellfun (sf, data(idx_string), ...
+    out_str(idx_object) = (cellfun (sf, data(idx_object), ...
                            'UniformOutput', false));
     ## 'string' arrays
     tmp = cell2mat (cellfun (@isstring, data(me), 'UniformOutput', false)) == 1;
@@ -11095,6 +10985,21 @@ function [outData, optLen]  = mixedcell2str (data, varLen)
     out_str(idx_struct) = (cellfun (sf, data(idx_struct), ...
                            'UniformOutput', false));
   endif
+
+  ## Whatever is left is named by its size and class, and a function handle
+  ## by its text.
+  for k = find (cellfun (@isempty, out_str(:)))'
+    x = data{k};
+    if (is_function_handle (x))
+      out_str{k} = func2str (x);
+      if (out_str{k}(1) != '@')
+        out_str{k} = ['@', out_str{k}];
+      endif
+    else
+      out_str{k} = sprintf ("%s %s", strjoin (arrayfun (@num2str, size (x), ...
+                                     "UniformOutput", false), 'x'), class (x));
+    endif
+  endfor
 
   ## Get optimal length
   strLen = max (cellfun (@length, out_str)) + 2;

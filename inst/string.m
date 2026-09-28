@@ -5031,7 +5031,7 @@ endfunction
 ## its largest finite magnitude, rounded up, from 5 to 16 significant digits.
 function c = num2strs (x, ref)
   if (isinteger (x))
-    c = arrayfun (@intstr, x, "UniformOutput", false);
+    c = arrayfun (@__intstr__, x, "UniformOutput", false);
     return;
   elseif (iscomplex (x))
     c = arrayfun (@num2str, x, "UniformOutput", false);
@@ -5046,36 +5046,6 @@ function c = num2strs (x, ref)
   endif
   fmt = sprintf ("%%.%dg", p);
   c = arrayfun (@(v) sprintf (fmt, v), x, "UniformOutput", false);
-endfunction
-
-## The exact decimal text of an integer-type scalar V.  A 64-bit value
-## beyond flintmax is divided by ten in two 32-bit halves held as doubles,
-## where every step is exact.
-function s = intstr (v)
-  if (abs (double (v)) < flintmax ())
-    s = sprintf ("%d", double (v));
-    return;
-  endif
-  neg = v < 0;
-  if (neg)
-    m = uint64 (-(v + ones (class (v)))) + uint64 (1);
-  else
-    m = uint64 (v);
-  endif
-  hi = double (bitshift (m, -32));
-  lo = double (bitand (m, uint64 (4294967295)));
-  s = '';
-  while (hi > 0 || lo > 0)
-    qh = floor (hi / 10);
-    t = (hi - 10 * qh) * 4294967296 + lo;
-    ql = floor (t / 10);
-    s = [char(48 + t - 10 * ql), s];
-    hi = qh;
-    lo = ql;
-  endwhile
-  if (neg)
-    s = ['-', s];
-  endif
 endfunction
 
 ## Convert a character vector to/from a row of Unicode code points (uint32), so
