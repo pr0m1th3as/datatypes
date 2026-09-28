@@ -1433,6 +1433,13 @@
 %! assert_equal (S.Properties.TimeStep, hours (1));
 %! D = standardizeMissing (TT, 30, 'DataVariables', 'B');
 %! assert_equal (D.B, [10; 20; NaN; 40; 50; 60]);
+%!test
+%! TT = timetable (hours ([1; 2]), hours ([1; -99]), [1; -99], ...
+%!                 'VariableNames', {'D', 'N'});
+%! S = standardizeMissing (TT, hours (-99));
+%! assert_equal (hours (S.D), [1; NaN]);
+%! assert_equal (S.N, [1; -99]);
+%! assert_equal (S.Properties.RowTimes, hours ([1; 2]));
 
 
 ## Test 'fillmissing' interpolates against the row times, not the row order
@@ -1600,6 +1607,10 @@
 %!error <timetable.standardizeMissing: invalid optional paired argument.> ...
 %! standardizeMissing (timetable ([1; 2; 3], 'RowTimes', ...
 %!                     datetime (2024, 1, 1) + hours (0:2)'), 1, 'Bogus', 1);
+%!error <timetable.standardizeMissing: cannot compare the datetime variable 'D' with a datetime indicator, because only one of them has a time zone.> ...
+%! standardizeMissing (timetable (hours (1), datetime (2020, 1, 1), ...
+%!                     'VariableNames', {'D'}), ...
+%!                     datetime (2020, 1, 1, 'TimeZone', 'UTC'));
 ################################################################################
 ##                      **    Variable management    **                       ##
 ################################################################################
@@ -3064,6 +3075,12 @@
 %!                 'VariableNames', {'A', 'B'});
 %! B = rowfun (@(x) sum (x), TT, 'SeparateInputs', false);
 %! assert_equal (B.Var1, [4; 6]);
+%!test
+%! TT = timetable (hours ([1; 2]), [1; 2], hours ([1; 2]));
+%! v = rowfun (@(x) {x}, TT, 'SeparateInputs', false, 'OutputFormat', 'cell');
+%! assert_equal (v{2}, {hours([48, 2])});
+%!error <timetable.rowfun: cannot concatenate the table variables 'Var1' and 'Var2', because their types are double and cell.> ...
+%! rowfun (@(x) x, timetable (hours (1), 1, {'a'}), 'SeparateInputs', false)
 
 ## Test 'ExtractCellContents' unwraps a cell variable
 %!test
@@ -9023,6 +9040,57 @@
 %!error <timetable.writetimetable: cannot write variables of 'inputParser' type.> ...
 %! writetimetable (timetable (inputParser (), 'TimeStep', hours (1)), ...
 %!                 [tempname() '.csv'])
+
+################################################################################
+##                     **    Conversion to arrays    **                       ##
+################################################################################
+
+## Test 'table2array' joins the variables and leaves the row times out
+%!test
+%! TT = timetable (hours ([1; 2]), [1.5; 2], [3; 4]);
+%! assert_equal (table2array (TT), [1.5, 3; 2, 4]);
+%!assert_equal (table2array (timetable (hours ([1; 2]), [1; 2], ...
+%!                                      string ({'x'; 'y'}))), ...
+%!              string ({'1', 'x'; '2', 'y'}))
+%!assert_equal (table2array (timetable (hours ([1; 2]), [1; 2], ...
+%!                                      {'a'; 'b'})), {1, 'a'; 2, 'b'})
+%!test
+%! TT = timetable (hours ([1; 2]), [1; 2], [3; 4]);
+%! assert_equal (table2array (TT(1:0,:)), zeros (0, 2));
+
+## Test 'table2cell' holds one row of one variable in each cell
+%!test
+%! TT = timetable (hours ([1; 2]), [1.5; 2], {'a'; 'b'});
+%! assert_equal (table2cell (TT), {1.5, 'a'; 2, 'b'});
+%!assert_equal (table2cell (timetable (hours ([1; 2]), [1, 2; 3, 4])), ...
+%!              {[1, 2]; [3, 4]})
+%!assert_equal (table2cell (eventtable (hours ([1; 2]), 'EventLabels', ...
+%!                                     {'a'; 'b'})), {'a'; 'b'})
+%!error <timetable.table2cell: cannot convert variables of 'containers.Map' type.> ...
+%! table2cell (timetable (containers.Map ({'a'}, {1}), 'TimeStep', hours (1)))
+
+## Test 'table2struct' leaves the row times out
+%!test
+%! TT = timetable (hours ([1; 2]), [1.5; 2], [3; 4]);
+%! S = table2struct (TT);
+%! assert_equal (size (S), [2, 1]);
+%! assert_equal (fieldnames (S), {'Var1'; 'Var2'});
+%! assert_equal ([S.Var1], [1.5, 2]);
+%! assert_equal ([S.Var2], [3, 4]);
+%!test
+%! TT = timetable (hours ([1; 2]), [1.5; 2], [3; 4]);
+%! S = table2struct (TT, 'ToScalar', true);
+%! assert_equal (S, struct ('Var1', [1.5; 2], 'Var2', [3; 4]));
+%!test
+%! TT = timetable (hours ([1; 2]), [1.5; 2], [3; 4]);
+%! assert_equal (size (table2struct (TT, 'ToScalar', false)), [2, 1]);
+%! assert_equal (size (table2struct (TT(1:0,:))), [0, 1]);
+%!error <timetable.table2struct: wrong number of input arguments.> ...
+%! table2struct (timetable (hours (1), 1), 'ToScalar')
+%!error <timetable.table2struct: wrong optional input argument.> ...
+%! table2struct (timetable (hours (1), 1), 'Scalar', true)
+%!error <timetable.table2struct: cannot convert variables of 'containers.Map' type.> ...
+%! table2struct (timetable (containers.Map ({'a'}, {1}), 'TimeStep', hours (1)))
 
 ################################################################################
 ##                       **    'timetable2table'    **                        ##

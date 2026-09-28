@@ -2488,7 +2488,11 @@ classdef timetable < tabular
     ## @code{@var{ttB} = standardizeMissing (@var{ttA}, @var{indicator})}
     ## replaces every value matching @var{indicator} with the missing value
     ## of its own type, so that @code{ismissing} and @code{rmmissing} will
-    ## afterwards treat it as missing.
+    ## afterwards treat it as missing.  Each indicator applies only to the
+    ## variables of its own kind, as @code{table.standardizeMissing}
+    ## describes: numbers to floating point variables, text to text and
+    ## @code{categorical} variables, and @code{duration} and @code{datetime}
+    ## indicators to variables of their own type.
     ##
     ## @qcode{'DataVariables'} restricts it to the variables named.  The row
     ## times are not a data variable and are never rewritten, so the time
@@ -3430,8 +3434,9 @@ classdef timetable < tabular
     ## @item @qcode{'SeparateInputs'}
     ## A logical scalar.  When @code{true} (the default), the value of each
     ## input variable is passed to @var{func} as a separate argument.  When
-    ## @code{false}, the values of the row are horizontally concatenated and
-    ## passed as a single argument.
+    ## @code{false}, the values of the row are joined into one array, as
+    ## @code{table2array} joins the variables, and passed as a single
+    ## argument.  Variables that cannot form one array are refused.
     ##
     ## @item @qcode{'ExtractCellContents'}
     ## A logical scalar.  When @code{true}, the contents of cell-valued
@@ -4907,6 +4912,69 @@ classdef timetable < tabular
   endmethods
 
   methods (Access = public)
+
+    ## -*- texinfo -*-
+    ## @deftypefn {timetable} {@var{A} =} table2array (@var{tt})
+    ##
+    ## Converts a timetable to an array.
+    ##
+    ## @code{@var{A} = table2array (@var{tt})} places the variables of
+    ## @var{tt} side by side and joins them into one array @var{A}, as
+    ## @code{table.table2array} joins the variables of a table.  The row
+    ## times and every other property of @var{tt} are left out.
+    ## @code{@var{tt}@{:,:@}} and @code{@var{tt}.Variables} return the same
+    ## array.
+    ##
+    ## @seealso{timetable.table2cell, timetable.table2struct,
+    ## timetable.timetable2table, table.table2array}
+    ## @end deftypefn
+    function A = table2array (this)
+      A = varsAsArray (this, 'table2array');
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {timetable} {@var{C} =} table2cell (@var{tt})
+    ##
+    ## Converts a timetable to a cell array.
+    ##
+    ## @code{@var{C} = table2cell (@var{tt})} returns a cell array @var{C} of
+    ## the same size as @var{tt}, in which each cell holds one row of one
+    ## variable, in the variable's own type, as @code{table.table2cell} does
+    ## for a table.  The row times and every other property of @var{tt} are
+    ## left out.
+    ##
+    ## @seealso{timetable.table2array, timetable.table2struct,
+    ## timetable.timetable2table, table.table2cell}
+    ## @end deftypefn
+    function C = table2cell (this)
+      C = varsAsCell (this, 'table2cell');
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timetable} {@var{S} =} table2struct (@var{tt})
+    ## @deftypefnx {timetable} {@var{S} =} table2struct (@var{tt}, @qcode{'ToScalar'}, @qcode{true})
+    ##
+    ## Converts a timetable to a scalar structure or structure array.
+    ##
+    ## @code{@var{S} = table2struct (@var{tt})} returns a structure array with
+    ## the same fields as the variables in @var{tt}.  The length of @var{S} is
+    ## the same as the height of @var{tt}.
+    ##
+    ## @code{@var{S} = table2struct (@var{tt}, @qcode{'ToScalar'},
+    ## @qcode{true})} returns a scalar structure with the same fields as the
+    ## variables in @var{tt}.  Each field has the same rows as @var{tt}.
+    ##
+    ## The row times and every other property of @var{tt} are left out.
+    ##
+    ## @seealso{timetable.table2array, timetable.table2cell,
+    ## timetable.timetable2table, table.table2struct}
+    ## @end deftypefn
+    function S = table2struct (this, varargin)
+      [S, errmsg] = table2structResult (this, varargin);
+      if (! isempty (errmsg))
+        error ("timetable.table2struct: %s", errmsg);
+      endif
+    endfunction
 
     ## -*- texinfo -*-
     ## @deftypefn  {timetable} {@var{tbl} =} timetable2table (@var{tt})

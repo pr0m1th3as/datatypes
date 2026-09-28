@@ -3709,15 +3709,23 @@ classdef (Abstract) tabular
         return
       endif
 
-      ## Split the indicator into numeric and text indicator values
-      [numInd, txtInd] = std_normalize_indicator (indicator, class (tblA));
+      ## Split the indicator by the type of variable each value applies to
+      ind = std_normalize_indicator (indicator, class (tblA));
 
       ## Standardize each targeted variable
       tbl = tblA;
       for k = 1:numel (ixVars)
         iv = ixVars(k);
-        v = std_apply_indicator (tbl.VariableValues{iv}, numInd, txtInd);
-        tbl.VariableValues{iv} = v;
+        v = tbl.VariableValues{iv};
+        if (isa (v, 'datetime') && ! isempty (ind.dt)
+            && isempty (v.TimeZone) != isempty (ind.dt.TimeZone))
+          errmsg = sprintf (strcat ("cannot compare the datetime variable", ...
+                                    " '%s' with a datetime indicator,", ...
+                                    " because only one of them has a", ...
+                                    " time zone."), tbl.VariableNames{iv});
+          return
+        endif
+        tbl.VariableValues{iv} = std_apply_indicator (v, ind);
       endfor
 
     endfunction
@@ -6511,19 +6519,29 @@ classdef (Abstract) tabular
       endif
 
       inCols = this.VariableValues(iIx);
-      ## A row laid side by side into one argument is a concatenation of the
-      ## variables, and the same pairs refuse here as anywhere else.  The
-      ## types do not change row by row, so it is asked once.
+      ## A row laid side by side into one argument joins as 'table2array'
+      ## joins the variables, but where they cannot form one array it is
+      ## refused rather than given as a cell array.  The types do not change
+      ## row by row, so it is asked once.
       if (! sepIn)
-        pair = tabular.incompatible_pair (inCols);
-        if (! isempty (pair))
+        [~, ok] = tabular.join_vars (inCols);
+        if (! ok)
           inNames = this.VariableNames(iIx);
-          errmsg = sprintf (strcat ("cannot concatenate the table", ...
-                                    " variables '%s' and '%s', because", ...
-                                    " their types are %s and %s."), ...
-                            inNames{pair(1)}, inNames{pair(2)}, ...
-                            class (inCols{pair(1)}), ...
-                            class (inCols{pair(2)}));
+          errmsg = "cannot concatenate the specified table variables.";
+          for j = 2:numel (inCols)
+            for i = 1:j-1
+              [~, ok] = tabular.join_vars (inCols([i, j]));
+              if (! ok)
+                errmsg = sprintf (strcat ("cannot concatenate the table", ...
+                                          " variables '%s' and '%s',", ...
+                                          " because their types are %s", ...
+                                          " and %s."), inNames{i}, ...
+                                  inNames{j}, class (inCols{i}), ...
+                                  class (inCols{j}));
+                return;
+              endif
+            endfor
+          endfor
           return;
         endif
       endif
@@ -7375,6 +7393,34 @@ classdef (Abstract) tabular
           end_try_catch
         endif
       endfor
+    endfunction
+
+    ## The body behind 'table2struct' on both classes.  Neither form reads the
+    ## row labels, so row names and row times are left out alike.  Returns an
+    ## errmsg body for the caller to raise.
+    function [S, errmsg] = table2structResult (this, args)
+      S = [];
+      errmsg = '';
+      toScalar = false;
+      if (! isempty (args))
+        if (numel (args) != 2)
+          errmsg = "wrong number of input arguments.";
+          return;
+        elseif (! strcmpi (args{1}, 'ToScalar'))
+          errmsg = "wrong optional input argument.";
+          return;
+        endif
+        toScalar = isequal (args{2}, 1);
+      endif
+      if (toScalar)
+        S = struct;
+        for i = 1:width (this)
+          S.(this.VariableNames{i}) = this.VariableValues{i};
+        endfor
+      else
+        C = varsAsCell (this, 'table2struct');
+        S = cell2struct (C, this.VariableNames(:), 2);
+      endif
     endfunction
 
     ## The stored variable values, and the types of the custom properties,
@@ -8837,39 +8883,6 @@ classdef (Abstract) tabular
       endif
     endfunction
 
-    ## The family a variable's type belongs to for concatenation into one
-    ## array.  Numbers, logicals, character data and strings promote into one
-    ## another, so they are one family; every other type concatenates only
-    ## with its own kind.
-    function fam = concat_family (val)
-      if (iscell (val))
-        fam = 'cell';
-      elseif (isnumeric (val) || islogical (val) || ischar (val)
-              || isa (val, 'string'))
-        fam = 'promotable';
-      elseif (isstruct (val))
-        fam = 'struct';
-      else
-        fam = class (val);
-      endif
-    endfunction
-
-    ## The first pair of variables that cannot form one array, or empty when
-    ## they all can.  Octave coerces several cross-family mixes silently,
-    ## a numeric beside a categorical coming back as the categorical's
-    ## codes, so the refusal has to be made here rather than left to 'cat'.
-    function pair = incompatible_pair (vals)
-      pair = [];
-      if (numel (vals) < 2)
-        return;
-      endif
-      fams = cellfun (@tabular.concat_family, vals, 'UniformOutput', false);
-      ix = find (! strcmp (fams, fams{1}), 1);
-      if (! isempty (ix))
-        pair = [1, ix];
-      endif
-    endfunction
-
     ## One header block entry as a column cell, whether it came in as a single
     ## character vector or as a column of them (a nested table or a struct).
     function out = header_entry (e)
@@ -10058,7 +10071,7 @@ classdef (Abstract) tabular
     ## selected by the logical mask ROWS, taken from the input-variable values
     ## INCOLS (a cell array of variable values).  When SEPIN is true each
     ## variable's selected rows form a separate argument; otherwise they are
-    ## horizontally concatenated into a single argument.  When EXTRACTCELL is
+    ## joined into a single argument by 'join_vars'.  When EXTRACTCELL is
     ## true the contents of cell-valued variables are extracted.
     function args = build_row_args (inCols, rows, sepIn, extractCell)
       vals = cell (1, numel (inCols));
@@ -10081,7 +10094,7 @@ classdef (Abstract) tabular
       if (sepIn)
         args = vals;
       else
-        args = {horzcat(vals{:})};
+        args = {tabular.join_vars(vals)};
       endif
     endfunction
 
@@ -10259,6 +10272,11 @@ function msg = uniqueBadType (badtype)
 
 endfunction
 
+## Impose 'EndValues' on the end gaps of a column.  COL is the column after
+## the fill method has run and COL0 the column before it, so a value the
+## method placed in an end gap can be taken back out.  A keyword takes the
+## value of the anchor on the side it names and leaves the other side missing;
+## a constant is written directly and must be assignable to the variable.
 function [col, filled] = apply_end_values (col, col0, m, filled, ...
                                            endVals, vname, cls)
   [head, tail] = end_gaps (m);
@@ -10326,11 +10344,8 @@ function [head, tail] = end_gaps (m)
   tail = m & x > known(end);
 endfunction
 
-## Impose 'EndValues' on the end gaps of a column.  COL is the column after
-## the fill method has run and COL0 the column before it, so a value the
-## method placed in an end gap can be taken back out.  A keyword takes the
-## value of the anchor on the side it names and leaves the other side missing;
-## a constant is written directly and must be assignable to the variable.
+## Fill every missing entry of variable V (mask M) with the constant FV.  Used
+## by 'fillmissing'.  VARNAME names the variable for error reporting.
 
 function [v, filled] = fill_constant (v, M, fv, varname, cls)
   filled = M;
@@ -10485,71 +10500,85 @@ function fvals = resolve_const_values (constVal, nvars, cls)
   endif
 endfunction
 
-## Fill every missing entry of variable V (mask M) with the constant FV.  Used
-## by 'fillmissing'.  VARNAME names the variable for error reporting.
-
-function v = std_apply_indicator (v, numInd, txtInd)
+## Replace entries of variable V that match an indicator of its own type with
+## the standard missing value of V's class.  Numbers apply to floating-point
+## variables, text to text variables, durations to durations and datetimes to
+## datetimes.  Used by 'standardizeMissing'.
+function v = std_apply_indicator (v, ind)
   if (isfloat (v))
-    if (! isempty (numInd))
-      v(ismember (v, numInd)) = NaN;
+    if (! isempty (ind.num))
+      v(ismember (v, ind.num)) = NaN;
     endif
   elseif (iscellstr (v))
-    if (! isempty (txtInd))
-      v(ismember (v, txtInd)) = {''};
+    if (! isempty (ind.txt))
+      v(ismember (v, ind.txt)) = {''};
     endif
   elseif (isa (v, 'string'))
-    if (! isempty (txtInd))
-      v(ismember (cellstr (v), txtInd)) = string (missing);
+    if (! isempty (ind.txt))
+      v(ismember (cellstr (v), ind.txt)) = string (missing);
     endif
   elseif (isa (v, 'categorical'))
-    if (! isempty (txtInd))
-      v(ismember (cellstr (v), txtInd)) = categorical (missing);
+    if (! isempty (ind.txt))
+      v(ismember (cellstr (v), ind.txt)) = categorical (missing);
+    endif
+  elseif (isa (v, 'duration'))
+    if (! isempty (ind.dur))
+      v(ismember (v, ind.dur)) = NaN;
+    endif
+  elseif (isa (v, 'datetime'))
+    if (! isempty (ind.dt))
+      v(ismember (v, ind.dt)) = NaT;
     endif
   endif
-  ## logical, integer, duration, datetime, calendarDuration, and nested table
-  ## variables have no compatible standard missing value here; pass through.
+  ## logical, integer, calendarDuration, and nested table variables have no
+  ## compatible standard missing value here; pass through.
 endfunction
 
-## Helper function for unstack method to get default aggregation function
-## and missing values according to the data type of the stacked variable
-
-function [numInd, txtInd] = std_normalize_indicator (indicator, cls)
-  numInd = [];
-  txtInd = {};
+## Split the indicator of 'standardizeMissing' by type into the fields 'num',
+## 'txt', 'dur' and 'dt' of IND.  Datetime indicators with and without a time
+## zone cannot be compared with the same variable, so they are refused
+## together.
+function ind = std_normalize_indicator (indicator, cls)
   if (iscell (indicator) && ! iscellstr (indicator))
-    for i = 1:numel (indicator)
-      e = indicator{i};
-      if (ischar (e))
-        txtInd{end+1} = e;
-      elseif (isa (e, 'string'))
-        tmp = cellstr (e);
-        txtInd = [txtInd, tmp(:)'];
-      elseif (iscellstr (e))
-        txtInd = [txtInd, e(:)'];
-      elseif (isnumeric (e) || islogical (e))
-        numInd = [numInd, double(e(:)')];
-      else
-        error (strcat ("%s.standardizeMissing: unsupported indicator", ...
-                       " element of class '%s'."), cls, class (e));
-      endif
-    endfor
-  elseif (iscellstr (indicator))
-    txtInd = indicator(:)';
-  elseif (ischar (indicator))
-    txtInd = {indicator};
-  elseif (isa (indicator, 'string'))
-    tmp = cellstr (indicator);
-    txtInd = tmp(:)';
-  elseif (isnumeric (indicator) || islogical (indicator))
-    numInd = double (indicator(:)');
+    elems = indicator(:)';
   else
-    error (strcat ("%s.standardizeMissing: invalid INDICATOR of class", ...
-                   " '%s'."), cls, class (indicator));
+    elems = {indicator};
+  endif
+  num = txt = dur = dt = {};
+  for i = 1:numel (elems)
+    e = elems{i};
+    if (ischar (e))
+      txt{end+1} = {e};
+    elseif (isa (e, 'string') || iscellstr (e))
+      txt{end+1} = cellstr (e)(:)';
+    elseif (isnumeric (e) || islogical (e))
+      num{end+1} = double (e(:)');
+    elseif (isa (e, 'duration'))
+      dur{end+1} = e(:);
+    elseif (isa (e, 'datetime'))
+      dt{end+1} = e(:);
+    elseif (iscell (indicator))
+      error (strcat ("%s.standardizeMissing: unsupported indicator", ...
+                     " element of class '%s'."), cls, class (e));
+    else
+      error (strcat ("%s.standardizeMissing: invalid INDICATOR of class", ...
+                     " '%s'."), cls, class (e));
+    endif
+  endfor
+  ind.num = [num{:}];
+  ind.txt = [txt{:}];
+  ind.dur = vertcat (dur{:});
+  if (isempty (dt))
+    ind.dt = [];
+  else
+    zoned = cellfun (@(x) ! isempty (x.TimeZone), dt);
+    if (any (zoned) && ! all (zoned))
+      error (strcat ("%s.standardizeMissing: cannot combine datetime", ...
+                     " indicators with and without a time zone."), cls);
+    endif
+    ind.dt = vertcat (dt{:});
   endif
 endfunction
-
-## Replace entries of variable V that match a (type-compatible) indicator with
-## the standard missing value of V's class.  Used by 'standardizeMissing'.
 
 
 ## One category value per column statistic, taken by its code.

@@ -756,31 +756,9 @@ classdef table < tabular
     ##
     ## @end deftypefn
     function S = table2struct (this, varargin)
-      ## Add defaults
-      toScalar = false;
-      ## Check optional input arguments
-      if (nargin > 1)
-        if (nargin != 3)
-          error ("table.table2struct: wrong number of input arguments.");
-        endif
-        if (strcmpi (varargin{1}, 'ToScalar') && isequal (varargin{2}, 1))
-          toScalar = true;
-        elseif (strcmpi (varargin{1}, 'ToScalar'))
-          toScalar = false;
-        else
-          error ("table.table2struct: wrong optional input argument.");
-        endif
-      endif
-      ## Do the conversion
-      if (toScalar)
-        S = struct;
-        for i = 1:width (this)
-          S.(this.VariableNames{i}) = this.VariableValues{i};
-        endfor
-      else
-        C = varsAsCell (this, 'table2struct');
-        F = this.VariableNames(:);
-        S = cell2struct (C, F, 2);
+      [S, errmsg] = table2structResult (this, varargin);
+      if (! isempty (errmsg))
+        error ("table.table2struct: %s", errmsg);
       endif
     endfunction
 
@@ -3344,17 +3322,24 @@ classdef table < tabular
     ## @code{@var{tblB} = standardizeMissing (@var{tblA}, @var{indicator})}
     ## replaces every entry of @var{tblA} that matches a value in
     ## @var{indicator} with the standard missing value of that variable's data
-    ## type (@code{NaN} for @code{double}/@code{single}, @qcode{''} for cell
-    ## arrays of character vectors, @code{<missing>} for @code{string}, and
-    ## @code{<undefined>} for @code{categorical}).
+    ## type (@code{NaN} for @code{double}/@code{single} and @code{duration},
+    ## @qcode{''} for cell arrays of character vectors, @code{<missing>} for
+    ## @code{string}, @code{<undefined>} for @code{categorical}, and
+    ## @code{NaT} for @code{datetime}).
     ##
     ## @var{indicator} may be a numeric scalar or vector, a character vector, a
-    ## @code{string} array, a cell array of character vectors, or a cell array
-    ## mixing numeric and text indicators.  Each indicator is applied only to
-    ## the variables whose type is compatible with it: numeric indicators match
-    ## @code{double} and @code{single} variables, while text indicators (char,
-    ## @code{string}, or cellstr) match cell-array-of-character-vector,
-    ## @code{string}, and @code{categorical} variables.
+    ## @code{string} array, a cell array of character vectors, a
+    ## @code{duration} or @code{datetime} array, or a cell array mixing any of
+    ## these.  Each indicator is applied only to the variables whose type is
+    ## compatible with it: numeric indicators match @code{double} and
+    ## @code{single} variables, text indicators (char, @code{string}, or
+    ## cellstr) match cell-array-of-character-vector, @code{string}, and
+    ## @code{categorical} variables, @code{duration} indicators match
+    ## @code{duration} variables, and @code{datetime} indicators match
+    ## @code{datetime} variables.  A @code{datetime} indicator matches the same
+    ## instant in any time zone, but indicators with and without a time zone
+    ## cannot be mixed, nor compared with a variable that differs from them in
+    ## having one.
     ##
     ## The @qcode{'DataVariables'} @var{Name}/@var{Value} pair restricts the
     ## operation to a subset of variables, using the same variable referencing
@@ -3362,8 +3347,7 @@ classdef table < tabular
     ## unchanged.
     ##
     ## Logical and integer variables (which have no standard missing value) and
-    ## @code{duration}, @code{datetime}, and @code{calendarDuration} variables
-    ## pass through unchanged.
+    ## @code{calendarDuration} variables pass through unchanged.
     ##
     ## @end deftypefn
     function tbl = standardizeMissing (tblA, varargin)
@@ -3560,8 +3544,9 @@ classdef table < tabular
     ## @item @qcode{'SeparateInputs'}
     ## A logical scalar.  When @code{true} (the default), the value of each
     ## input variable is passed to @var{func} as a separate argument.  When
-    ## @code{false}, the values of the row are horizontally concatenated and
-    ## passed as a single argument.
+    ## @code{false}, the values of the row are joined into one array, as
+    ## @code{table2array} joins the variables, and passed as a single
+    ## argument.  Variables that cannot form one array are refused.
     ##
     ## @item @qcode{'ExtractCellContents'}
     ## A logical scalar.  When @code{true}, the contents of cell-valued
