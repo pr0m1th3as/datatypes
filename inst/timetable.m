@@ -2534,6 +2534,11 @@ classdef timetable < tabular
     ## on one side, taking @qcode{'extrap'}, another method name, or a
     ## constant.
     ##
+    ## A variable with nothing @code{ismissing} counts as missing, such as a
+    ## cell array that is not a cell array of character vectors, a structure
+    ## or a nested table, is left as it is.  MATLAB refuses the whole call
+    ## when such a variable is among the data variables.
+    ##
     ## @code{[@var{ttB}, @var{TF}] = fillmissing (@dots{})} also returns a
     ## logical array marking what was filled.  The row times themselves are
     ## never filled and the time step is unchanged.
@@ -3718,7 +3723,9 @@ classdef timetable < tabular
     ##
     ## @var{vars} names the variables to stack.  A cell array of variable
     ## references stacks several groups at once, one new variable per group,
-    ## each group holding the same number of variables.
+    ## each group holding the same number of variables.  The stacked variables
+    ## are joined as @code{table2array} joins them, and must each have one
+    ## column; variables that cannot join are refused.
     ##
     ## @code{[@var{tt2}, @var{index}] = stack (@dots{})} also returns
     ## @var{index}, naming the row of @var{tt} each row of @var{tt2} came

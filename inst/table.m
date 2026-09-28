@@ -2322,6 +2322,10 @@ classdef table < tabular
     ## defined in @var{vars} for stacking are replicated in @var{tblB}.  If
     ## @var{tblA} contains @qcode{RowNames}, these are not stacked.
     ##
+    ## The stacked variables are joined as @code{table2array} joins them, and
+    ## must each have one column; variables that cannot join, such as a
+    ## @code{categorical} and a numeric variable, are refused.
+    ##
     ## @code{@var{tblB} = stack (@var{tblA}, @{@var{vars1}, @dots{},
     ## @var{varsN}@})} stacks multiple groups of variables, given as a cell
     ## array of variable references, producing one stacked data variable in
@@ -3239,6 +3243,11 @@ classdef table < tabular
     ## The @qcode{'previous'}, @qcode{'next'}, and @qcode{'nearest'} methods
     ## operate on variables of any data type.  Leading or trailing missing
     ## entries that cannot be reached by the method are left missing.
+    ##
+    ## A variable with nothing @code{ismissing} counts as missing, such as a
+    ## cell array that is not a cell array of character vectors, a structure
+    ## or a nested table, is left as it is.  MATLAB refuses the whole call
+    ## when such a variable is among the data variables.
     ##
     ## The following @var{Name}/@var{Value} pairs are supported:
     ##

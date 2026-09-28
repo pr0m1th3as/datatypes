@@ -1860,6 +1860,12 @@ classdef (Abstract) tabular
         else
           tmpDir = -1;
         endif
+        ## Calendar durations have no order: a month is no fixed number of
+        ## days, so they are refused, as in MATLAB.
+        if (isa (varVal{ix}, 'calendarDuration'))
+          errmsg = sortBadType ('calendarDuration');
+          return
+        endif
         [p, badtype] = valueProxy (varVal{ix}, CM);
         if (! isempty (badtype))
           errmsg = sortBadType (badtype);
@@ -5959,11 +5965,28 @@ classdef (Abstract) tabular
         idVarValues = repmat (categorical (grpNames{1})', nRow, 1);
       endif
 
-      ## Build one stacked data column per group
+      ## Build one stacked data column per group.  The variables join as
+      ## 'table2array' joins them, and a group that cannot is refused.
       ndCols = cell (1, nGroup);
       for g = 1:nGroup
         gvals = this.VariableValues(grpIx{g});
-        ndCols{g} = vec (cat (2, gvals{:})');
+        gnames = this.VariableNames(grpIx{g});
+        multi = find (cellfun (@(x) columns (x) != 1, gvals), 1);
+        if (! isempty (multi))
+          errmsg = sprintf ("cannot stack the multicolumn variable '%s'.", ...
+                            gnames{multi});
+          return;
+        endif
+        [joined, ok] = tabular.join_vars (gvals);
+        if (! ok)
+          [i, j] = stack_bad_pair (gvals);
+          errmsg = sprintf (strcat ("cannot stack the variables '%s' and", ...
+                                    " '%s', because their types are %s and", ...
+                                    " %s."), gnames{i}, gnames{j}, ...
+                            class (gvals{i}), class (gvals{j}));
+          return;
+        endif
+        ndCols{g} = vec (joined');
       endfor
 
       ## Assemble the stacked table (indicator followed by the data columns)
@@ -10751,6 +10774,22 @@ endfunction
 
 ## Special function to convert a mixed cell array to cellstr array
 ## that keeps MATLAB like formatting for each type of element
+## The first pair of the values VALS that cannot join, or the first and the
+## last where every pair can but the whole set cannot.
+function [i, j] = stack_bad_pair (vals)
+  n = numel (vals);
+  for i = 1:n-1
+    for j = i+1:n
+      [~, ok] = tabular.join_vars (vals([i, j]));
+      if (! ok)
+        return;
+      endif
+    endfor
+  endfor
+  i = 1;
+  j = n;
+endfunction
+
 ## The text of each cell of the variable DATA in a table display, one
 ## column of TEXTS for each display column, with how they align and how wide
 ## each column's widest text is.  VARLEN is the width of the variable's name,
