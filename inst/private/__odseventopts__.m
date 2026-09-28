@@ -16,7 +16,7 @@
 ## this program; if not, see <http://www.gnu.org/licenses/>.
 
 ## -*- texinfo -*-
-## @deftypefn {datatypes} {@var{args} =} __odseventopts__ (@var{x})
+## @deftypefn {datatypes} {[@var{args}, @var{errmsg}] =} __odseventopts__ (@var{x}, @var{varNames})
 ##
 ## The @code{eventtable} constructor options one cross-reference carries.
 ##
@@ -25,9 +25,13 @@
 ## variable designations the reference carries, and is empty when it carries
 ## none.
 ##
+## @var{varNames} are the variables of the sheet read as the event table.
+## @var{errmsg} is the body of a complaint for the caller to raise under its
+## own name when a designation names none of them, and is empty otherwise.
+##
 ## @end deftypefn
 
-function args = __odseventopts__ (x)
+function [args, errmsg] = __odseventopts__ (x, varNames)
 
   args = {};
   if (! isempty (x.labels))
@@ -38,6 +42,15 @@ function args = __odseventopts__ (x)
   endif
   if (! isempty (x.ends))
     args = [args, {'EventEndsVariable', x.ends}];
+  endif
+
+  errmsg = '';
+  named = args(2:2:end);
+  bad = find (! ismember (named, varNames), 1);
+  if (! isempty (bad))
+    errmsg = sprintf (strcat ("sheet '%s' is named as the event table of", ...
+                              " sheet '%s' but has no variable '%s'."), ...
+                      x.to, x.from, named{bad});
   endif
 
 endfunction

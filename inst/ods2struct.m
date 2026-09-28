@@ -66,19 +66,10 @@ function s = ods2struct (filename)
   ## field of its own; returning it twice would put the same event table in
   ## two places, and an edit to one copy would disagree with the other on the
   ## rewrite.
-  xrefs = __odscrossrefs__ (preamble);
-  for i = 1:numel (xrefs)
-    if (! any (strcmp (xrefs(i).from, names)))
-      error (strcat ("ods2struct: sheet '%s' is said to have its events on", ...
-                     " sheet '%s', but the file has no sheet '%s'."), ...
-             xrefs(i).from, xrefs(i).to, xrefs(i).from);
-    endif
-    if (any (strcmp (xrefs(i).to, {xrefs.from})))
-      error (strcat ("ods2struct: sheet '%s' is named as an event table", ...
-                     " and carries one of its own; an event table cannot", ...
-                     " carry an event table."), xrefs(i).to);
-    endif
-  endfor
+  [xrefs, errmsg] = __odscrossrefs__ (preamble, names);
+  if (! isempty (errmsg))
+    error ("ods2struct: %s", errmsg);
+  endif
   consumed = {xrefs.to};
 
   s = struct ();

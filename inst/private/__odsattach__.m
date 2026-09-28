@@ -52,7 +52,10 @@ function tt = __odsattach__ (tt, file, x, names, caller)
                    " where sheet '%s' has %s ones."), caller, x.to, ...
            evClass, x.from, ttClass);
   endif
-  args = __odseventopts__ (x);
+  [args, errmsg] = __odseventopts__ (x, ev.Properties.VariableNames);
+  if (! isempty (errmsg))
+    error ("%s: %s", caller, errmsg);
+  endif
   tt.Properties.Events = eventtable (ev, args{:});
 
 endfunction

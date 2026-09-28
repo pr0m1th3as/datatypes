@@ -102,7 +102,10 @@ function tt = ods2timetable (filename, varargin)
   if (ischar (data))
     error ("ods2timetable: %s", data);
   endif
-  xrefs = __odscrossrefs__ (preamble);
+  [xrefs, errmsg] = __odscrossrefs__ (preamble, names);
+  if (! isempty (errmsg))
+    error ("ods2timetable: %s", errmsg);
+  endif
 
   ## With no sheet asked for, the first data sheet is read, less the sheets
   ## that hold somebody's events: a file holding one timetable and its events
@@ -112,10 +115,6 @@ function tt = ods2timetable (filename, varargin)
   args = varargin;
   if (! any (strcmpi (args(1:2:end), 'Sheet')))
     pick = names(! ismember (names, {xrefs.to}));
-    if (isempty (pick))
-      error (strcat ("ods2timetable: every sheet of '%s' holds the events", ...
-                     " of another; name the one to read."), file);
-    endif
     args = [{'Sheet', pick{1}}, args];
   endif
 
@@ -152,7 +151,11 @@ function tt = ods2timetable (filename, varargin)
     jx = find (strcmp (sheet, {xrefs.to}), 1);
   endif
   if (! isempty (jx))
-    evargs = __odseventopts__ (xrefs(jx));
+    [evargs, errmsg] = __odseventopts__ (xrefs(jx), ...
+                                         tt.Properties.VariableNames);
+    if (! isempty (errmsg))
+      error ("ods2timetable: %s", errmsg);
+    endif
     tt = eventtable (tt, evargs{:});
     return;
   endif
@@ -512,11 +515,12 @@ endfunction
 %!   delete (fname);
 %! end_unwind_protect
 
-## Three files a hand edit has made inconsistent: one whose cross reference
+## Four files a hand edit has made inconsistent: one whose cross reference
 ## names a sheet that is not there, one whose event table is said to carry an
-## event table of its own, and one whose event table keeps row times of
-## another type than the sheet it annotates.
-%!shared fmiss, fdeep, ftype
+## event table of its own, one whose event table keeps row times of another
+## type than the sheet it annotates, and one whose event table lacks the
+## labels variable the cross reference names.
+%!shared fmiss, fdeep, ftype, fvar
 %! t = datetime (2024, 1, 1) + hours ((0:3)');
 %! A = timetable (t, (1:4)', 'VariableNames', {'v'});
 %! A.Properties.Events = eventtable (t(2), 'EventLabels', {'up'});
@@ -541,6 +545,11 @@ endfunction
 %! txt = fileread (ftype);
 %! txt = strrep (txt, '<text:p>A_Events</text:p>', '<text:p>B</text:p>');
 %! fid = fopen (ftype, 'w');  fputs (fid, txt);  fclose (fid);
+%! fvar = [tempname(), '.fods'];
+%! struct2ods (fvar, struct ('A', A, 'B', timetable (t, (5:8)')));
+%! txt = fileread (fvar);
+%! txt = strrep (txt, '<text:p>A_Events</text:p>', '<text:p>B</text:p>');
+%! fid = fopen (fvar, 'w');  fputs (fid, txt);  fclose (fid);
 
 ## Test a reference to a sheet the file does not have is refused
 %!error <ods2timetable: the event table of sheet 'Data' is said to be on sheet 'Nope', which the file does not have.> ...
@@ -549,23 +558,36 @@ endfunction
 ## Test an event table said to carry an event table is refused
 %!error <ods2struct: sheet 'A' is named as an event table and carries one of its own; an event table cannot carry an event table.> ...
 %! ods2struct (fdeep)
+%!error <ods2timetable: sheet 'A' is named as an event table and carries one of its own; an event table cannot carry an event table.> ...
+%! ods2timetable (fdeep)
 
 ## Test an event table whose row times are of another type is refused
 %!error <ods2struct: the event table on sheet 'B' has duration row times where sheet 'A' has datetime ones.> ...
 %! ods2struct (ftype)
+%!error <ods2timetable: the event table on sheet 'B' has duration row times where sheet 'A' has datetime ones.> ...
+%! ods2timetable (ftype)
+
+## Test an event table lacking a variable its cross reference names is refused
+%!error <ods2timetable: sheet 'B' is named as the event table of sheet 'A' but has no variable 'EventLabels'.> ...
+%! ods2timetable (ftype, 'Sheet', 'B')
+%!error <ods2timetable: sheet 'B' is named as the event table of sheet 'A' but has no variable 'EventLabels'.> ...
+%! ods2timetable (fvar)
+%!error <ods2struct: sheet 'B' is named as the event table of sheet 'A' but has no variable 'EventLabels'.> ...
+%! ods2struct (fvar)
 
 ## Test the fixtures are removed again
 %!test
 %! delete (fmiss);
 %! delete (fdeep);
 %! delete (ftype);
+%! delete (fvar);
 %! assert_equal (exist (fmiss, 'file'), 0);
 %! assert_equal (exist (fdeep, 'file'), 0);
 %! assert_equal (exist (ftype, 'file'), 0);
+%! assert_equal (exist (fvar, 'file'), 0);
 ## Two files nothing can be read out of: one whose columns are all numeric,
 ## so nothing in it can label the rows, and one in which a second cross
-## reference points at the data sheet, leaving every sheet of the file the
-## event table of another.
+## reference points back at the data sheet from its event table.
 %!shared fnum, fev
 %! fnum = [tempname(), '.fods'];
 %! table2ods (table ([1; 2], [3; 4], 'VariableNames', {'a', 'b'}), fnum);
@@ -594,8 +616,8 @@ endfunction
 %!error <ods2timetable: the sheet has no datetime or duration column to use as row times.> ...
 %! ods2timetable (fnum)
 
-## Test a file whose every sheet is somebody's event table names none to read
-%!error <ods2timetable: every sheet of '.*' holds the events of another; name the one to read.> ...
+## Test a file whose event table names its timetable as its own is refused
+%!error <ods2timetable: sheet 'Sheet1_Events' is named as an event table and carries one of its own; an event table cannot carry an event table.> ...
 %! ods2timetable (fev)
 
 ## Test the fixtures are removed again

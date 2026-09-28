@@ -16,7 +16,8 @@
 ## this program; if not, see <http://www.gnu.org/licenses/>.
 
 ## -*- texinfo -*-
-## @deftypefn {datatypes} {@var{x} =} __odscrossrefs__ (@var{preamble})
+## @deftypefn  {datatypes} {@var{x} =} __odscrossrefs__ (@var{preamble})
+## @deftypefnx {datatypes} {[@var{x}, @var{errmsg}] =} __odscrossrefs__ (@var{preamble}, @var{names})
 ##
 ## The event cross-references a workbook's metadata preamble carries.
 ##
@@ -30,6 +31,11 @@
 ## @qcode{labels}, @qcode{lengths} and @qcode{ends}, empty when the preamble
 ## carries no such line.
 ##
+## Given the workbook's data sheet names @var{names}, @var{errmsg} is the body
+## of a complaint for the caller to raise under its own name when a reference
+## starts from a sheet the file does not have, or names as an event table a
+## sheet that carries one of its own; it is empty otherwise.
+##
 ## Each value goes in a cell of its own rather than into one string because a
 ## sheet name may contain spaces.  A line whose keyword is not recognised is
 ## skipped, so that a file written by a later version is read rather than
@@ -37,9 +43,10 @@
 ##
 ## @end deftypefn
 
-function x = __odscrossrefs__ (preamble)
+function [x, errmsg] = __odscrossrefs__ (preamble, names = {})
 
   x = struct ('from', {}, 'to', {}, 'labels', {}, 'lengths', {}, 'ends', {});
+  errmsg = '';
   if (isempty (preamble) || columns (preamble) < 3)
     return;
   endif
@@ -57,6 +64,24 @@ function x = __odscrossrefs__ (preamble)
                        'labels', cell_text (preamble, r, 4), ...
                        'lengths', cell_text (preamble, r, 5), ...
                        'ends', cell_text (preamble, r, 6));
+  endfor
+
+  if (nargin < 2)
+    return;
+  endif
+  for i = 1:numel (x)
+    if (! any (strcmp (x(i).from, names)))
+      errmsg = sprintf (strcat ("sheet '%s' is said to have its events on", ...
+                                " sheet '%s', but the file has no sheet", ...
+                                " '%s'."), x(i).from, x(i).to, x(i).from);
+      return;
+    endif
+    if (any (strcmp (x(i).to, {x.from})))
+      errmsg = sprintf (strcat ("sheet '%s' is named as an event table and", ...
+                                " carries one of its own; an event table", ...
+                                " cannot carry an event table."), x(i).to);
+      return;
+    endif
   endfor
 
 endfunction
