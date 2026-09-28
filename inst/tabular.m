@@ -8774,11 +8774,6 @@ classdef (Abstract) tabular
       endif
     endfunction
 
-    ## Detect the cell/non-cell mix of variable values VALS that cannot form a
-    ## homogeneous array.  Returns the column indices [LO, HI] (in column order)
-    ## of the first cell and first non-cell variable, or [] when VALS are not
-    ## such a mix.  Callers emit the incompatibility error under their own
-    ## method name.
     ## Validate an 'empty' size specification and return it as [rows, vars].
     ## CLSTYPE names the class for the one message that has to say it.
     ## Returns an errmsg body (empty on success) emitted by the caller under
