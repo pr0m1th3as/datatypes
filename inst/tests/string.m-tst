@@ -65,6 +65,47 @@
 %! tfM = ismissing (str);
 %! assert_equal (cellstr (str), {"1", "2", "3", "", "5"});
 %! assert_equal (tfM, logical ([0 0 0 1 0]));
+## One precision for the whole numeric array, set by its largest finite
+## magnitude, as in MATLAB
+%!assert_equal (cellstr (string ([pi; 1e20])), {'3.141592653589793'; '1e+20'})
+%!assert_equal (cellstr (string ([1/3; 10])), {'0.33333'; '10'})
+%!assert_equal (cellstr (string ([1/3; 20])), {'0.333333'; '20'})
+%!assert_equal (cellstr (string ([1/3; 12345])), {'0.333333333'; '12345'})
+%!assert_equal (cellstr (string ([1/3; 1e10])), ...
+%!              {'0.33333333333333'; '10000000000'})
+%!assert_equal (cellstr (string ([1/3; 2e10])), ...
+%!              {'0.333333333333333'; '20000000000'})
+%!assert_equal (cellstr (string ([0.1; 123456789.123])), ...
+%!              {'0.1'; '123456789.123'})
+%!assert_equal (cellstr (string ([1/3, 1e10; 2, 3])), ...
+%!              {'0.33333333333333', '10000000000'; '2', '3'})
+%!assert_equal (cellstr (string ([1e15; 2])), {'1000000000000000'; '2'})
+%!assert_equal (cellstr (string ([1e16; 2])), {'1e+16'; '2'})
+%!assert_equal (cellstr (string ([1e-5; 2e-7])), {'1e-05'; '2e-07'})
+%!assert_equal (cellstr (string ([-1/3; 2])), {'-0.33333'; '2'})
+%!assert_equal (cellstr (string ([Inf; 1/3])), {'Inf'; '0.33333'})
+%!assert_equal (cellstr (string ([Inf; -Inf])), {'Inf'; '-Inf'})
+%!assert_equal (cellstr (string ([1/3; -0])), {'0.33333'; '0'})
+%!assert_equal (ismissing (string ([NaN; 1/3])), [true; false])
+%!assert_equal (cellstr (string (single ([1/3; 123456.7]))), ...
+%!              {'0.3333333433'; '123456.7031'})
+%!assert_equal (cellstr (string (single ([1/3; 1e10]))), ...
+%!              {'0.33333334326744'; '10000000000'})
+%!assert_equal (cellstr (string (uint64 ([18446744073709551615; 4]))), ...
+%!              {'18446744073709551615'; '4'})
+%!assert_equal (cellstr (string (intmin ('int64'))), ...
+%!              {'-9223372036854775808'})
+%!assert_equal (cellstr (string (int64 (2) ^ 53 + int64 (1))), ...
+%!              {'9007199254740993'})
+%!assert_equal (cellstr (string (int8 ([-128; 127]))), {'-128'; '127'})
+%!assert_equal (cellstr (string ({1/3, 1e10})), {'0.33333', '10000000000'})
+## Concatenation converts each numeric argument as the constructor does
+%!assert_equal (cellstr ([[pi; 1e20], string({'s'; 's'})]), ...
+%!              {'3.141592653589793', 's'; '1e+20', 's'})
+%!assert_equal (cellstr ([string({'s'; 's'}), [1/3; 1e10]]), ...
+%!              {'s', '0.33333333333333'; 's', '10000000000'})
+%!assert_equal (cellstr ([1/3, 1e10, string('s')]), ...
+%!              {'0.33333', '10000000000', 's'})
 %!test
 %! str = string (duration ([3,4,5; NaN,NaN,NaN]));
 %! tfM = ismissing (str);

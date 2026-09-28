@@ -142,7 +142,11 @@ classdef string
     ## @item character arrays are converted so that each row becomes a string
     ## element, with any trailing whitespace preserved; cell arrays of character
     ## vectors are stored as-is.
-    ## @item numeric arrays are converted via the code @code{num2str} function.
+    ## @item numeric arrays are converted with one precision for the whole
+    ## array: @math{P} significant digits, where @math{P} is four more than the
+    ## base-10 logarithm of its largest finite magnitude, rounded up, and lies
+    ## between 5 and 16.  Integer types are written exactly, and @qcode{NaN}
+    ## becomes a missing string.
     ## @item logical arrays are converted to either @qcode{false} or
     ## @qcode{true} character sequences.
     ## @item categorical arrays are converted via their @code{cellstr} method.
@@ -258,7 +262,8 @@ classdef string
           is_empty = cellfun (@isempty, tmpval);
           tf_m(is_empty) = true;
           tmpval = cell2mat (tmpval(! tf_m));
-          strs(! tf_m) = arrayfun (@num2str, tmpval, "UniformOutput", false);
+          strs(! tf_m) = arrayfun (@(x) num2strs (x, x){1}, tmpval, ...
+                                   "UniformOutput", false);
           is_nan = strcmp (strs, 'NaN');
           strs(is_nan) = {''};
           tf_m(is_nan) = true;
@@ -321,13 +326,9 @@ classdef string
       elseif (isnumeric (in))
         is_nan = isnan (in);
         this.isMissing = is_nan;
-        if (any (is_nan(:)))
-          strs = repmat ({''}, size (in));
-          strs(! is_nan) = arrayfun (@(x) {num2str(x)}, in(! is_nan));
-          this.strs = strs;
-        else
-          this.strs = arrayfun (@(x) {num2str(x)}, in);
-        endif
+        strs = repmat ({''}, size (in));
+        strs(! is_nan) = num2strs (in(! is_nan), in);
+        this.strs = strs;
 
       elseif (islogical (in))
         sz = size (in);
@@ -5023,6 +5024,58 @@ function m = extract_between_matches (s, sp, ep, inclusive)
     endif
     i = ei + numel (ep);                  # resume past the END match
   endwhile
+endfunction
+
+## The text of each element of the numeric array X, with the precision
+## MATLAB gives the whole array REF: four more than the base-10 logarithm of
+## its largest finite magnitude, rounded up, from 5 to 16 significant digits.
+function c = num2strs (x, ref)
+  if (isinteger (x))
+    c = arrayfun (@intstr, x, "UniformOutput", false);
+    return;
+  elseif (iscomplex (x))
+    c = arrayfun (@num2str, x, "UniformOutput", false);
+    return;
+  endif
+  x = double (x);
+  x(x == 0) = 0;
+  m = max (abs (double (ref(isfinite (ref)))));
+  p = 5;
+  if (! isempty (m) && m > 0)
+    p = min (16, max (5, ceil (log10 (m)) + 4));
+  endif
+  fmt = sprintf ("%%.%dg", p);
+  c = arrayfun (@(v) sprintf (fmt, v), x, "UniformOutput", false);
+endfunction
+
+## The exact decimal text of an integer-type scalar V.  A 64-bit value
+## beyond flintmax is divided by ten in two 32-bit halves held as doubles,
+## where every step is exact.
+function s = intstr (v)
+  if (abs (double (v)) < flintmax ())
+    s = sprintf ("%d", double (v));
+    return;
+  endif
+  neg = v < 0;
+  if (neg)
+    m = uint64 (-(v + ones (class (v)))) + uint64 (1);
+  else
+    m = uint64 (v);
+  endif
+  hi = double (bitshift (m, -32));
+  lo = double (bitand (m, uint64 (4294967295)));
+  s = '';
+  while (hi > 0 || lo > 0)
+    qh = floor (hi / 10);
+    t = (hi - 10 * qh) * 4294967296 + lo;
+    ql = floor (t / 10);
+    s = [char(48 + t - 10 * ql), s];
+    hi = qh;
+    lo = ql;
+  endwhile
+  if (neg)
+    s = ['-', s];
+  endif
 endfunction
 
 ## Convert a character vector to/from a row of Unicode code points (uint32), so
