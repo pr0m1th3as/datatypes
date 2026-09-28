@@ -3172,6 +3172,10 @@
 %! assert_equal (sortrows (T, 'K', 'descend').N, [1; 3; 2]);
 
 ## Test input validation for 'sortrows' method
+%!error <table.sortrows: VARS must be a numeric or logical index, a variable name, a cell array or string array of variable names, or a vartype object.> ...
+%! sortrows (table ([2; 1]), struct ('a', 1));
+%!error <table.sortrows: VARS must be a numeric or logical index, a variable name, a cell array or string array of variable names, or a vartype object.> ...
+%! sortrows (table ([2; 1]), {1});
 %!error <table.sortrows: cannot sort variables of 'calendarDuration' type.> ...
 %! sortrows (table (calmonths ([2; 1])));
 %!error <table.sortrows: cannot sort variables of 'calendarDuration' type.> ...
@@ -4447,6 +4451,16 @@
 %! assert_equal (R.Properties.VariableNames, ...
 %!               {'OriginalVariableNames', 'p', 'q', 'r'});
 %! assert_equal (R.OriginalVariableNames, {'B'});
+%!test  # each new variable joins its row as 'table2array' joins it
+%! R = rows2vars (table (int8 ([7; 3]), [1; 2], 'VariableNames', {'A', 'K'}));
+%! assert_equal (R.Var1, int8 ([7; 1]));
+%!test
+%! R = rows2vars (table (hours ([1; 2]), [3; 4], 'VariableNames', {'D', 'K'}));
+%! assert_equal (R.Var1, hours ([1; 72]));
+%!test
+%! R = rows2vars (table (string ({'x'; 'y'}), [3; 4], ...
+%!                       'VariableNames', {'S', 'K'}));
+%! assert_equal (R.Var2, string ({'y'; '4'}));
 ## Test input validation for  'rows2vars' method
 %!error <table.rows2vars: name-value arguments must be in pairs.> ...
 %! rows2vars (tblA, 'DataVariables');
@@ -5374,6 +5388,10 @@
 %!                table ([2;1], {'p';'q'}, 'VariableNames', {'KeyR', 'V'}), ...
 %!                'LeftKeys', 'KeyL', 'RightKeys', 'KeyR');
 %! assert_equal (T.Properties.VariableNames, {'KeyL', 'V_left', 'V_right'});
+%!test  # an undefined key matches nothing, as in MATLAB
+%! T = table (categorical ({'lo'; ''}), [1; 1], 'VariableNames', {'C', 'K'});
+%! U = table (categorical ({'lo'; ''}), [3; 4], 'VariableNames', {'C', 'W'});
+%! assert_equal (innerjoin (T, U, 'Keys', 'C').W, 3);
 %!error <table.innerjoin: too few input arguments.> ...
 %! innerjoin (table ([1;2]));
 %!error <table.innerjoin: both inputs must be tables.> ...
@@ -5562,6 +5580,11 @@
 %! J = outerjoin (T, table ([1; 2], [8; 9], 'VariableNames', {'G', 'W'}), ...
 %!                'Keys', 'G');
 %! assert_equal (J.A.p, [1; 2; 3]);
+%!test  # an undefined key matches nothing, as in MATLAB
+%! T = table (categorical ({'lo'; ''}), [1; 1], 'VariableNames', {'C', 'K'});
+%! U = table (categorical ({'lo'; ''}), [3; 4], 'VariableNames', {'C', 'W'});
+%! J = outerjoin (T, U, 'Keys', 'C');
+%! assert_equal (J.W, [3; NaN; 4]);
 %!error <table.outerjoin: too few input arguments.> ...
 %! outerjoin (table ([1;2]));
 %!error <table.outerjoin: both inputs must be tables.> ...
@@ -5810,6 +5833,10 @@
 %! U = table ([7; NaN], [1; 2], 'VariableNames', {'A', 'K'});
 %! assert_equal (union (T, T).A, [1.5; NaN; NaN]);
 %! assert_equal (union (T, U, 'stable').A, [1.5; NaN; 7; NaN]);
+%!test  # rows with an undefined value are never equal, and sort last
+%! T = table (categorical ({'lo'; ''}), [1; 1], 'VariableNames', {'C', 'K'});
+%! U = union (T, T);
+%! assert_equal (isundefined (U.C), [false; true; true]);
 %!error <table.union: too few input arguments.> ...
 %! union (table ([1;2]));
 %!error <table.union: both inputs must be tables.> ...
@@ -5823,6 +5850,9 @@
 %!error <table.union: too many input arguments.> ...
 %! union (table ([1;2], 'VariableNames', {'N'}), ...
 %!        table ([1;2], 'VariableNames', {'N'}), 'sorted', 'extra');
+%!test  # a row with a missing value is in no intersection
+%! T = table (categorical ({'lo'; ''}), [1; 1], 'VariableNames', {'C', 'K'});
+%! assert_equal (intersect (T, T).C, categorical ({'lo'}, {'lo'}));
 %!error <table.intersect: too few input arguments.> ...
 %! intersect (table ([1;2]));
 %!error <table.intersect: both inputs must be tables.> ...
@@ -5836,6 +5866,11 @@
 %!error <table.intersect: too many input arguments.> ...
 %! intersect (table ([1;2], 'VariableNames', {'N'}), ...
 %!            table ([1;2], 'VariableNames', {'N'}), 'sorted', 'extra');
+%!test  # a row with a missing value is never removed
+%! T = table ([string('x'); string(missing)], [1; 1], ...
+%!            'VariableNames', {'S', 'K'});
+%! D = setdiff (T, T);
+%! assert_equal (ismissing (D.S), true);
 %!error <table.setdiff: too few input arguments.> ...
 %! setdiff (table ([1;2]));
 %!error <table.setdiff: both inputs must be tables.> ...
@@ -5867,6 +5902,9 @@
 %!error <table.setxor: too many input arguments.> ...
 %! setxor (table ([1;2], 'VariableNames', {'N'}), ...
 %!         table ([1;2], 'VariableNames', {'N'}), 'sorted', 'extra');
+%!test  # a row with a missing value is a member of nothing
+%! T = table (categorical ({'lo'; ''}), [1; 1], 'VariableNames', {'C', 'K'});
+%! assert_equal (ismember (T, T), [true; false]);
 %!error <table.ismember: too few input arguments.> ...
 %! ismember (table ([1;2]));
 %!error <table.ismember: both inputs must be tables.> ...
@@ -5972,6 +6010,13 @@
 %!test  # a NaN indicator also flags genuinely missing duration entries
 %! TF = ismissing (table (hours ([1; NaN; 3]), 'VariableNames', {'d'}), NaN);
 %! assert_equal (TF, [false; true; false]);
+%!test  # a missing variable is missing in every row
+%! T = table ([missing; missing], [1; 2], 'VariableNames', {'M', 'K'});
+%! assert_equal (ismissing (T), [true, false; true, false]);
+%!test  # a character vector indicator is one text value for a cellstr
+%! assert_equal (ismissing (table ({'a'; 'b'}), 'a'), [true; false]);
+%! assert_equal (ismissing (table ({'a'; 'b'}, [5; 1]), {'b', 5}), ...
+%!               [false, true; true, false]);
 
 ## Test 'rmmissing' method
 %!test  # removes every row that contains a missing value
@@ -6080,6 +6125,9 @@
 %! [R, TF] = rmmissing (T, 2);
 %! assert_equal (size (R), [0, 2]);
 %! assert_equal (TF, [false, false]);
+%!test  # a missing variable is missing, as in MATLAB
+%! T = table ([missing; missing], [1; 2], 'VariableNames', {'M', 'K'});
+%! assert_equal (size (rmmissing (T)), [0, 2]);
 ## Test input validation for 'rmmissing' method
 %!error <table.rmmissing: DIM must be 1 or 2.> ...
 %! rmmissing (table ([1; NaN]), 3);
@@ -8969,6 +9017,17 @@
 %! T = addprop (T, 'tp', 'table');
 %! T.Properties.CustomProperties.tp = string ({'a', 'b'});
 %! assert_equal (numel (T.Properties.CustomProperties.tp), 2);
+%!test  # a new variable pads each variable property with a missing value
+%! T = table ([1; 2], [3; 4]);
+%! T = addprop (T, {'c', 'd', 's'}, {'variable', 'variable', 'variable'});
+%! T.Properties.CustomProperties.c = categorical ({'a', 'b'});
+%! T.Properties.CustomProperties.d = datetime (2020, 1, [1, 2]);
+%! T.Properties.CustomProperties.s = struct ('f', {1, 2});
+%! T.x = [5; 6];
+%! assert_equal (isundefined (T.Properties.CustomProperties.c), ...
+%!               [false, false, true]);
+%! assert_equal (isnat (T.Properties.CustomProperties.d), [false, false, true]);
+%! assert_equal (isempty (T.Properties.CustomProperties.s(3).f), true);
 
 ## Test input validation for 'subsasgn' custom property assignment
 %!error <table.subsasgn: custom property 'nope' does not exist, use 'addprop' to add it.> ...

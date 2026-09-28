@@ -2826,6 +2826,9 @@ classdef table < tabular
     ## in the same order; @var{tbl} keeps the variable order of @var{tblA}.
     ## Rows are compared by their variable values only (row names are ignored),
     ## and by default @var{tbl} is sorted by those values.
+    ## A row holding a missing value (@qcode{NaN}, @qcode{NaT},
+    ## @qcode{<undefined>} or @qcode{<missing>}) equals no other row, itself
+    ## included, and missing values sort last.
     ##
     ## @code{@var{tbl} = union (@var{tblA}, @var{tblB}, @var{setOrder})}
     ## controls the ordering of @var{tbl}.  @var{setOrder} is either
@@ -2880,6 +2883,9 @@ classdef table < tabular
     ## necessarily in the same order; @var{tbl} keeps the variable order of
     ## @var{tblA}.  Rows are compared by their variable values only (row names
     ## are ignored), and by default @var{tbl} is sorted by those values.
+    ## A row holding a missing value (@qcode{NaN}, @qcode{NaT},
+    ## @qcode{<undefined>} or @qcode{<missing>}) equals no other row, itself
+    ## included, and missing values sort last.
     ##
     ## @code{@var{tbl} = intersect (@var{tblA}, @var{tblB}, @var{setOrder})}
     ## controls the ordering of @var{tbl}, either @qcode{'sorted'} (default) or
@@ -2921,6 +2927,8 @@ classdef table < tabular
     ## also appears as a row of @var{tblB}.  Both tables must have the same
     ## variable names, although not necessarily in the same order, and rows are
     ## compared by their variable values only (row names are ignored).
+    ## A row holding a missing value (@qcode{NaN}, @qcode{NaT},
+    ## @qcode{<undefined>} or @qcode{<missing>}) is a member of nothing.
     ##
     ## @code{[@var{TF}, @var{ixB}] = ismember (@var{tblA}, @var{tblB})} also
     ## returns a column vector @var{ixB} containing, for each row of @var{tblA},
@@ -2955,6 +2963,9 @@ classdef table < tabular
     ## not necessarily in the same order; @var{tbl} keeps the variable order of
     ## @var{tblA}.  Rows are compared by their variable values only (row names
     ## are ignored), and by default @var{tbl} is sorted by those values.
+    ## A row holding a missing value (@qcode{NaN}, @qcode{NaT},
+    ## @qcode{<undefined>} or @qcode{<missing>}) equals no other row, itself
+    ## included, and missing values sort last.
     ##
     ## @code{@var{tbl} = setdiff (@var{tblA}, @var{tblB}, @var{setOrder})}
     ## controls the ordering of @var{tbl}, either @qcode{'sorted'} (default) or
@@ -2998,6 +3009,9 @@ classdef table < tabular
     ## variable order of @var{tblA}.  Rows are compared by their variable values
     ## only (row names are ignored), and by default @var{tbl} is sorted by those
     ## values.
+    ## A row holding a missing value (@qcode{NaN}, @qcode{NaT},
+    ## @qcode{<undefined>} or @qcode{<missing>}) equals no other row, itself
+    ## included, and missing values sort last.
     ##
     ## @code{@var{tbl} = setxor (@var{tblA}, @var{tblB}, @var{setOrder})}
     ## controls the ordering of @var{tbl}, either @qcode{'sorted'} (default) or

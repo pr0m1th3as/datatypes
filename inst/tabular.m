@@ -1812,6 +1812,11 @@ classdef (Abstract) tabular
                            " 'vartype' object.");
             return
           endif
+        else
+          errmsg = strcat ("VARS must be a numeric or logical index, a", ...
+                           " variable name, a cell array or string array", ...
+                           " of variable names, or a vartype object.");
+          return
         endif
       endif
 
@@ -3052,6 +3057,8 @@ classdef (Abstract) tabular
             varTF = __ismissing__ (tmpVar);
             varTF = all (varTF, 2);
             this.VariableValues{i} = varTF;
+          elseif (isa (tmpVar, 'missing'))
+            this.VariableValues{i} = true (rows (tmpVar), 1);
           else  # numeric, logical, and cellstr arrays
             varTF = __ismissing__ (tmpVar);
             varTF = any (varTF, 2);
@@ -3131,9 +3138,14 @@ classdef (Abstract) tabular
             iscstr_indicator = indicator{idx_iscstr};
             idx_iscstr = true;
           endif
-          ## char arrays
+          ## char arrays, each also a text value for cellstr variables
           idx_ischar = cellfun ('ischar', indicator);
           if (any (idx_ischar))
+            if (! idx_iscstr)
+              iscstr_indicator = {};
+            endif
+            iscstr_indicator = [iscstr_indicator(:); indicator(idx_ischar)(:)];
+            idx_iscstr = true;
             ischar_indicator = [indicator{idx_ischar}];
             idx_ischar = true;
           endif
@@ -3190,6 +3202,9 @@ classdef (Abstract) tabular
           elseif (ischar (indicator))
             idx_ischar = true;
             ischar_indicator = cellstr (indicator);
+            ## A character vector names one text value for cellstr variables
+            idx_iscstr = true;
+            iscstr_indicator = cellstr (indicator);
             idx_string = true;
             string_indicator = string (indicator);
             idx_categorical = true;
@@ -5760,12 +5775,15 @@ classdef (Abstract) tabular
         endif
       endfor
 
-      ## Check column types to decide whether to return arrays or cell arrays
-      col_types = cellfun (@(x) class (x), tbl.VariableValues, ...
-                           'UniformOutput', false);
-      if (isscalar (__unique__ (col_types)))
-        matrix = cat (2, tbl.VariableValues{:})';
-        new_var_values = num2cell (matrix, 1);
+      ## Each new variable is a row of the variables joined as 'table2array'
+      ## joins them, and a cell array where they cannot join.
+      [joined, ok] = tabular.join_vars (tbl.VariableValues);
+      if (ok)
+        new_var_values = cell (1, height (tbl));
+        for i = 1:height (tbl)
+          col = joined(i,:);
+          new_var_values{i} = col(:);
+        endfor
         out = table (new_var_values{:}, 'VariableNames', newVarNames);
       else
         cols_as_cells = cell (1, width (tbl));
@@ -7464,10 +7482,16 @@ classdef (Abstract) tabular
                   tmp(end+1) = NaN;
                 elseif (islogical (tmp))
                   tmp(end+1) = false;
-                elseif (isa (tmp, 'string'))
-                  tmp(end+1) = string (NaN);
                 elseif (iscell (tmp))
                   tmp{end+1} = [];
+                elseif (isstruct (tmp))
+                  f = fieldnames (tmp);
+                  tmp(end+1) = cell2struct (cell (numel (f), 1), f, 1);
+                else
+                  ## Any other type takes its own missing value, as in MATLAB
+                  try
+                    tmp(end+1) = missing;
+                  end_try_catch
                 endif
                 tbl.CustomProperties.(cpNames{i}) = tmp;
               endif
@@ -8626,6 +8650,12 @@ classdef (Abstract) tabular
       switch (kl)
         case 'text'
           [lp, rp] = tabular.text_codes (cellstr (lcol), cellstr (rcol));
+          ## A missing categorical or string value equals nothing, itself
+          ## included, as a NaN does; a cellstr's '' is text like any other.
+          lp = double (lp);
+          rp = double (rp);
+          lp(text_missing (lcol)) = NaN;
+          rp(text_missing (rcol)) = NaN;
         case 'datetime'
           lp = tabular.datetime_to_datenum (lcol);
           rp = tabular.datetime_to_datenum (rcol);
@@ -10790,6 +10820,18 @@ function [i, j] = stack_bad_pair (vals)
   endfor
   i = 1;
   j = n;
+endfunction
+
+## Which elements of the text key V are missing: undefined categorical
+## values and missing strings.  Character data and cellstr have none.
+function tf = text_missing (v)
+  if (isa (v, 'categorical'))
+    tf = isundefined (v);
+  elseif (isa (v, 'string'))
+    tf = ismissing (v);
+  else
+    tf = false (rows (v), 1);
+  endif
 endfunction
 
 ## The rows IDX of the variable V.  Indexing a tabular variable inside the
