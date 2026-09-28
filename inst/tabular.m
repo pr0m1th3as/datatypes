@@ -3859,7 +3859,7 @@ classdef (Abstract) tabular
             col = inCols{k};
             what = sprintf ("the variable '%s'", inNames{k});
             out = tabular.apply_func (func, errHandler, g, 1, ...
-                                      {col(rows,:)}, scope, what);
+                                      {rowsof(col, rows)}, scope, what);
             res{g,k} = out{1};
           endfor
         endfor
@@ -3971,7 +3971,7 @@ classdef (Abstract) tabular
         endif
         for i = 1:width (this)
           col = this.VariableValues{i};
-          tbl.VariableValues{i} = col(ixRows,:);
+          tbl.VariableValues{i} = rowsof (col, ixRows);
         endfor
         tbl = repeatRowLabels (tbl, rows, elementwise);
       endif
@@ -4152,7 +4152,8 @@ classdef (Abstract) tabular
           vals = cell (ng, 1);
           for g = 1:ng
             rows = (Grp == g);
-            [v, merr] = tabular.gs_apply_method (methods{mi}, col(rows,:));
+            [v, merr] = tabular.gs_apply_method (methods{mi}, ...
+                                                 rowsof (col, rows));
             if (! isempty (merr))
               errmsg = sprintf ("variable '%s': %s", datNames{di}, merr);
               return;
@@ -4609,7 +4610,7 @@ classdef (Abstract) tabular
         idcols = cell (1, nvar);
         for j = 1:nvar
           col = this.VariableValues{j};
-          idcols{j} = col(repRows,:);
+          idcols{j} = rowsof (col, repRows);
         endfor
         TID = table (idcols{:}, "VariableNames", this.VariableNames);
       endif
@@ -4654,7 +4655,7 @@ classdef (Abstract) tabular
         args = cell (1, nvar);
         for j = 1:nvar
           col = this.VariableValues{j};
-          args{j} = col(rows,:);
+          args{j} = rowsof (col, rows);
         endfor
         [results{g,:}] = func (args{:});
       endfor
@@ -4960,7 +4961,7 @@ classdef (Abstract) tabular
           UvarTable.VariableValues{i} = mcvec;
           ix = strcmp (IvarNames{i}, IvarValues);
           if (nrows == 1)
-            aggrVal = aggrFcn (vvals(ix, :));
+            aggrVal = aggrFcn (rowsof (vvals, ix));
             UvarTable.VariableValues{i} = aggrVal;
             CixRows = 1;
           else
@@ -4970,7 +4971,7 @@ classdef (Abstract) tabular
               ix = strcmp (IvarNames{i}, tmpIvarNames);
               if (any (ix))
                 aggrVec = ismember (tmpIvarNames, IvarNames{i});
-                aggrVal = aggrFcn (vvals(J == j, :)(aggrVec,:));
+                aggrVal = aggrFcn (rowsof (rowsof (vvals, J == j), aggrVec));
                 UvarTable.VariableValues{i}(j,:) = aggrVal;
               endif
               CixRows = [CixRows, find(J == j, 1)];
@@ -5082,7 +5083,7 @@ classdef (Abstract) tabular
             UvarTable.VariableValues{vi} = mcvec;
             ix = strcmp (IvarNames{i}, IvarValues);
             if (nrows == 1)
-              aggrVal = thisAggr (vvals(ix, :));
+              aggrVal = thisAggr (rowsof (vvals, ix));
               UvarTable.VariableValues{vi} = aggrVal;
               CixRows = 1;
             else
@@ -5092,7 +5093,7 @@ classdef (Abstract) tabular
                 ix = strcmp (IvarNames{i}, tmpIvarNames);
                 if (any (ix))
                   aggrVec = ismember (tmpIvarNames, IvarNames{i});
-                  aggrVal = thisAggr (vvals(J == j, :)(aggrVec,:));
+                  aggrVal = thisAggr (rowsof (rowsof (vvals, J == j), aggrVec));
                   UvarTable.VariableValues{vi}(j,:) = aggrVal;
                 endif
                 if (v == 1)
@@ -7180,7 +7181,7 @@ classdef (Abstract) tabular
         if (any (pos))
           src = idx;
           src(! pos) = idx(find (pos, 1));
-          col = p(src, :);
+          col = rowsof (p, src);
           [col, errmsg] = set_var_missing (col, ! pos);
         else
           [col, errmsg] = missing_rows (p, nout);
@@ -9084,7 +9085,7 @@ classdef (Abstract) tabular
         if (isempty (rows))
           continue;
         endif
-        slice = x(rows,:);
+        slice = rowsof (x, rows);
         if (is_function_handle (method))
           r = method (slice);
           if (! (isnumeric (r) || islogical (r)))
@@ -9298,13 +9299,13 @@ classdef (Abstract) tabular
         idx = NaN (n, 1);
         keep = find (! miss);
         if (isempty (keep))
-          levVals = col([], :);
+          levVals = rowsof (col, []);
           L = 0;
           missLvl = [];
         else
           [~, ia, ic] = unique (p(keep,:), "rows");
           idx(keep) = ic;
-          levVals = col(keep(ia), :);
+          levVals = rowsof (col, keep(ia));
           L = numel (ia);
           missLvl = false (1, L);
         endif
@@ -9315,7 +9316,7 @@ classdef (Abstract) tabular
           L = L + 1;
           idx(miss) = L;
           mrow = find (miss, 1);
-          levVals = [levVals; col(mrow, :)];
+          levVals = [levVals; rowsof(col, mrow)];
           missLvl = [missLvl, true];
         else
           idx(miss) = NaN;
@@ -9548,7 +9549,7 @@ classdef (Abstract) tabular
           if (isempty (rows))
             continue;
           endif
-          r = method (col(rows,:));
+          r = method (rowsof (col, rows));
           if (! (islogical (r) || isnumeric (r)))
             errmsg = "the filter function must return a logical result.";
             return;
@@ -9780,7 +9781,8 @@ classdef (Abstract) tabular
         if (! hasDV)
           v = numel (rows);
         else
-          v = sum (! any (tabular.gs_missing_mask (dataVals(rows,:)), 2));
+          m = tabular.gs_missing_mask (rowsof (dataVals, rows));
+          v = sum (! any (m, 2));
         endif
       elseif (ischar (method) && strcmp (method, 'percentage'))
         v = 100 * numel (rows) / totalAssigned;
@@ -9793,7 +9795,7 @@ classdef (Abstract) tabular
           v = NaN;
         endif
       else
-        [v, errmsg] = tabular.gs_apply_method (method, dataVals(rows,:));
+        [v, errmsg] = tabular.gs_apply_method (method, rowsof (dataVals, rows));
       endif
     endfunction
 
@@ -9823,7 +9825,7 @@ classdef (Abstract) tabular
       mv = [];
       mm = any (tabular.gs_missing_mask (x), 2);
       if (any (mm))
-        mv = x(find (mm, 1), :);
+        mv = rowsof (x, find (mm, 1));
       elseif (isnumeric (x))
         mv = nan (1, size (x, 2));
       else
@@ -9891,7 +9893,7 @@ classdef (Abstract) tabular
           hasVal(r) = true;
         endif
       endfor
-      col = dataVals(srcRow, :);
+      col = rowsof (dataVals, srcRow);
       if (! all (hasVal))
         [mv, ok] = tabular.pivot_missing_scalar (dataVals);
         if (! ok)
@@ -9941,7 +9943,7 @@ classdef (Abstract) tabular
         endif
         return;
       endif
-      val = col(k,:);
+      val = rowsof (col, k);
       if (isa (val, 'categorical'))
         if (ismissing (val))
           s = '<undefined>';
@@ -9996,7 +9998,7 @@ classdef (Abstract) tabular
             vals{k} = vertcat (sub{:});
           endif
         else
-          vals{k} = col(rows,:);
+          vals{k} = rowsof (col, rows);
         endif
       endfor
       if (sepIn)
@@ -10788,6 +10790,17 @@ function [i, j] = stack_bad_pair (vals)
   endfor
   i = 1;
   j = n;
+endfunction
+
+## The rows IDX of the variable V.  Indexing a tabular variable inside the
+## class takes the built-in indexing, which sees one object, so it goes
+## through the class's own 'subsref'.
+function out = rowsof (v, idx)
+  if (isa (v, 'tabular'))
+    out = subsref (v, substruct ('()', {idx, ':'}));
+  else
+    out = v(idx,:);
+  endif
 endfunction
 
 ## The text of each cell of the variable DATA in a table display, one

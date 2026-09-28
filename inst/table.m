@@ -2853,7 +2853,7 @@ classdef table < tabular
       if (! isempty (emsg))
         error ("table.union: %s", emsg);
       endif
-      [keyU, ixA, ixB] = union (proxyA, proxyB, 'rows', order);
+      [~, ixA, ixB] = union (proxyA, proxyB, 'rows', order);
       ## ixA, ixB list A's then B's contributions, but the result row order
       ## interleaves them per SETORDER, so reorder the assembled rows to the
       ## result's own order.  Row names are dropped: rows are drawn from both
@@ -2863,7 +2863,7 @@ classdef table < tabular
       sA.RowNames = {};
       sB.RowNames = {};
       sel = vertcat (sA, sB);
-      [~, perm] = ismember (keyU, [proxyA(ixA,:); proxyB(ixB,:)], 'rows');
+      perm = setop_order ([proxyA(ixA,:); proxyB(ixB,:)], order);
       tbl = subsetrows (sel, perm);
     endfunction
 
@@ -3024,7 +3024,7 @@ classdef table < tabular
       if (! isempty (emsg))
         error ("table.setxor: %s", emsg);
       endif
-      [keyX, ixA, ixB] = setxor (proxyA, proxyB, 'rows', order);
+      [~, ixA, ixB] = setxor (proxyA, proxyB, 'rows', order);
       ## ixA, ixB list A's then B's contributions, but the result row order
       ## interleaves them per SETORDER, so reorder the assembled rows to the
       ## result's own order.  Row names are dropped: rows are drawn from both
@@ -3034,7 +3034,7 @@ classdef table < tabular
       sA.RowNames = {};
       sB.RowNames = {};
       sel = vertcat (sA, sB);
-      [~, perm] = ismember (keyX, [proxyA(ixA,:); proxyB(ixB,:)], 'rows');
+      perm = setop_order ([proxyA(ixA,:); proxyB(ixB,:)], order);
       tbl = subsetrows (sel, perm);
     endfunction
 
@@ -4633,6 +4633,18 @@ endclassdef
 ## Validate the optional SETORDER argument shared by the set operations.
 ## Returns the lower-cased order ('sorted' default) and an errmsg body (empty on
 ## success) emitted by the caller under its own name.
+## The order of the result rows of a set operation, whose row values are P
+## as its two inputs contributed them: already in order when 'stable', and
+## sorted otherwise.  The rows are the result, so they are ordered, not
+## looked up; a row with a missing value matches no other.
+function perm = setop_order (P, order)
+  if (strcmp (order, 'stable'))
+    perm = (1:rows (P))';
+  else
+    [~, perm] = sortrows (P);
+  endif
+endfunction
+
 function [order, errmsg] = parse_set_order (args)
   order = 'sorted';
   errmsg = '';

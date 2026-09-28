@@ -5556,6 +5556,12 @@
 %! R = table ([2;3], {'x';'y'}, 'VariableNames', {'K', 'R'});
 %! T = outerjoin (L, R);
 %! assert_equal (ismissing (T.D), [false;false;true]);
+%!test  # a nested table variable is carried by its rows
+%! N = table ([1; 2; 3], 'VariableNames', {'p'});
+%! T = table (N, [1; 1; 2], [5; 6; 7], 'VariableNames', {'A', 'G', 'V'});
+%! J = outerjoin (T, table ([1; 2], [8; 9], 'VariableNames', {'G', 'W'}), ...
+%!                'Keys', 'G');
+%! assert_equal (J.A.p, [1; 2; 3]);
 %!error <table.outerjoin: too few input arguments.> ...
 %! outerjoin (table ([1;2]));
 %!error <table.outerjoin: both inputs must be tables.> ...
@@ -5799,6 +5805,11 @@
 %! [TF, ixB] = ismember (A, B);
 %! assert_equal (TF, [false;false;true]);
 %! assert_equal (ixB, [0;0;1]);
+%!test  # rows with a missing value are never equal, as in MATLAB
+%! T = table ([1.5; NaN], [1; 2], 'VariableNames', {'A', 'K'});
+%! U = table ([7; NaN], [1; 2], 'VariableNames', {'A', 'K'});
+%! assert_equal (union (T, T).A, [1.5; NaN; NaN]);
+%! assert_equal (union (T, U, 'stable').A, [1.5; NaN; 7; NaN]);
 %!error <table.union: too few input arguments.> ...
 %! union (table ([1;2]));
 %!error <table.union: both inputs must be tables.> ...
@@ -5838,6 +5849,11 @@
 %!error <table.setdiff: too many input arguments.> ...
 %! setdiff (table ([1;2], 'VariableNames', {'N'}), ...
 %!          table ([1;2], 'VariableNames', {'N'}), 'sorted', 'extra');
+%!test  # rows with a missing value are never equal, as in MATLAB
+%! T = table ([1.5; NaN], [1; 2], 'VariableNames', {'A', 'K'});
+%! U = table ([7; NaN], [1; 2], 'VariableNames', {'A', 'K'});
+%! assert_equal (setxor (T, U).A, [1.5; 7; NaN; NaN]);
+%! assert_equal (setxor (T, U, 'stable').A, [1.5; NaN; 7; NaN]);
 %!error <table.setxor: too few input arguments.> ...
 %! setxor (table ([1;2]));
 %!error <table.setxor: both inputs must be tables.> ...
@@ -6521,6 +6537,12 @@
 %! assert_equal (size (C), [2, 1]);
 %! assert_equal (C{1}, [20; 40]);
 %! assert_equal (C{2}, [60; 80]);
+%!test  # a nested table variable passes its rows to each group
+%! N = table ([1; 2; 3], 'VariableNames', {'p'});
+%! T = table (N, [1; 1; 2], [5; 6; 7], 'VariableNames', {'A', 'G', 'V'});
+%! R = varfun (@(x) height (x), T, 'GroupingVariables', 'G', ...
+%!             'InputVariables', 'A');
+%! assert_equal (R{:,3}, [2; 1]);
 %!error <table.varfun: FUNC must be a function handle.> varfun (1, table ([1; 2]))
 %!error <table.varfun: too few input arguments.> varfun (table ([1; 2]))
 %!error <table.varfun: name-value arguments must be in pairs.> ...
@@ -6536,6 +6558,11 @@
 ## a table does not answer to the other class's name as an 'OutputFormat'
 %!error <table.varfun: 'timetable' OutputFormat is not supported.> ...
 %! varfun (@mean, table ([1; 2]), 'OutputFormat', 'timetable')
+%!test  # a nested table variable passes its rows
+%! N = table ([1; 2; 3], 'VariableNames', {'p'});
+%! T = table (N, [1; 1; 2], [5; 6; 7], 'VariableNames', {'A', 'G', 'V'});
+%! R = rowfun (@(a, g, v) height (a) + v, T);
+%! assert_equal (R.Var1, [6; 7; 8]);
 %!error <table.rowfun: 'timetable' OutputFormat is not supported.> ...
 %! rowfun (@(a) a, table ([1; 2]), 'OutputFormat', 'timetable')
 
@@ -6597,6 +6624,11 @@
 %!               'A').Properties.VariableNames, ...
 %!               {'g', 'GroupCount', 'median_A'});
 ## an ambiguous abbreviation is refused
+%!test  # a nested table variable passes its rows to a function
+%! N = table ([1; 2; 3], 'VariableNames', {'p'});
+%! T = table (N, [1; 1; 2], [5; 6; 7], 'VariableNames', {'A', 'G', 'V'});
+%! S = groupsummary (T, 'G', @(x) height (x), 'A');
+%! assert_equal (S{:,3}, [2; 1]);
 %!error <table.groupsummary: 'm' matches more than one method name.> ...
 %! groupsummary (table (categorical ({'a'}), 1, 'VariableNames', {'g', ...
 %!               'A'}), ...
@@ -7052,6 +7084,11 @@
 %! G2 = groupfilter (T, 'g', [0 6 12], @(x) mean (x) > 4, 'IncludedEdge', ...
 %!                   'right');
 %! assert_equal (G2.x, [4; 5; 6]);
+%!test  # a nested table variable passes its rows
+%! N = table ([1; 2; 3], 'VariableNames', {'p'});
+%! T = table (N, [1; 1; 2], [5; 6; 7], 'VariableNames', {'A', 'G', 'V'});
+%! F = groupfilter (T, 'G', @(x) height (x) > 1, 'A');
+%! assert_equal (F.V, [5; 6]);
 %!error <table.groupfilter: METHOD must be a function handle.> ...
 %! groupfilter (table ([1; 2], [3; 4], 'VariableNames', {'g', 'x'}), 'g', 'sum')
 %!error <table.groupfilter: too few input arguments.> ...
@@ -7277,6 +7314,11 @@
 %! assert_equal (cellstr (P{:, 'g'}), {'a'; 'b'; 'Overall_sum'});
 %! assert_equal (P{:, {'x', 'y', 'Overall_sum'}}, [1, 2, 3; 3, 9, 12; 4, 11, ...
 %!               15]);
+%!test  # a nested table variable is counted by its rows
+%! N = table ([1; 2; 3], 'VariableNames', {'p'});
+%! T = table (N, [1; 1; 2], [5; 6; 7], 'VariableNames', {'A', 'G', 'V'});
+%! P = pivot (T, 'Rows', 'G', 'DataVariable', 'A', 'Method', 'count');
+%! assert_equal (P{:,2}, [2; 1]);
 %!error <table.pivot: specify at least one of 'Columns' or 'Rows'.> ...
 %! pivot (table (categorical ({'a'; 'b'}), 'VariableNames', {'g'}))
 %!error <table.pivot: 'DataVariable' must specify a single variable.> ...
@@ -7657,6 +7699,11 @@
 %!test  # repelem (T, 1, 1) leaves the table unchanged
 %! T = table ([1; 2; 3], 'VariableNames', {'x'});
 %! assert_equal (isequal (repelem (T, 1, 1), T), true);
+%!test  # a nested table variable is repeated by its rows
+%! N = table ([1; 2; 3], 'VariableNames', {'p'});
+%! T = table (N, [1; 1; 2], [5; 6; 7], 'VariableNames', {'A', 'G', 'V'});
+%! R = repelem (T, 2, 1);
+%! assert_equal (R.A.p, [1; 1; 2; 2; 3; 3]);
 ## Test input validation for 'repelem' method
 %!error <table.repelem: exactly three input arguments are required.> ...
 %! repelem (table (1));
@@ -7736,6 +7783,11 @@
 %!test  # repmat (T, 1, 1) leaves the table unchanged
 %! T = table ([1; 2; 3], 'VariableNames', {'x'});
 %! assert_equal (isequal (repmat (T, 1, 1), T), true);
+%!test  # a nested table variable is repeated by its rows
+%! N = table ([1; 2; 3], 'VariableNames', {'p'});
+%! T = table (N, [1; 1; 2], [5; 6; 7], 'VariableNames', {'A', 'G', 'V'});
+%! R = repmat (T, 2, 1);
+%! assert_equal (R.A.p, [1; 2; 3; 1; 2; 3]);
 ## Test input validation for 'repmat' method
 %!error <table.repmat: too few input arguments.> ...
 %! repmat (table (1));
@@ -9136,6 +9188,10 @@
 %! findgroups (table ());
 %!error <table.findgroups: unsupported grouping variable type 'cell'.> ...
 %! findgroups (table ({{1}; {2}}, 'VariableNames', {'v'}));
+%!test  # a nested table variable passes its rows
+%! N = table ([1; 2; 3], 'VariableNames', {'p'});
+%! C = splitapply (@(a) height (a), table (N), [1; 1; 2]);
+%! assert_equal (C, [2; 1]);
 %!error <table.splitapply: FUNC must be a function handle.> ...
 %! T = table ([1; 2], {'a'; 'b'}, 'VariableNames', {'n', 'c'});
 %! splitapply (5, T, [1; 2]);
