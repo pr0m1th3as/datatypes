@@ -8649,7 +8649,19 @@ classdef (Abstract) tabular
       endif
       switch (kl)
         case 'text'
-          [lp, rp] = tabular.text_codes (cellstr (lcol), cellstr (rcol));
+          if (ischar (lcol) || columns (lcol) == 1
+              || columns (lcol) != columns (rcol))
+            [lp, rp] = tabular.text_codes (cellstr (lcol), cellstr (rcol));
+          else
+            ## A multicolumn key is coded column by column, as a numeric one
+            ## is compared.
+            lp = zeros (rows (lcol), columns (lcol));
+            rp = zeros (rows (rcol), columns (rcol));
+            for c = 1:columns (lcol)
+              [lp(:,c), rp(:,c)] = tabular.text_codes (cellstr (lcol(:,c)), ...
+                                                       cellstr (rcol(:,c)));
+            endfor
+          endif
           ## A missing categorical or string value equals nothing, itself
           ## included, as a NaN does; a cellstr's '' is text like any other.
           lp = double (lp);
@@ -8944,6 +8956,13 @@ classdef (Abstract) tabular
       p = [];
       miss = [];
       errmsg = '';
+      ## A group is one value per row, as in MATLAB; a character matrix holds
+      ## one text value per row and groups by it.
+      if (columns (col) != 1 && ! ischar (col))
+        errmsg = strcat ("a grouping variable must have one column; use", ...
+                         " splitvars to group by its columns.");
+        return;
+      endif
       if (isa (col, 'categorical'))
         ## Categorical groups follow category order (ordinal or reordered),
         ## which the underlying category codes encode; <undefined> maps to NaN.
