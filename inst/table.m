@@ -651,7 +651,48 @@ classdef table < tabular
     ## -*- texinfo -*-
     ## @deftypefn {table} {@var{A} =} table2array (@var{tbl})
     ##
-    ## Converts a table to a homogeneous array.
+    ## Converts a table to an array.
+    ##
+    ## @code{@var{A} = table2array (@var{tbl})} places the variables of
+    ## @var{tbl} side by side and joins them into one array @var{A}, as
+    ## concatenation with @code{[]} joins them in MATLAB.  A multicolumn
+    ## variable gives as many columns.  The row names and every other property
+    ## of @var{tbl} are left out.  @code{@var{tbl}@{:,:@}} and
+    ## @code{@var{tbl}.Variables} return the same array.
+    ##
+    ## The variables join as follows:
+    ##
+    ## @itemize
+    ## @item Numeric and logical variables join as numbers do.  An integer type
+    ## takes precedence over @qcode{single}, @qcode{double} and
+    ## @qcode{logical}, the leftmost integer type over any other integer type,
+    ## @qcode{single} over @qcode{double}, and @qcode{double} over
+    ## @qcode{logical}.  Values outside the range of the resulting integer type
+    ## are clipped to its limits.
+    ## @item A numeric variable beside a @qcode{char} variable becomes the
+    ## characters of its values.  A logical variable does not join a
+    ## @qcode{char} variable.
+    ## @item Cell variables join only with other cell variables.
+    ## @item A @qcode{duration} variable joins @qcode{double} and logical
+    ## variables, whose values count days, and a @qcode{calendarDuration}
+    ## variable joins all three.
+    ## @item @qcode{categorical} variables join only if all or none of them are
+    ## ordinal, and @qcode{datetime} variables only if all or none of them have
+    ## a time zone.  Structures join only with the same fields, and nested
+    ## tables only with different variable names.
+    ## @item A @qcode{missing} variable joins @qcode{double}, @qcode{single},
+    ## @qcode{categorical}, @qcode{datetime}, @qcode{duration} and
+    ## @qcode{calendarDuration} variables, as the missing value of their type.
+    ## @end itemize
+    ##
+    ## Where the variables cannot form one array, @var{A} is the cell array
+    ## that @code{table2cell} returns; MATLAB raises an error instead.
+    ##
+    ## The exception is a @qcode{string} variable.  Numeric, logical,
+    ## @qcode{char}, cell and @qcode{missing} variables beside it are converted
+    ## to strings, and @var{A} is a string array instead of a cell array.  Each
+    ## row of a @qcode{char} variable becomes one string, each cell one string,
+    ## and a logical value the string @qcode{"true"} or @qcode{"false"}.
     ##
     ## @end deftypefn
     function A = table2array (this)
@@ -663,31 +704,17 @@ classdef table < tabular
     ##
     ## Converts a table to a cell array.
     ##
-    ## Each variable in @var{tbl} becomes a column of cells in the output
-    ## @var{C}.  Multicolumnar variables are returned in a single column with
-    ## each cell element containing a row vector.
-    ##
-    ## The size of the returned cell array, @var{C}, is the same as the input
-    ## table, @var{tbl}.  The output @var{C} does not include any of the table's
-    ## properties.  This also applies to row names.
-    ##
-    ## Compatibility Notes:
-    ##
-    ## Variables of types @qcode{categorical}, @qcode{calendarDuration},
-    ## @qcode{datetime}, @qcode{duration} and @qcode{string} are returned as
-    ## in their printed representation as character vectors.  To revert them to
-    ## their original class type you can parse the cell elements to the
-    ## respective object constructor.
-    ##
-    ## Nested tables are handled as multicolumnar variables only if they contain
-    ## data types, which can be converted to homogeneous array, i.e. numerical
-    ## logical values. Other data types will result to a warning due to
-    ## implicit conversion from numeric to char and the returned values will
-    ## not contain all values from the nested table.
+    ## @code{@var{C} = table2cell (@var{tbl})} returns a cell array @var{C} of
+    ## the same size as @var{tbl}, in which each cell holds one row of one
+    ## variable, in the variable's own type.  A multicolumn variable gives a row
+    ## in each cell, a @qcode{char} matrix one row of text, and a nested table a
+    ## table of one row.  A cell variable of one column gives the contents of
+    ## its cells.  The row names and every other property of @var{tbl} are left
+    ## out.
     ##
     ## @end deftypefn
     function C = table2cell (this, varargin)
-      C = varsAsCell (this);
+      C = varsAsCell (this, 'table2cell');
     endfunction
 
     ## -*- texinfo -*-
@@ -731,20 +758,7 @@ classdef table < tabular
           S.(this.VariableNames{i}) = this.VariableValues{i};
         endfor
       else
-        C = table2cell (this);
-        ## 'table2cell' renders categorical, datetime, duration,
-        ## calendarDuration, and string variables as character vectors; restore
-        ## the original typed values so the structure array preserves the
-        ## variable types, consistent with the 'ToScalar' output and MATLAB.
-        for i = 1:width (this)
-          vv = this.VariableValues{i};
-          if (any (isa (vv, {'categorical', 'datetime', 'duration', ...
-                             'calendarDuration', 'string'})))
-            for r = 1:size (vv, 1)
-              C{r,i} = vv(r,:);
-            endfor
-          endif
-        endfor
+        C = varsAsCell (this, 'table2struct');
         F = this.VariableNames(:);
         S = cell2struct (C, F, 2);
       endif
@@ -993,7 +1007,10 @@ classdef table < tabular
         error (strcat ("table.table2csv: 'WriteRowNames' must be a logical", ...
                        " scalar."));
       endif
-      csv = __csv_parts__ (this, writeVarNames, writeRowNames);
+      [csv, errmsg] = __csv_parts__ (this, writeVarNames, writeRowNames);
+      if (! isempty (errmsg))
+        error ("table.table2csv: %s", errmsg);
+      endif
       ## Write to file
       msg = __table2csv__ (file, csv);
       if (msg)

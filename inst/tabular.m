@@ -75,7 +75,9 @@ classdef (Abstract) tabular
     ## @qcode{'Row', 'Variables'}.  You can access table data per rows or per
     ## columns by using either one of the two dimension names, respectively.
     ## However, if the table contains row names, then the first element of the
-    ## @qcode{DimensionNames} corresponds to the row names.
+    ## @qcode{DimensionNames} corresponds to the row names.  The second name
+    ## returns the variables joined into one array, as @code{table2array} joins
+    ## them.
     ##
     ## @end deftp
     DimensionNames = {'Row', 'Variables'}
@@ -574,22 +576,7 @@ classdef (Abstract) tabular
           tbl = this;
           tbl = subsetrows (tbl, ixRow);
           tbl = subsetvars (tbl, ixVar);
-          pair = tabular.incompatible_pair (tbl.VariableValues);
-          if (! isempty (pair))
-            error (strcat ("%s.subsref: cannot concatenate the %s", ...
-                           " variables '%s' and '%s', because their types", ...
-                           " are %s and %s."), clstype, clstype, ...
-                   tbl.VariableNames{pair(1)}, ...
-                   tbl.VariableNames{pair(2)}, ...
-                   class (tbl.VariableValues{pair(1)}), ...
-                   class (tbl.VariableValues{pair(2)}));
-          endif
-          try
-            tbl = varsAsArray (tbl, 'subsref');
-          catch
-            error (strcat ("%s.subsref: %s cannot be concatenated", ...
-                           " into a matrix."), clstype, clstype);
-          end_try_catch
+          tbl = varsAsArray (tbl, 'subsref');
 
         case '.'
           ## A field name may be given as a string scalar, as in MATLAB.
@@ -606,11 +593,7 @@ classdef (Abstract) tabular
           elseif (isequal (s.subs, this.DimensionNames{1}))
             tbl = getRowLabels (this);
           elseif (isequal (s.subs, this.DimensionNames{2}))
-            try
-              tbl = varsAsArray (this, 'subsref');
-            catch
-              tbl = varsAsCell (this);
-            end_try_catch
+            tbl = varsAsArray (this, 'subsref');
           ## Everything else is indexing an existing variable name
           else
             tbl = getvar (this, s.subs);
@@ -1255,12 +1238,16 @@ classdef (Abstract) tabular
     ## descriptions and units, and the data.  Shared by 'table.table2csv' and
     ## 'timetable.timetable2csv', which differ only in what their row-label
     ## column holds.
-    function csv = __csv_parts__ (this, writeVarNames = true, ...
+    function [csv, errmsg] = __csv_parts__ (this, writeVarNames = true, ...
                                   writeRowLabels = true)
       ## A datetime or duration is written in its ISO 8601 form rather than as
       ## its display string: a display format may round or omit components, and
       ## a day-first one is indistinguishable from a month-first one on read.
-      [V, N, T, D, U] = table2cellarrays (this, 'iso');
+      [V, N, T, D, U, errmsg] = table2cellarrays (this, 'iso');
+      if (! isempty (errmsg))
+        csv = {};
+        return;
+      endif
       ## The row labels lead the block when the object has them; dropping the
       ## column here keeps them out of the file entirely.
       if (! writeRowLabels && hasRowLabels (this))
@@ -1374,7 +1361,10 @@ classdef (Abstract) tabular
     function [V, vtype, meta, hdr] = __ods_parts__ (this, caller, ...
                                                     writeVarNames = true, ...
                                                     writeRowNames = true)
-      [V, N, T, D, U] = table2cellarrays (this, 'iso');
+      [V, N, T, D, U, errmsg] = table2cellarrays (this, 'iso');
+      if (! isempty (errmsg))
+        error ("%s: %s", caller, errmsg);
+      endif
       ## The row labels lead the block when the object has them; dropping the
       ## column here keeps them out of the file entirely.
       if (! writeRowNames && hasRowLabels (this))
@@ -1472,7 +1462,10 @@ classdef (Abstract) tabular
     function __interop_write__ (this, caller, file, o)
       ## Flatten the table; nested tables and structs (multi-row type entries)
       ## are refused, as MATLAB does.
-      [V, N, T] = table2cellarrays (this, o.fmt);
+      [V, N, T, ~, ~, errmsg] = table2cellarrays (this, o.fmt);
+      if (! isempty (errmsg))
+        error ("%s: %s", caller, errmsg);
+      endif
       if (any (cellfun (@iscell, T)))
         error (strcat ("%s: %s does not support writing nested tables.", ...
                        "  Use splitvars to split multicolumn variables", ...
@@ -1601,7 +1594,10 @@ classdef (Abstract) tabular
     ## metadata (interop format).  Shared by 'writetable' and 'struct2xlsx'.
     ## CALLER names the function for error reporting.
     function [names, V, vtype] = __interop_parts__ (this, caller)
-      [V, N, T] = table2cellarrays (this, 'iso');
+      [V, N, T, ~, ~, errmsg] = table2cellarrays (this, 'iso');
+      if (! isempty (errmsg))
+        error ("%s: %s", caller, errmsg);
+      endif
       if (any (cellfun (@iscell, T)))
         error (strcat ("%s: nested tables and structs are not supported;", ...
                        " flatten multicolumn variables with splitvars", ...
@@ -7265,63 +7261,53 @@ classdef (Abstract) tabular
       tbl = varsChanged (tbl);
     endfunction
 
-    ## The variables laid side by side as one homogeneous array, and as a
-    ## cell array.  Neither reads the row labels, so both serve every
-    ## tabular class; CALLER names the method reporting a refusal, which is
-    ## the public conversion for a table and the brace reference otherwise.
+    ## The variables laid side by side as one array, and as a cell array.
+    ## Neither reads the row labels, so both serve every tabular class;
+    ## CALLER names the method reporting a refusal, which is the public
+    ## conversion for a table and the brace reference otherwise.
     function A = varsAsArray (this, caller)
-      ## Handle empty table.  An object with rows but no variables still
-      ## reports its height, so the array it becomes keeps it too.
-      if isempty (this)
-        A = zeros (size (this));
-        return
+      ## An object with rows but no variables still reports its height, so
+      ## the array it becomes keeps it too.
+      if (width (this) == 0)
+        A = zeros (height (this), 0);
+        return;
       endif
-      ## A mix of cell and non-cell variables cannot form a homogeneous array.
-      ## Octave would silently promote single-row pieces to a cell (MATLAB
-      ## errors), so guard explicitly and report the first incompatible pair.
-      pair = tabular.incompatible_pair (this.VariableValues);
-      if (! isempty (pair))
-        error (strcat ("%s.%s: cannot concatenate the table", ...
-                       " variables '%s' and '%s', because their types are", ...
-                       " %s and %s."), class (this), caller, ...
-               this.VariableNames{pair(1)}, ...
-               this.VariableNames{pair(2)}, ...
-               class (this.VariableValues{pair(1)}), ...
-               class (this.VariableValues{pair(2)}));
+      ## Variables that cannot form one array give a cell array instead.
+      [A, ok] = tabular.join_vars (this.VariableValues);
+      if (! ok)
+        A = varsAsCell (this, caller);
       endif
-      ## Add a try...catch block instead of heuristics
-      try
-        A = cat (2, this.VariableValues{:});
-      catch
-        error (strcat ("%s.%s: table cannot be concatenated", ...
-                       " into a matrix due to incompatible variable", ...
-                       " types."), class (this), caller);
-      end_try_catch
     endfunction
 
-    function C = varsAsCell (this)
+    function C = varsAsCell (this, caller)
+      ## Each cell holds one row of one variable, of the variable's own type.
       C = cell (size (this));
       for i = 1:width (this)
         varVal = this.VariableValues{i};
-        if (iscell (varVal))
+        if (iscell (varVal) && columns (varVal) == 1)
           C(:,i) = varVal;
-        elseif (isnumeric (varVal) || islogical (varVal))
+        elseif (is_function_handle (varVal))
+          ## A handle cannot form an array, so it is the only row there is,
+          ## and indexing it would call the function.
+          C(:,i) = {varVal};
+        elseif (isnumeric (varVal) || islogical (varVal) || ischar (varVal)
+                || iscell (varVal))
           C(:,i) = num2cell (varVal, 2);
-        elseif (any (isa (varVal, {'calendarDuration', 'categorical'})))
-          C(:,i) = dispstrings (varVal);
-        elseif (any (isa (varVal, {'datetime', 'duration'})))
-          C(:,i) = dispstrings (varVal);
-        elseif (isa (varVal, 'string'))
-          C(:,i) = cellstr (varVal);
-        elseif (isa (varVal, 'table'))
-          tmpVal = table2cell (varVal);
-          if (size (tmpVal, 2) > 1)
-            C(:,i) = num2cell (cell2mat (tmpVal), 2);
-          else
-            C(:,i) = tmpVal;
-          endif
-        elseif (isa (varVal, 'struct'))
-          C(:,i) = num2cell (varVal(:));
+        elseif (isa (varVal, 'tabular'))
+          ## Indexing inside a class method bypasses its own 'subsref'.
+          for r = 1:size (varVal, 1)
+            C{r,i} = subsetrows (varVal, r);
+          endfor
+        else
+          ## A struct or an object, provided '()' selects its rows.
+          try
+            for r = 1:size (varVal, 1)
+              C{r,i} = varVal(r,:);
+            endfor
+          catch
+            error ("%s.%s: cannot convert variables of '%s' type.", ...
+                   class (this), caller, class (varVal));
+          end_try_catch
         endif
       endfor
     endfunction
@@ -8272,12 +8258,13 @@ classdef (Abstract) tabular
 
 
     ## Export table to cell arrays
-    function [V, N, T, D, U] = table2cellarrays (this, fmt = 'display')
+    function [V, N, T, D, U, errmsg] = table2cellarrays (this, fmt = 'display')
       V = {};  # variable values
       N = {};  # variable names
       T = {};  # variable types
       D = {};  # variable descriptions
       U = {};  # variable units
+      errmsg = '';
       ## Every exported column needs a description and a units slot.  An unset
       ## property gives empties, which a file writes as value-less fields and
       ## so distinguishes from the empty strings a set-but-blank one gives.
@@ -8425,7 +8412,10 @@ classdef (Abstract) tabular
             U = [U, VU(ix)];
           endfor
         elseif (isa (var_V, 'table'))
-          [tmpV, tmpN, tmpT tmpD, tmpU] = table2cellarrays (var_V, fmt);
+          [tmpV, tmpN, tmpT tmpD, tmpU, errmsg] = table2cellarrays (var_V, fmt);
+          if (! isempty (errmsg))
+            return;
+          endif
           V = [V, tmpV];
           nestedN = {};
           nestedT = {};
@@ -8460,6 +8450,10 @@ classdef (Abstract) tabular
           T = [T, nestedT];
           D = [D, nestedD];
           U = [U, nestedU];
+        else
+          errmsg = sprintf ("cannot write variables of '%s' type.", ...
+                            class (var_V));
+          return;
         endif
       endfor
     endfunction
@@ -8847,6 +8841,81 @@ classdef (Abstract) tabular
       if (all (sz != 0))
         errmsg = 'at least one dimension must be zero.';
         return;
+      endif
+    endfunction
+
+    ## The variables joined side by side as MATLAB's concatenation joins
+    ## them.  OK is false for a combination MATLAB refuses, and for one that
+    ## core Octave would join only by changing a type MATLAB keeps apart,
+    ## such as a logical beside a char or a number beside a categorical.
+    function [A, ok] = join_vars (vals)
+      A = [];
+      kinds = cellfun (@tabular.join_kind, vals, 'UniformOutput', false);
+      has = @(k) any (strcmp (kinds, k));
+      only = @(ks) all (ismember (kinds, ks));
+      if (has ('string'))
+        ## Numbers, logicals, text and cells become strings.
+        ok = only ({'string', 'float', 'integer', 'logical', 'char', ...
+                    'cell', 'missing'});
+      elseif (has ('cell'))
+        ok = only ({'cell'});
+      elseif (has ('calendarDuration'))
+        ok = only ({'calendarDuration', 'duration', 'float', 'logical', ...
+                    'missing'}) && ! any (cellfun (@(x) isa (x, 'single'), vals));
+      elseif (has ('duration'))
+        ok = only ({'duration', 'float', 'logical', 'missing'}) ...
+             && ! any (cellfun (@(x) isa (x, 'single'), vals));
+      elseif (has ('categorical'))
+        ok = only ({'categorical', 'missing'});
+        if (ok)
+          iscat = strcmp (kinds, 'categorical');
+          ord = cellfun (@isordinal, vals(iscat));
+          ok = all (ord) || ! any (ord);
+        endif
+      elseif (has ('datetime'))
+        ok = only ({'datetime', 'missing'});
+        if (ok)
+          isdt = strcmp (kinds, 'datetime');
+          zoned = cellfun (@(x) ! isempty (x.TimeZone), vals(isdt));
+          ok = all (zoned) || ! any (zoned);
+        endif
+      elseif (has ('char'))
+        ok = only ({'char', 'float', 'integer'});
+      elseif (has ('missing'))
+        ok = only ({'missing', 'float'});
+      elseif (only ({'float', 'integer', 'logical'}))
+        ok = true;
+      else
+        ## Structs, nested tables, and any other class join only with their
+        ## own kind.
+        ok = all (strcmp (kinds, kinds{1}));
+      endif
+      if (! ok)
+        return;
+      endif
+      ## A logical beside a duration counts days, as a number does.
+      if (has ('duration') || has ('calendarDuration'))
+        islg = strcmp (kinds, 'logical');
+        vals(islg) = cellfun (@double, vals(islg), 'UniformOutput', false);
+      endif
+      ## A number beside a char becomes its character, silently as in MATLAB.
+      warning ('off', 'Octave:num-to-str', 'local');
+      try
+        A = cat (2, vals{:});
+      catch
+        A = [];
+        ok = false;
+      end_try_catch
+    endfunction
+
+    ## The kind of a variable's type, as 'join_vars' groups them.
+    function kind = join_kind (val)
+      if (isfloat (val))
+        kind = 'float';
+      elseif (isinteger (val))
+        kind = 'integer';
+      else
+        kind = class (val);
       endif
     endfunction
 
@@ -10198,6 +10267,8 @@ function [p, badtype] = valueProxy (v, CM)
     [~, ~, p] = __unique__ (c, 'rows');
   elseif (iscellstr (v))
     [~, ~, p] = __unique__ (v, 'rows');
+  elseif (ischar (v))
+    [~, ~, p] = __unique__ (v, 'rows');
   elseif (iscell (v))
     badtype = 'cell';
   elseif (isnumeric (v))
@@ -10213,11 +10284,18 @@ function [p, badtype] = valueProxy (v, CM)
   elseif (isstruct (v))
     badtype = 'struct';
   elseif (isa (v, 'table') || isa (v, 'timetable'))
+    ## Variables that cannot form one array come back as a cell array.
     try
       p = table2array (v);
     catch
       badtype = 'nested';
     end_try_catch
+    if (iscell (p))
+      p = [];
+      badtype = 'nested';
+    endif
+  else
+    badtype = class (v);
   endif
 
 endfunction
@@ -10225,32 +10303,24 @@ endfunction
 ## How 'sortrows' names a type it cannot compare.
 function msg = sortBadType (badtype)
 
-  switch (badtype)
-    case 'cell'
-      msg = "cannot sort variables of 'cell' type.";
-    case 'struct'
-      msg = "cannot sort variables of 'struct' type.";
-    otherwise
-      msg = strcat ("cannot sort nested tables with mixed data", ...
-                    " types.");
-  endswitch
+  if (strcmp (badtype, 'nested'))
+    msg = "cannot sort nested tables with mixed data types.";
+  else
+    msg = sprintf ("cannot sort variables of '%s' type.", badtype);
+  endif
 
 endfunction
 
 ## How 'unique' names a type it cannot compare.
 function msg = uniqueBadType (badtype)
 
-  switch (badtype)
-    case 'cell'
-      msg = strcat ("cannot find unique rows for variables of", ...
-                    " 'cell' type.");
-    case 'struct'
-      msg = strcat ("cannot find unique rows for variables of", ...
-                    " 'struct' type.");
-    otherwise
-      msg = strcat ("cannot find unique rows for nested tables with", ...
-                    " mixed data types.");
-  endswitch
+  if (strcmp (badtype, 'nested'))
+    msg = strcat ("cannot find unique rows for nested tables with", ...
+                  " mixed data types.");
+  else
+    msg = sprintf (strcat ("cannot find unique rows for variables of", ...
+                           " '%s' type."), badtype);
+  endif
 
 endfunction
 

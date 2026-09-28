@@ -5067,7 +5067,10 @@ classdef timetable < tabular
         error (strcat ("timetable.timetable2csv: 'WriteVariableNames' must", ...
                        " be a logical scalar."));
       endif
-      csv = __csv_parts__ (this, writeVarNames, true);
+      [csv, errmsg] = __csv_parts__ (this, writeVarNames, true);
+      if (! isempty (errmsg))
+        error ("timetable.timetable2csv: %s", errmsg);
+      endif
       msg = __table2csv__ (file, csv);
       if (msg)
         error ("timetable.timetable2csv: %s", msg);

@@ -411,11 +411,353 @@
 %!                  'y'}));
 %! assert_equal (class (M), 'cell');
 %! assert_equal (size (M), [2, 2]);
-## Test input validation for 'table2array' method: a mix of cell and non-cell
-## variables cannot form a homogeneous array (matches MATLAB, names the pair).
-%!error <table.table2array: cannot concatenate the table variables 'A' and 'B', because their types are double and cell.> ...
-%! table2array (table ([1; 2; 3; 4; 5], {1; 2; 3; 4; 5}, "VariableNames", ...
-%!              {"A", "B"}));
+## Test 'table2array' joins every pair of variable types as MATLAB joins them,
+## and gives the cell array of 'table2cell' where MATLAB cannot
+%!shared d, s, i1, u1, i2, i8, u8, b, c, cs, ce, st, ca, dt, du, cd, sr, tb, ms
+%! d = [66.5; 67];
+%! s = single ([68.5; 69]);
+%! i1 = int8 ([70; 71]);
+%! u1 = uint8 ([72; 73]);
+%! i2 = int16 ([74; 75]);
+%! i8 = int64 ([76; 77]);
+%! u8 = uint64 ([78; 79]);
+%! b = [true; false];
+%! c = ['ab'; 'cd'];
+%! cs = {'ef'; 'g'};
+%! ce = {1; 'h'};
+%! st = string ({'x'; 'y'});
+%! ca = categorical ({'lo'; 'hi'});
+%! dt = datetime (2020, 1, [1; 2]);
+%! du = hours ([1; 2]);
+%! cd = calmonths ([1; 2]);
+%! sr = struct ('a', {1; 2});
+%! tb = table ([1; 2], 'VariableNames', {'p'});
+%! ms = [missing; missing];
+%!assert_equal (table2array (table (d, d, 'VariableNames', {'a', 'b'})), ...
+%!               [66.5, 66.5; 67, 67])
+%!assert_equal (table2array (table (d, s)), single ([66.5, 68.5; 67, 69]))
+%!assert_equal (table2array (table (d, i1)), int8 ([67, 70; 67, 71]))
+%!assert_equal (table2array (table (d, u1)), uint8 ([67, 72; 67, 73]))
+%!assert_equal (table2array (table (d, i2)), int16 ([67, 74; 67, 75]))
+%!assert_equal (table2array (table (d, i8)), int64 ([67, 76; 67, 77]))
+%!assert_equal (table2array (table (d, u8)), uint64 ([67, 78; 67, 79]))
+%!assert_equal (table2array (table (d, b)), [66.5, 1; 67, 0])
+%!assert_equal (table2array (table (d, c)), ['Bab'; 'Ccd'])
+%!assert_equal (table2array (table (d, cs)), table2cell (table (d, cs)))
+%!assert_equal (table2array (table (d, ce)), table2cell (table (d, ce)))
+%!assert_equal (table2array (table (d, st)), string ({'66.5', 'x'; '67', 'y'}))
+%!assert_equal (table2array (table (d, ca)), table2cell (table (d, ca)))
+%!assert_equal (table2array (table (d, dt)), table2cell (table (d, dt)))
+%!assert_equal (table2array (table (d, du)), hours ([1596, 1; 1608, 2]))
+%!assert_equal (table2array (table (d, cd)), ...
+%!               calendarDuration (0, [0, 1; 0, 2], 0, ...
+%!                                 [1596, 0; 1608, 0], 0, 0))
+%!assert_equal (table2array (table (d, sr)), table2cell (table (d, sr)))
+%!assert_equal (isequaln (table2array (table (d, tb)), ...
+%!                         table2cell (table (d, tb))), true)
+%!assert_equal (table2array (table (d, ms)), [66.5, NaN; 67, NaN])
+%!assert_equal (table2array (table (s, s, 'VariableNames', {'a', 'b'})), ...
+%!               single ([68.5, 68.5; 69, 69]))
+%!assert_equal (table2array (table (s, i1)), int8 ([69, 70; 69, 71]))
+%!assert_equal (table2array (table (s, u1)), uint8 ([69, 72; 69, 73]))
+%!assert_equal (table2array (table (s, i2)), int16 ([69, 74; 69, 75]))
+%!assert_equal (table2array (table (s, i8)), int64 ([69, 76; 69, 77]))
+%!assert_equal (table2array (table (s, u8)), uint64 ([69, 78; 69, 79]))
+%!assert_equal (table2array (table (s, b)), single ([68.5, 1; 69, 0]))
+%!assert_equal (table2array (table (s, c)), ['Dab'; 'Ecd'])
+%!assert_equal (table2array (table (s, cs)), table2cell (table (s, cs)))
+%!assert_equal (table2array (table (s, ce)), table2cell (table (s, ce)))
+%!assert_equal (table2array (table (s, st)), string ({'68.5', 'x'; '69', 'y'}))
+%!assert_equal (table2array (table (s, ca)), table2cell (table (s, ca)))
+%!assert_equal (table2array (table (s, dt)), table2cell (table (s, dt)))
+%!assert_equal (table2array (table (s, du)), table2cell (table (s, du)))
+%!assert_equal (table2array (table (s, cd)), table2cell (table (s, cd)))
+%!assert_equal (table2array (table (s, sr)), table2cell (table (s, sr)))
+%!assert_equal (isequaln (table2array (table (s, tb)), ...
+%!                         table2cell (table (s, tb))), true)
+%!assert_equal (table2array (table (s, ms)), single ([68.5, NaN; 69, NaN]))
+%!assert_equal (table2array (table (i1, i1, 'VariableNames', {'a', 'b'})), ...
+%!               int8 ([70, 70; 71, 71]))
+%!assert_equal (table2array (table (i1, u1)), int8 ([70, 72; 71, 73]))
+%!assert_equal (table2array (table (i1, i2)), int8 ([70, 74; 71, 75]))
+%!assert_equal (table2array (table (i1, i8)), int8 ([70, 76; 71, 77]))
+%!assert_equal (table2array (table (i1, u8)), int8 ([70, 78; 71, 79]))
+%!assert_equal (table2array (table (i1, b)), int8 ([70, 1; 71, 0]))
+%!assert_equal (table2array (table (i1, c)), ['Fab'; 'Gcd'])
+%!assert_equal (table2array (table (i1, cs)), table2cell (table (i1, cs)))
+%!assert_equal (table2array (table (i1, ce)), table2cell (table (i1, ce)))
+%!assert_equal (table2array (table (i1, st)), string ({'70', 'x'; '71', 'y'}))
+%!assert_equal (table2array (table (i1, ca)), table2cell (table (i1, ca)))
+%!assert_equal (table2array (table (i1, dt)), table2cell (table (i1, dt)))
+%!assert_equal (table2array (table (i1, du)), table2cell (table (i1, du)))
+%!assert_equal (table2array (table (i1, cd)), table2cell (table (i1, cd)))
+%!assert_equal (table2array (table (i1, sr)), table2cell (table (i1, sr)))
+%!assert_equal (isequaln (table2array (table (i1, tb)), ...
+%!                         table2cell (table (i1, tb))), true)
+%!assert_equal (isequaln (table2array (table (i1, ms)), ...
+%!                         table2cell (table (i1, ms))), true)
+%!assert_equal (table2array (table (u1, u1, 'VariableNames', {'a', 'b'})), ...
+%!               uint8 ([72, 72; 73, 73]))
+%!assert_equal (table2array (table (u1, i2)), uint8 ([72, 74; 73, 75]))
+%!assert_equal (table2array (table (u1, i8)), uint8 ([72, 76; 73, 77]))
+%!assert_equal (table2array (table (u1, u8)), uint8 ([72, 78; 73, 79]))
+%!assert_equal (table2array (table (u1, b)), uint8 ([72, 1; 73, 0]))
+%!assert_equal (table2array (table (u1, c)), ['Hab'; 'Icd'])
+%!assert_equal (table2array (table (u1, cs)), table2cell (table (u1, cs)))
+%!assert_equal (table2array (table (u1, ce)), table2cell (table (u1, ce)))
+%!assert_equal (table2array (table (u1, st)), string ({'72', 'x'; '73', 'y'}))
+%!assert_equal (table2array (table (u1, ca)), table2cell (table (u1, ca)))
+%!assert_equal (table2array (table (u1, dt)), table2cell (table (u1, dt)))
+%!assert_equal (table2array (table (u1, du)), table2cell (table (u1, du)))
+%!assert_equal (table2array (table (u1, cd)), table2cell (table (u1, cd)))
+%!assert_equal (table2array (table (u1, sr)), table2cell (table (u1, sr)))
+%!assert_equal (isequaln (table2array (table (u1, tb)), ...
+%!                         table2cell (table (u1, tb))), true)
+%!assert_equal (isequaln (table2array (table (u1, ms)), ...
+%!                         table2cell (table (u1, ms))), true)
+%!assert_equal (table2array (table (i2, i2, 'VariableNames', {'a', 'b'})), ...
+%!               int16 ([74, 74; 75, 75]))
+%!assert_equal (table2array (table (i2, i8)), int16 ([74, 76; 75, 77]))
+%!assert_equal (table2array (table (i2, u8)), int16 ([74, 78; 75, 79]))
+%!assert_equal (table2array (table (i2, b)), int16 ([74, 1; 75, 0]))
+%!assert_equal (table2array (table (i2, c)), ['Jab'; 'Kcd'])
+%!assert_equal (table2array (table (i2, cs)), table2cell (table (i2, cs)))
+%!assert_equal (table2array (table (i2, ce)), table2cell (table (i2, ce)))
+%!assert_equal (table2array (table (i2, st)), string ({'74', 'x'; '75', 'y'}))
+%!assert_equal (table2array (table (i2, ca)), table2cell (table (i2, ca)))
+%!assert_equal (table2array (table (i2, dt)), table2cell (table (i2, dt)))
+%!assert_equal (table2array (table (i2, du)), table2cell (table (i2, du)))
+%!assert_equal (table2array (table (i2, cd)), table2cell (table (i2, cd)))
+%!assert_equal (table2array (table (i2, sr)), table2cell (table (i2, sr)))
+%!assert_equal (isequaln (table2array (table (i2, tb)), ...
+%!                         table2cell (table (i2, tb))), true)
+%!assert_equal (isequaln (table2array (table (i2, ms)), ...
+%!                         table2cell (table (i2, ms))), true)
+%!assert_equal (table2array (table (i8, i8, 'VariableNames', {'a', 'b'})), ...
+%!               int64 ([76, 76; 77, 77]))
+%!assert_equal (table2array (table (i8, u8)), int64 ([76, 78; 77, 79]))
+%!assert_equal (table2array (table (i8, b)), int64 ([76, 1; 77, 0]))
+%!assert_equal (table2array (table (i8, c)), ['Lab'; 'Mcd'])
+%!assert_equal (table2array (table (i8, cs)), table2cell (table (i8, cs)))
+%!assert_equal (table2array (table (i8, ce)), table2cell (table (i8, ce)))
+%!assert_equal (table2array (table (i8, st)), string ({'76', 'x'; '77', 'y'}))
+%!assert_equal (table2array (table (i8, ca)), table2cell (table (i8, ca)))
+%!assert_equal (table2array (table (i8, dt)), table2cell (table (i8, dt)))
+%!assert_equal (table2array (table (i8, du)), table2cell (table (i8, du)))
+%!assert_equal (table2array (table (i8, cd)), table2cell (table (i8, cd)))
+%!assert_equal (table2array (table (i8, sr)), table2cell (table (i8, sr)))
+%!assert_equal (isequaln (table2array (table (i8, tb)), ...
+%!                         table2cell (table (i8, tb))), true)
+%!assert_equal (isequaln (table2array (table (i8, ms)), ...
+%!                         table2cell (table (i8, ms))), true)
+%!assert_equal (table2array (table (u8, u8, 'VariableNames', {'a', 'b'})), ...
+%!               uint64 ([78, 78; 79, 79]))
+%!assert_equal (table2array (table (u8, b)), uint64 ([78, 1; 79, 0]))
+%!assert_equal (table2array (table (u8, c)), ['Nab'; 'Ocd'])
+%!assert_equal (table2array (table (u8, cs)), table2cell (table (u8, cs)))
+%!assert_equal (table2array (table (u8, ce)), table2cell (table (u8, ce)))
+%!assert_equal (table2array (table (u8, st)), string ({'78', 'x'; '79', 'y'}))
+%!assert_equal (table2array (table (u8, ca)), table2cell (table (u8, ca)))
+%!assert_equal (table2array (table (u8, dt)), table2cell (table (u8, dt)))
+%!assert_equal (table2array (table (u8, du)), table2cell (table (u8, du)))
+%!assert_equal (table2array (table (u8, cd)), table2cell (table (u8, cd)))
+%!assert_equal (table2array (table (u8, sr)), table2cell (table (u8, sr)))
+%!assert_equal (isequaln (table2array (table (u8, tb)), ...
+%!                         table2cell (table (u8, tb))), true)
+%!assert_equal (isequaln (table2array (table (u8, ms)), ...
+%!                         table2cell (table (u8, ms))), true)
+%!assert_equal (table2array (table (b, b, 'VariableNames', {'a', 'b'})), ...
+%!               [true, true; false, false])
+%!assert_equal (table2array (table (b, c)), table2cell (table (b, c)))
+%!assert_equal (table2array (table (b, cs)), table2cell (table (b, cs)))
+%!assert_equal (table2array (table (b, ce)), table2cell (table (b, ce)))
+%!assert_equal (table2array (table (b, st)), ...
+%!               string ({'true', 'x'; 'false', 'y'}))
+%!assert_equal (table2array (table (b, ca)), table2cell (table (b, ca)))
+%!assert_equal (table2array (table (b, dt)), table2cell (table (b, dt)))
+%!assert_equal (table2array (table (b, du)), hours ([24, 1; 0, 2]))
+%!assert_equal (table2array (table (b, cd)), ...
+%!               calendarDuration (0, [0, 1; 0, 2], 0, [24, 0; 0, 0], 0, 0))
+%!assert_equal (table2array (table (b, sr)), table2cell (table (b, sr)))
+%!assert_equal (isequaln (table2array (table (b, tb)), ...
+%!                         table2cell (table (b, tb))), true)
+%!assert_equal (isequaln (table2array (table (b, ms)), ...
+%!                         table2cell (table (b, ms))), true)
+%!assert_equal (table2array (table (c, c, 'VariableNames', {'a', 'b'})), ...
+%!               ['abab'; 'cdcd'])
+%!assert_equal (table2array (table (c, cs)), table2cell (table (c, cs)))
+%!assert_equal (table2array (table (c, ce)), table2cell (table (c, ce)))
+%!assert_equal (table2array (table (c, st)), string ({'ab', 'x'; 'cd', 'y'}))
+%!assert_equal (table2array (table (c, ca)), table2cell (table (c, ca)))
+%!assert_equal (table2array (table (c, dt)), table2cell (table (c, dt)))
+%!assert_equal (table2array (table (c, du)), table2cell (table (c, du)))
+%!assert_equal (table2array (table (c, cd)), table2cell (table (c, cd)))
+%!assert_equal (table2array (table (c, sr)), table2cell (table (c, sr)))
+%!assert_equal (isequaln (table2array (table (c, tb)), ...
+%!                         table2cell (table (c, tb))), true)
+%!assert_equal (isequaln (table2array (table (c, ms)), ...
+%!                         table2cell (table (c, ms))), true)
+%!assert_equal (table2array (table (cs, cs, 'VariableNames', {'a', 'b'})), ...
+%!               {'ef', 'ef'; 'g', 'g'})
+%!assert_equal (table2array (table (cs, ce)), {'ef', 1; 'g', 'h'})
+%!assert_equal (table2array (table (cs, st)), string ({'ef', 'x'; 'g', 'y'}))
+%!assert_equal (table2array (table (cs, ca)), table2cell (table (cs, ca)))
+%!assert_equal (table2array (table (cs, dt)), table2cell (table (cs, dt)))
+%!assert_equal (table2array (table (cs, du)), table2cell (table (cs, du)))
+%!assert_equal (table2array (table (cs, cd)), table2cell (table (cs, cd)))
+%!assert_equal (table2array (table (cs, sr)), table2cell (table (cs, sr)))
+%!assert_equal (isequaln (table2array (table (cs, tb)), ...
+%!                         table2cell (table (cs, tb))), true)
+%!assert_equal (isequaln (table2array (table (cs, ms)), ...
+%!                         table2cell (table (cs, ms))), true)
+%!assert_equal (table2array (table (ce, ce, 'VariableNames', {'a', 'b'})), ...
+%!               {1, 1; 'h', 'h'})
+%!assert_equal (table2array (table (ce, st)), string ({'1', 'x'; 'h', 'y'}))
+%!assert_equal (table2array (table (ce, ca)), table2cell (table (ce, ca)))
+%!assert_equal (table2array (table (ce, dt)), table2cell (table (ce, dt)))
+%!assert_equal (table2array (table (ce, du)), table2cell (table (ce, du)))
+%!assert_equal (table2array (table (ce, cd)), table2cell (table (ce, cd)))
+%!assert_equal (table2array (table (ce, sr)), table2cell (table (ce, sr)))
+%!assert_equal (isequaln (table2array (table (ce, tb)), ...
+%!                         table2cell (table (ce, tb))), true)
+%!assert_equal (isequaln (table2array (table (ce, ms)), ...
+%!                         table2cell (table (ce, ms))), true)
+%!assert_equal (table2array (table (st, st, 'VariableNames', {'a', 'b'})), ...
+%!               string ({'x', 'x'; 'y', 'y'}))
+%!assert_equal (table2array (table (st, ca)), table2cell (table (st, ca)))
+%!assert_equal (table2array (table (st, dt)), table2cell (table (st, dt)))
+%!assert_equal (table2array (table (st, du)), table2cell (table (st, du)))
+%!assert_equal (table2array (table (st, cd)), table2cell (table (st, cd)))
+%!assert_equal (table2array (table (st, sr)), table2cell (table (st, sr)))
+%!assert_equal (isequaln (table2array (table (st, tb)), ...
+%!                         table2cell (table (st, tb))), true)
+%!assert_equal (isequaln (table2array (table (st, ms)), ...
+%!               string ({'x', NaN; 'y', NaN})), true)
+%!assert_equal (table2array (table (ca, ca, 'VariableNames', {'a', 'b'})), ...
+%!               categorical ({'lo', 'lo'; 'hi', 'hi'}, {'hi', 'lo'}))
+%!assert_equal (table2array (table (ca, dt)), table2cell (table (ca, dt)))
+%!assert_equal (table2array (table (ca, du)), table2cell (table (ca, du)))
+%!assert_equal (table2array (table (ca, cd)), table2cell (table (ca, cd)))
+%!assert_equal (table2array (table (ca, sr)), table2cell (table (ca, sr)))
+%!assert_equal (isequaln (table2array (table (ca, tb)), ...
+%!                         table2cell (table (ca, tb))), true)
+%!assert_equal (isequaln (table2array (table (ca, ms)), ...
+%!               categorical ({'lo', ''; 'hi', ''}, {'hi', 'lo'})), true)
+%!assert_equal (table2array (table (dt, dt, 'VariableNames', {'a', 'b'})), ...
+%!               datetime (2020, 1, [1, 1; 2, 2]))
+%!assert_equal (table2array (table (dt, du)), table2cell (table (dt, du)))
+%!assert_equal (table2array (table (dt, cd)), table2cell (table (dt, cd)))
+%!assert_equal (table2array (table (dt, sr)), table2cell (table (dt, sr)))
+%!assert_equal (isequaln (table2array (table (dt, tb)), ...
+%!                         table2cell (table (dt, tb))), true)
+%!assert_equal (isequaln (table2array (table (dt, ms)), ...
+%!               datetime (2020, 1, [1, NaN; 2, NaN])), true)
+%!assert_equal (table2array (table (du, du, 'VariableNames', {'a', 'b'})), ...
+%!               hours ([1, 1; 2, 2]))
+%!assert_equal (table2array (table (du, cd)), ...
+%!               calendarDuration (0, [0, 1; 0, 2], 0, [1, 0; 2, 0], 0, 0))
+%!assert_equal (table2array (table (du, sr)), table2cell (table (du, sr)))
+%!assert_equal (isequaln (table2array (table (du, tb)), ...
+%!                         table2cell (table (du, tb))), true)
+%!assert_equal (isequaln (table2array (table (du, ms)), ...
+%!               hours ([1, NaN; 2, NaN])), true)
+%!assert_equal (table2array (table (cd, cd, 'VariableNames', {'a', 'b'})), ...
+%!               calmonths ([1, 1; 2, 2]))
+%!assert_equal (table2array (table (cd, sr)), table2cell (table (cd, sr)))
+%!assert_equal (isequaln (table2array (table (cd, tb)), ...
+%!                         table2cell (table (cd, tb))), true)
+%!assert_equal (isequaln (table2array (table (cd, ms)), ...
+%!               calmonths ([1, NaN; 2, NaN])), true)
+%!assert_equal (table2array (table (sr, sr, 'VariableNames', {'a', 'b'})), ...
+%!               struct ('a', {1, 1; 2, 2}))
+%!assert_equal (isequaln (table2array (table (sr, tb)), ...
+%!                         table2cell (table (sr, tb))), true)
+%!assert_equal (isequaln (table2array (table (sr, ms)), ...
+%!                         table2cell (table (sr, ms))), true)
+%!assert_equal (isequaln (table2array (table (tb, tb, 'VariableNames', ...
+%!                                               {'a', 'b'})), ...
+%!                         table2cell (table (tb, tb, 'VariableNames', ...
+%!                                               {'a', 'b'}))), true)
+%!assert_equal (isequaln (table2array (table (tb, ms)), ...
+%!                         table2cell (table (tb, ms))), true)
+%!assert_equal (isequaln (table2array (table (ms, ms, 'VariableNames', ...
+%!                                               {'a', 'b'})), ...
+%!                         repmat (missing, 2, 2)), true)
+%!assert_equal (table2array (table (u1, i1)), uint8 ([72, 70; 73, 71]))
+%!assert_equal (table2array (table (i2, i1)), int16 ([74, 70; 75, 71]))
+%!assert_equal (table2array (table (i8, i1)), int64 ([76, 70; 77, 71]))
+%!assert_equal (table2array (table (u8, i1)), uint64 ([78, 70; 79, 71]))
+%!assert_equal (table2array (table (i2, u1)), int16 ([74, 72; 75, 73]))
+%!assert_equal (table2array (table (i8, u1)), int64 ([76, 72; 77, 73]))
+%!assert_equal (table2array (table (u8, u1)), uint64 ([78, 72; 79, 73]))
+%!assert_equal (table2array (table (i8, i2)), int64 ([76, 74; 77, 75]))
+%!assert_equal (table2array (table (u8, i2)), uint64 ([78, 74; 79, 75]))
+%!assert_equal (table2array (table (u8, i8)), uint64 ([78, 76; 79, 77]))
+## Test 'table2array' over more than two variables and other shapes
+%!assert_equal (table2array (table (int8 ([100; -1]), int16 ([1000; 2]))), ...
+%!              int8 ([100, 127; -1, 2]))
+%!assert_equal (table2array (table (int64 (2) ^ 53 + 1, 2.5)), ...
+%!              [int64(2) ^ 53 + 1, int64(3)])
+%!assert_equal (table2array (table ([1.5; 2], {'ab'; 'c'}, st)), ...
+%!              string ({'1.5', 'ab', 'x'; '2', 'c', 'y'}))
+%!assert_equal (table2array (table ([1.5; 2], {1; 'x'}, st)), ...
+%!              string ({'1.5', '1', 'x'; '2', 'x', 'y'}))
+%!assert_equal (table2array (table ([2; 3], int8 ([100; -1]), ...
+%!                                 int16 ([1000; 2]))), ...
+%!              int8 ([2, 100, 127; 3, -1, 2]))
+%!assert_equal (table2array (table ([true; false], ['c'; 'd'], [1; 2])), ...
+%!              table2cell (table ([true; false], ['c'; 'd'], [1; 2])))
+%!assert_equal (table2array (table ([1, 2; 3, 4], st)), ...
+%!              string ({'1', '2', 'x'; '3', '4', 'y'}))
+%!assert_equal (table2array (table ({'a', 'b'; 'c', 'd'}, st)), ...
+%!              string ({'a', 'b', 'x'; 'c', 'd', 'y'}))
+%!assert_equal (table2array (table ({{'a'}; 'x'}, st)), ...
+%!              string ({'a', 'x'; 'x', 'y'}))
+%!assert_equal (table2array (table ({[1, 2]; 'x'}, st)), ...
+%!              table2cell (table ({[1, 2]; 'x'}, st)))
+%!assert_equal (table2array (table (['a'; 'b'], ['c'; 'd'])), ['ac'; 'bd'])
+%!assert_equal (table2array (table ([65; 66], c, ['e'; 'f'])), ...
+%!              ['Aabe'; 'Bcdf'])
+%!assert_equal (table2array (table (ca, categorical ({'a'; 'b'}))), ...
+%!              categorical ({'lo', 'a'; 'hi', 'b'}, {'hi', 'lo', 'a', 'b'}))
+%!assert_equal (table2array (table (categorical ({'lo'; 'hi'}, ...
+%!                                    {'lo', 'hi'}, 'Ordinal', true), ca)), ...
+%!              table2cell (table (categorical ({'lo'; 'hi'}, ...
+%!                                    {'lo', 'hi'}, 'Ordinal', true), ca)))
+%!assert_equal (table2array (table (datetime (2020, 1, [1; 2], ...
+%!                                             'TimeZone', 'UTC'), dt)), ...
+%!              table2cell (table (datetime (2020, 1, [1; 2], ...
+%!                                             'TimeZone', 'UTC'), dt)))
+%!assert_equal (table2array (table (datetime (2020, 1, [1; 2], ...
+%!                                             'TimeZone', 'UTC'), ...
+%!                                 datetime (2020, 1, [1; 2], 'TimeZone', ...
+%!                                           'Europe/Athens'))), ...
+%!              datetime (2020, 1, [1, 1; 2, 2], [0, -2; 0, -2], 0, 0, ...
+%!                        'TimeZone', 'UTC'))
+%!assert_equal (table2array (table (sr, struct ('z', {1; 2}))), ...
+%!              table2cell (table (sr, struct ('z', {1; 2}))))
+%!assert_equal (isequaln (table2array (table (tb, table ({'a'; 'b'}, ...
+%!                                           'VariableNames', {'r'}))), ...
+%!                         table ([1; 2], {'a'; 'b'}, ...
+%!                                'VariableNames', {'p', 'r'})), true)
+%!assert_equal (table2array (table (zeros (0, 1), string (cell (0, 1)))), ...
+%!              string (cell (0, 2)))
+%!assert_equal (table2array (table (zeros (0, 1), cell (0, 1))), cell (0, 2))
+## Test '{}' and the variable dimension name give what 'table2array' gives
+%!assert_equal (table (d, cs){:,:}, table2array (table (d, cs)))
+%!assert_equal (table (d, cs).Variables, table2array (table (d, cs)))
+%!assert_equal (table (d, cs){2,:}, {67, 'g'})
+%!assert_equal (table (d, st){:,:}, table2array (table (d, st)))
+%!assert_equal (table (d, st).Variables, table2array (table (d, st)))
+
+%!shared LastName, Age, Smoker, Height, Weight, BloodPressure, T, tblA
+%! LastName = {"Sanchez"; "Johnson"; "Li"; "Diaz"; "Brown"};
+%! Age = [38; 43; 38; 40; 49];
+%! Smoker = logical ([1; 0; 1; 0; 1]);
+%! Height = [71; 69; 64; 67; 64];
+%! Weight = [176; 163; 131; 133; 119];
+%! BloodPressure = [124, 93; 109, 77; 125, 83; 117, 75; 122, 80];
+%! T = table (Age, Smoker, Height, Weight, BloodPressure);
 
 ## Test 'table2cell' method
 %!test  # the output cell array has the same size as the table
@@ -440,21 +782,39 @@
 %! C = table2cell (table (logical ([1; 0]), 'VariableNames', {'l'}));
 %! assert_equal (C{1}, true);
 %! assert_equal (C{2}, false);
-%!test  # a string variable is returned as character vectors
+%!test  # a string variable gives one string per cell
 %! C = table2cell (table (string ({'a'; 'b'}), 'VariableNames', {'s'}));
-%! assert_equal (C{1}, 'a');
-%! assert_equal (class (C{1}), 'char');
-%!test  # a categorical variable is returned as character vectors
+%! assert_equal (C, {string('a'); string('b')});
+%!test  # a categorical variable gives one categorical per cell
 %! C = table2cell (table (categorical ({'lo'; 'hi'}), 'VariableNames', {'c'}));
-%! assert_equal (C{1}, 'lo');
-%! assert_equal (C{2}, 'hi');
-%!test  # a datetime variable is returned as character vectors
+%! assert_equal (C{2}, categorical ({'hi'}, {'hi', 'lo'}));
+%!test  # a datetime variable gives one datetime per cell
 %! C = table2cell (table (datetime (2020, 1, [1; 2]), 'VariableNames', {'d'}));
-%! assert_equal (C{1}, '01-Jan-2020');
-%! assert_equal (class (C{1}), 'char');
-%!test  # a duration variable is returned as character vectors
+%! assert_equal (C, {datetime(2020, 1, 1); datetime(2020, 1, 2)});
+%!test  # a duration variable gives one duration per cell
 %! C = table2cell (table (days ([1.5; 2.5]), 'VariableNames', {'d'}));
-%! assert_equal (C{1}, '1.5 days');
+%! assert_equal (C, {days(1.5); days(2.5)});
+%!test  # a calendarDuration variable gives one per cell
+%! C = table2cell (table (calmonths ([1; 2]), 'VariableNames', {'m'}));
+%! assert_equal (C, {calmonths(1); calmonths(2)});
+%!test  # an integer variable keeps its class
+%! C = table2cell (table (int8 ([100; -1]), 'VariableNames', {'i'}));
+%! assert_equal (C, {int8(100); int8(-1)});
+%!test  # a missing variable gives one missing per cell
+%! C = table2cell (table ([missing; missing], 'VariableNames', {'m'}));
+%! assert_equal (class (C{2}), 'missing');
+%!test  # a two-column datetime variable gives a row per cell
+%! D = [datetime(2020, 1, [1; 2]), datetime(2021, 1, [1; 2])];
+%! C = table2cell (table (D, 'VariableNames', {'d'}));
+%! assert_equal (C{2}, [datetime(2020, 1, 2), datetime(2021, 1, 2)]);
+%!test  # a two-column cell variable gives a 1-by-2 cell per cell
+%! C = table2cell (table ({'a', 'b'; 'c', 'd'}, 'VariableNames', {'k'}));
+%! assert_equal (C, {{'a', 'b'}; {'c', 'd'}});
+%!test  # a nested table gives its row as a one-row table
+%! N = table (datetime (2020, 1, [1; 2]), [5; 6], 'VariableNames', {'d', 'x'});
+%! C = table2cell (table (N, [7; 8], 'VariableNames', {'m', 'y'}));
+%! assert_equal (isequaln (C{2,1}, N(2,:)), true);
+%! assert_equal (C{2,2}, 8);
 %!test  # a struct variable yields one struct per cell
 %! A = table ([struct('x', 1); struct('x', 2)], 'VariableNames', {'s'});
 %! C = table2cell (A);
@@ -466,6 +826,18 @@
 %! C = table2cell (A);
 %! assert_equal (size (C), [2, 1]);
 %! assert_equal (C{1}, 1);
+%!test  # a char matrix variable gives one row per cell
+%! C = table2cell (table (['ab'; 'cd'], 'VariableNames', {'k'}));
+%! assert_equal (C, {'ab'; 'cd'});
+%!test  # an object of any other class is placed in its cell as it is
+%! C = table2cell (table (inputParser ()));
+%! assert_equal (class (C{1}), 'inputParser');
+%!test  # a function handle variable is returned, not called
+%! C = table2cell (table (@sin));
+%! assert_equal (func2str (C{1}), 'sin');
+## Test input validation for 'table2cell' method
+%!error <table.table2cell: cannot convert variables of 'containers.Map' type.> ...
+%! table2cell (table (containers.Map ({'a', 'b'}, {1, 2})));
 
 ## Test 'table2struct' method
 %!test  # default output is an m-by-1 struct array, one element per row
@@ -516,11 +888,23 @@
 %! A = table ([1; 2], 'VariableNames', {'x'}, 'RowNames', {'r1'; 'r2'});
 %! S = table2struct (A);
 %! assert_equal (fieldnames (S), {'x'});
+%!test  # a char matrix variable gives one row per element
+%! S = table2struct (table (['ab'; 'cd'], 'VariableNames', {'k'}));
+%! assert_equal (S(2).k, 'cd');
+%!test  # an object of any other class is placed in its element as it is
+%! S = table2struct (table (inputParser (), 'VariableNames', {'p'}));
+%! assert_equal (class (S.p), 'inputParser');
+%!test  # a nested table gives its row as a one-row table
+%! N = table (datetime (2020, 1, [1; 2]), [5; 6], 'VariableNames', {'d', 'x'});
+%! S = table2struct (table (N, [7; 8], 'VariableNames', {'m', 'y'}));
+%! assert_equal (isequaln (S(2).m, N(2,:)), true);
 ## Test input validation for 'table2struct' method
 %!error <table.table2struct: wrong number of input arguments.> ...
 %! table2struct (table (1), "ToScalar");
 %!error <table.table2struct: wrong optional input argument.> ...
 %! table2struct (table (1), "Scalar", 1);
+%!error <table.table2struct: cannot convert variables of 'containers.Map' type.> ...
+%! table2struct (table (containers.Map ({'a', 'b'}, {1, 2})));
 
 ################################################################################
 ##                            ** Save to Files **                             ##
@@ -1766,6 +2150,10 @@
 %! table2csv (table (1), [tempname() '.csv'], 'WriteRowNames', 1);
 %!error <table.table2csv: unknown option 'Bogus'.> ...
 %! table2csv (table (1), [tempname() '.csv'], 'Bogus', 1);
+%!error <table.table2csv: cannot write variables of 'inputParser' type.> ...
+%! table2csv (table (inputParser ()), [tempname() '.csv']);
+%!error <table.table2ods: cannot write variables of 'inputParser' type.> ...
+%! table2ods (table (inputParser ()), [tempname() '.ods']);
 %!error <table.table2ods: 'WriteVariableNames' must be a logical scalar.> ...
 %! table2ods (table (1), [tempname() '.ods'], 'WriteVariableNames', 'yes');
 %!error <table.table2ods: 'WriteRowNames' must be a logical scalar.> ...
@@ -2777,6 +3165,12 @@
 %! assert_equal (sortrows (T).N, [1; 2; 3]);
 %! assert_equal (sortrows (T, {'N', 'L'}).N, [1; 2; 3]);
 
+## Test 'sortrows' sorts by a char matrix variable
+%!test
+%! T = table (['cb'; 'aa'; 'ca'], [1; 2; 3], 'VariableNames', {'K', 'N'});
+%! assert_equal (sortrows (T, 'K').N, [2; 3; 1]);
+%! assert_equal (sortrows (T, 'K', 'descend').N, [1; 3; 2]);
+
 ## Test input validation for 'sortrows' method
 %!error <table.sortrows: 'MissingPlacement' parameter can be either 'auto', 'first', or 'last'.> ...
 %! sortrows (tblA, "MissingPlacement", "param");
@@ -2810,6 +3204,8 @@
 %! sortrows (table ({5; 4; 3}));
 %!error <table.sortrows: cannot sort variables of 'struct' type.> ...
 %! sortrows (table ([struct("s", 4); struct("s", 5); struct("s", 6)]));
+%!error <table.sortrows: cannot sort variables of 'inputParser' type.> ...
+%! sortrows (table (inputParser ()));
 %!error <table.sortrows: cannot sort nested tables with mixed data types.> ...
 %! sortrows (table (Age, table (Age, LastName), "RowNames", LastName))
 
@@ -2909,6 +3305,11 @@
 %! St = string ({'banana'; 'apple'; 'banana'; 'cherry'});
 %! C = unique (table (St, 'VariableNames', {'St'}));
 %! assert_equal (cellstr (C.St), {'apple'; 'banana'; 'cherry'});
+%!test  # a char matrix variable compares whole rows
+%! [C, ia, ic] = unique (table (['cc'; 'aa'; 'cc'], 'VariableNames', {'K'}));
+%! assert_equal (C.K, ['aa'; 'cc']);
+%! assert_equal (ia, [2; 1]);
+%! assert_equal (ic, [2; 1; 2]);
 %!test  # nested numeric table variable (regression: brace-indexed extraction)
 %! Ag = [38; 43; 38]; Hi = [71; 69; 71];
 %! [C, ia, ic] = unique (table (table (Ag, Hi), 'VariableNames', {'N'}));
@@ -2921,6 +3322,8 @@
 %! unique (table ({2; 2; 3}), "sorted");
 %!error <table.unique: cannot find unique rows for variables of 'struct' type.> ...
 %! unique (table (struct ("a", {2; 2; 3})), "sorted");
+%!error <table.unique: cannot find unique rows for variables of 'inputParser' type.> ...
+%! unique (table (inputParser ()));
 %!error <table.unique: cannot find unique rows for nested tables with mixed data types.> ...
 %! unique (table (table (Age, LastName)), "sorted");
 
@@ -7488,12 +7891,10 @@
 %!test  # brace-indexing all-cell variables yields a cell array
 %! Tc = table ({'a'; 'b'}, {'c'; 'd'}, 'VariableNames', {'x', 'y'});
 %! assert_equal (Tc{:,:}, {'a', 'c'; 'b', 'd'});
-%!error <table.subsref: cannot concatenate the table variables 'x' and 'y', because their types are double and cell.> ...
-%! Tm = table ([1; 2; 3], {'a'; 'b'; 'c'}, 'VariableNames', {'x', ...
-%!             'y'}); Tm{1,:};
-%!error <table.subsref: cannot concatenate the table variables 'x' and 'y', because their types are double and cell.> ...
-%! Tm = table ([1; 2; 3], {'a'; 'b'; 'c'}, 'VariableNames', {'x', ...
-%!             'y'}); Tm{:,:};
+%!test  # brace-indexing variables that cannot form one array gives a cell
+%! Tm = table ([1; 2; 3], {'a'; 'b'; 'c'}, 'VariableNames', {'x', 'y'});
+%! assert_equal (Tm{1,:}, {1, 'a'});
+%! assert_equal (Tm{:,:}, {1, 'a'; 2, 'b'; 3, 'c'});
 %!assert_equal (T.Variables, [Age, Smoker, Height, Weight, BloodPressure]);
 %!assert_equal (isempty (T.Properties.RowNames), true);
 %!assert_equal (numel (T.Properties.VariableNames), 5);
@@ -7635,6 +8036,8 @@
 ## Test input validation for 'subsref' with '{}' indexing
 %!error <table.subsref: '{}' indexing of table requires exactly two arguments.> ...
 %! T = table ([1;2;3]); T{1};
+%!error <table.subsref: cannot convert variables of 'containers.Map' type.> ...
+%! T = table ([1; 2], containers.Map ({'a', 'b'}, {1, 2})); T.Variables;
 
 ## 'subsref' with '.' returns variable values, properties, and dimension data
 %!test
@@ -8433,10 +8836,10 @@
 
 ## the shared 'tabular' machinery, reached through a table.  Its messages
 ## take the class name from the subclass, so they read 'table' here
-%!error <table.subsref: cannot concatenate the table variables 'n' and 'sub', because their types are double and table.> ...
+%!test
 %! N = table ([1; 2], 'VariableNames', {'n'});
 %! N.sub = table ([3; 4], [5; 6]);
-%! N{:, :};
+%! assert_equal (isequaln (N{:, :}, table2cell (N)), true);
 %!error <table: unsupported row indexing operand type: 'datetime'> ...
 %! T = table ([1;2], 'RowNames', {'a', 'b'}); T(datetime (2024, 1, 1),:);
 %!error <table: unsupported row indexing operand type: 'struct'> ...
@@ -8455,22 +8858,25 @@
 %!test  # variables of one non-numeric type concatenate with each other
 %! T = table (categorical ({'x';'y'}), categorical ({'a';'b'}));
 %! assert_equal (class (table2array (T)), 'categorical');
-%!error <table.table2array: cannot concatenate the table variables 'Var1' and 'Var2', because their types are double and categorical.> ...
-%! table2array (table ([1;2;3], categorical ({'x';'y';'x'})));
-%!error <table.table2array: cannot concatenate the table variables 'Var1' and 'Var2', because their types are double and duration.> ...
-%! table2array (table ([1;2;3], duration ([1;2;3], 0, 0)));
+%!test  # a number and a categorical give a cell array
+%! T = table ([1; 2], categorical ({'x'; 'y'}));
+%! assert_equal (table2array (T), table2cell (T));
+%!test  # a number beside a duration counts days
+%! T = table ([1; 2], duration ([1; 2], 0, 0));
+%! assert_equal (table2array (T), hours ([24, 1; 48, 2]));
 %!test  # a string promotes a number beside it, as concatenation does
 %! T = table ([1;2;3], string ({'a';'b';'c'}));
 %! assert_equal (class (table2array (T)), 'string');
 %! assert_equal (size (table2array (T)), [3, 2]);
-%!error <table.table2array: cannot concatenate the table variables 'Var1' and 'Var2', because their types are string and categorical.> ...
-%! table2array (table (string ({'a';'b'}), categorical ({'x';'y'})));
+%!test  # a string and a categorical give a cell array
+%! T = table (string ({'a'; 'b'}), categorical ({'x'; 'y'}));
+%! assert_equal (table2array (T), table2cell (T));
 
-## table2array and writetable refuse a nested table
-%!error <table.table2array: cannot concatenate the table variables 'n' and 'sub', because their types are double and table.> ...
+## table2array gives a cell array for a nested table, writetable refuses it
+%!test
 %! N = table ([1; 2], 'VariableNames', {'n'});
 %! N.sub = table ([3; 4], [5; 6]);
-%! table2array (N);
+%! assert_equal (isequaln (table2array (N), table2cell (N)), true);
 %!error <table.writetable: writetable does not support writing nested tables.  Use splitvars to split multicolumn variables into single-column variables before writing.> ...
 %! N = table ([1; 2], 'VariableNames', {'n'});
 %! N.sub = table ([3; 4], [5; 6]);
@@ -8717,6 +9123,12 @@
 %! unwind_protect_cleanup
 %!   delete (fn);
 %! end_unwind_protect
+
+## writetable refuses a variable of a type it cannot write, text or sheet
+%!error <table.writetable: cannot write variables of 'inputParser' type.> ...
+%! writetable (table (inputParser ()), [tempname() '.csv']);
+%!error <table.writetable: cannot write variables of 'inputParser' type.> ...
+%! writetable (table (inputParser ()), [tempname() '.xlsx']);
 
 ## a custom variable property takes one value per variable, as a vector
 %!error <table.subsasgn: assigned value to a custom variable property must be a vector.> ...

@@ -1085,11 +1085,23 @@
 %! V = timetable (hours (0:2)', (1:3)', 'VariableNames', {'A'});
 %! assert_equal (V.Variables, (1:3)');
 
-## Test braces refuse variables that cannot be laid side by side
-%!error <timetable.subsref: cannot concatenate the timetable variables 'A' and 'B', because their types are double and cell.> ...
-%! V = timetable (hours (0:2)', (1:3)', {1; 2; 3}, ...
-%!                'VariableNames', {'A', 'B'}); ...
-%! V{:, :};
+## Test braces give a cell array for variables that cannot form one array
+%!test
+%! V = timetable (hours (0:1)', (1:2)', {'a'; 'b'}, ...
+%!                'VariableNames', {'A', 'B'});
+%! assert_equal (V{:, :}, {1, 'a'; 2, 'b'});
+%! assert_equal (V.Variables, {1, 'a'; 2, 'b'});
+%!test
+%! V = timetable (hours (0:1)', int8 ([100; -1]), int16 ([1000; 2]));
+%! assert_equal (V{:, :}, int8 ([100, 127; -1, 2]));
+%! assert_equal (V.Variables, int8 ([100, 127; -1, 2]));
+%!test
+%! V = timetable (hours (0:1)', [1.5; 2], string ({'x'; 'y'}));
+%! assert_equal (V{:, :}, string ({'1.5', 'x'; '2', 'y'}));
+%!test
+%! V = timetable (hours (0:1)', datetime (2020, 1, [1; 2]), hours ([1; 2]));
+%! assert_equal (class (V{:, :}), 'cell');
+%! assert_equal (V{2, :}, {datetime(2020, 1, 2), hours(2)});
 
 ################################################################################
 ##                        **    Concatenation    **                           ##
@@ -2069,6 +2081,8 @@
 %!               t0 + hours ([1 0 2])');
 
 ## Test input validation for 'timetable.sortrows'
+%!error <timetable.sortrows: cannot sort variables of 'inputParser' type.> ...
+%! sortrows (timetable (inputParser (), 'TimeStep', hours (1)), 'Var1');
 %!error <timetable.sortrows: VARS indexes non-existing variable names.> ...
 %! sortrows (timetable ((1:3)', 'RowTimes', ...
 %!           datetime (2024, 1, 1) + hours (0:2)'), 'descend');
@@ -2240,6 +2254,8 @@
 %!error <timetable.unique: cannot find unique rows for variables of 'cell' type.> ...
 %! unique (timetable ({1; 2; 3}, 'RowTimes', ...
 %!         datetime (2024, 1, 1) + hours (0:2)'));
+%!error <timetable.unique: cannot find unique rows for variables of 'inputParser' type.> ...
+%! unique (timetable (inputParser (), 'TimeStep', hours (1)));
 
 
 ## Test 'topkrows' ranks by the row times, latest first
@@ -8867,6 +8883,14 @@
 %! timetable2ods (timetable ((1:3)', 'TimeStep', hours (1)), 'f.ods', ...
 %!                'WriteMode', 'nosuchmode')
 
+## Test a variable of a type the writers cannot write is refused
+%!error <timetable.timetable2ods: cannot write variables of 'inputParser' type.> ...
+%! timetable2ods (timetable (inputParser (), 'TimeStep', hours (1)), ...
+%!                [tempname() '.ods'])
+%!error <timetable.timetable2csv: cannot write variables of 'inputParser' type.> ...
+%! timetable2csv (timetable (inputParser (), 'TimeStep', hours (1)), ...
+%!                [tempname() '.csv'])
+
 ################################################################################
 ##                        **    'writetimetable'    **                        ##
 ################################################################################
@@ -8968,6 +8992,11 @@
 %! writetimetable (timetable ((1:3)', 'TimeStep', hours (1)), ...
 %!                 file_in_loadpath ('timetable.m'), ...
 %!                 'FileType', 'spreadsheet', 'Range', 'A1')
+
+## Test a variable of a type the writer cannot write is refused
+%!error <timetable.writetimetable: cannot write variables of 'inputParser' type.> ...
+%! writetimetable (timetable (inputParser (), 'TimeStep', hours (1)), ...
+%!                 [tempname() '.csv'])
 
 ################################################################################
 ##                       **    'timetable2table'    **                        ##
