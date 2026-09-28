@@ -3964,9 +3964,9 @@ classdef table < tabular
 ##                                                                            ##
 ## 'cat'              'horzcat'          'iscolumn'         'isempty'         ##
 ## 'isequal'          'isequaln'         'ismatrix'         'isrow'           ##
-## 'isscalar'         'istable'          'isvector'         'length'          ##
-## 'ndims'            'numel'            'repelem'          'repmat'          ##
-## 'size'             'squeeze'          'vertcat'                            ##
+## 'isscalar'         'istable'          'isvector'         'ndims'           ##
+## 'numel'            'repelem'          'repmat'           'size'            ##
+## 'squeeze'          'vertcat'                                               ##
 ##                                                                            ##
 ################################################################################
 
@@ -4344,16 +4344,6 @@ classdef table < tabular
     ## @end deftypefn
     function TF = isvector (this)
       TF = isrow (this) || iscolumn (this);
-    endfunction
-
-    ## -*- texinfo -*-
-    ## @deftypefn {table} {@var{out} =} length (@var{tbl})
-    ##
-    ## Length along longest dimension.
-    ##
-    ## @end deftypefn
-    function out = length (this, varargin)
-      out = max (size (this));
     endfunction
 
     ## -*- texinfo -*-

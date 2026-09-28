@@ -1979,9 +1979,8 @@ classdef timetable < tabular
 ################################################################################
 ##                             Available Methods                              ##
 ##                                                                            ##
-## 'height'           'width'            'size'             'numel'          ##
-## 'ndims'            'length'           'isempty'          'repelem'         ##
-## 'repmat'                                                                  ##
+## 'height'           'width'            'size'             'numel'           ##
+## 'ndims'            'isempty'          'repelem'          'repmat'          ##
 ##                                                                            ##
 ################################################################################
 
@@ -2095,23 +2094,6 @@ classdef timetable < tabular
     ## @end deftypefn
     function out = ndims (this)
       out = 2;
-    endfunction
-
-    ## -*- texinfo -*-
-    ## @deftypefn {timetable} {} length (@var{tt})
-    ##
-    ## Length is not defined for a timetable.
-    ##
-    ## @code{length (@var{tt})} always raises.  A timetable has two
-    ## dimensions that mean different things, and the larger of them is not
-    ## a useful answer about either; ask @code{height}, @code{width} or
-    ## @code{size} for the one that is wanted.
-    ##
-    ## @seealso{height, width, size}
-    ## @end deftypefn
-    function out = length (this, varargin)
-      error (strcat ("timetable.length: 'length' is not defined for a", ...
-                     " timetable; use 'height', 'width' or 'size'."));
     endfunction
 
     ## -*- texinfo -*-

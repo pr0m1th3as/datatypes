@@ -1226,6 +1226,20 @@ classdef (Abstract) tabular
 
   methods (Hidden)
 
+    ## A table has two dimensions that mean different things, and the larger
+    ## of them is not a useful answer about either, so 'length' is refused,
+    ## as in MATLAB.
+    function out = length (this, varargin)
+      cls = class (this);
+      if (any (cls(1) == 'aeiou'))
+        article = 'an';
+      else
+        article = 'a';
+      endif
+      error (strcat ("%s.length: 'length' is not defined for %s %s; use", ...
+                     " 'height', 'width' or 'size'."), cls, article, cls);
+    endfunction
+
     function out = repelems (this, varargin)
       error ("%s.repelems: 'repelems' is not supported.", class (this));
     endfunction

@@ -842,8 +842,6 @@
 ## Test input validation for 'table2cell' method
 %!error <table.table2cell: cannot convert variables of 'containers.Map' type.> ...
 %! table2cell (table (containers.Map ({'a', 'b'}, {1, 2})));
-%!error <table2cell: function called with too many inputs> ...
-%! table2cell (table (1), 1);
 
 ## Test 'table2struct' method
 %!test  # default output is an m-by-1 struct array, one element per row
@@ -7628,9 +7626,9 @@
 ##                                                                            ##
 ## 'horzcat'          'iscolumn'         'isempty'          'isequal'         ##
 ## 'isequaln'         'ismatrix'         'isrow'            'isscalar'        ##
-## 'istable'          'isvector'         'length'           'ndims'           ##
-## 'numel'            'repelem'          'repmat'           'size'            ##
-## 'squeeze'          'vertcat'                                               ##
+## 'istable'          'isvector'         'ndims'            'numel'           ##
+## 'repelem'          'repmat'           'size'             'squeeze'         ##
+## 'vertcat'                                                                  ##
 ##                                                                            ##
 ################################################################################
 
@@ -7655,11 +7653,8 @@
 %!assert_equal (isvector (table ([1, 2, 3])), true)
 %!assert_equal (isvector (table ([1; 2; 3])), true)
 %!assert_equal (isvector (table ([1; 2], {'a'; 'b'})), false)
-%!assert_equal (length (table (1)), 1)
-%!assert_equal (length (table ([1; 2; 3])), 3)
-%!assert_equal (length (table ([1, 2, 3])), 1)
-%!assert_equal (length (table ([1; 2; 3], [2; 3; 4])), 3)
-%!assert_equal (length (table ([1; 2], [2; 3], [3; 4], [4; 5])), 4)
+%!error <table.length: 'length' is not defined for a table; use 'height', 'width' or 'size'.> ...
+%! length (table ([1; 2; 3], [2; 3; 4]));
 %!assert_equal (ndims (table ()), 2)
 %!assert_equal (ndims (table ([])), 2)
 %!assert_equal (ndims (table ([1, 2, 3, 4])), 2)
