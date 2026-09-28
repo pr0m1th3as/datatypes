@@ -26,6 +26,7 @@ duration arrays
  isduration
 string arrays
  string
+ strings
  convertCharsToStrings
  convertStringsToChars
 table arrays

@@ -34,7 +34,7 @@ classdef string
   ## vectors or character vectors as if they were string arrays or string
   ## scalars, use the @code{convertStringsToChars} function.
   ##
-  ## @seealso{convertCharsToStrings, convertStringsToChars}
+  ## @seealso{strings, convertCharsToStrings, convertStringsToChars}
   ## @end deftp
 
   properties (SetAccess = private, Hidden)
