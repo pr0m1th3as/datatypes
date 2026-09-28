@@ -842,6 +842,8 @@
 ## Test input validation for 'table2cell' method
 %!error <table.table2cell: cannot convert variables of 'containers.Map' type.> ...
 %! table2cell (table (containers.Map ({'a', 'b'}, {1, 2})));
+%!error <table2cell: function called with too many inputs> ...
+%! table2cell (table (1), 1);
 
 ## Test 'table2struct' method
 %!test  # default output is an m-by-1 struct array, one element per row

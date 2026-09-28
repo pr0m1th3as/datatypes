@@ -733,7 +733,7 @@ classdef table < tabular
     ## out.
     ##
     ## @end deftypefn
-    function C = table2cell (this, varargin)
+    function C = table2cell (this)
       C = varsAsCell (this, 'table2cell');
     endfunction
 
