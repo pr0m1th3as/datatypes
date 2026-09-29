@@ -54,6 +54,11 @@ timeseries objects
  timeseries
  istimeseries
  istscollection
+ tsdata.timemetadata
+ tsdata.datametadata
+ tsdata.qualmetadata
+ tsdata.interpolation
+ tsdata.event
 supplementary classes
  tabular
  missing
