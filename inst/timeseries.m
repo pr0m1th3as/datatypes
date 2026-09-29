@@ -1854,6 +1854,335 @@ classdef timeseries
 
   endmethods
 
+################################################################################
+##               ** Interpolation, resampling, synchronising **               ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'getinterpmethod'  'setinterpmethod'  'resample'         'synchronize'     ##
+##                                                                            ##
+################################################################################
+
+  methods (Access = public)
+
+    ## -*- texinfo -*-
+    ## @deftypefn {timeseries} {@var{name} =} getinterpmethod (@var{ts})
+    ##
+    ## Return the name of the interpolation method.
+    ##
+    ## @code{@var{name} = getinterpmethod (@var{ts})} returns
+    ## @qcode{'linear'}, @qcode{'zoh'} or @qcode{'myFuncHandle'}, the
+    ## @qcode{Name} of @qcode{@var{ts}.DataInfo.Interpolation}.
+    ##
+    ## @seealso{timeseries.setinterpmethod, tsdata.interpolation}
+    ## @end deftypefn
+    function name = getinterpmethod (this)
+      mustBeScalar (this, 'getinterpmethod');
+      name = this.dataInfo_.Interpolation.Name;
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timeseries} {@var{ts} =} setinterpmethod (@var{ts}, @var{name})
+    ## @deftypefnx {timeseries} {@var{ts} =} setinterpmethod (@var{ts}, @var{fh})
+    ## @deftypefnx {timeseries} {@var{ts} =} setinterpmethod (@var{ts}, @var{ip})
+    ##
+    ## Set the interpolation method.
+    ##
+    ## @code{@var{ts} = setinterpmethod (@var{ts}, @var{name})} sets the method
+    ## @code{resample} and @code{synchronize} use to @var{name},
+    ## @qcode{'linear'} or @qcode{'zoh'} (zero-order hold, keeping each value
+    ## until the next sample), matched in any case and stored in lower case.
+    ## MATLAB stores any name, @qcode{'cubic'} included, and fails only on
+    ## resampling; here another name is refused.
+    ##
+    ## @code{@var{ts} = setinterpmethod (@var{ts}, @var{fh})} sets a method
+    ## evaluated by the function handle @var{fh}, called as MATLAB calls it:
+    ## @code{@var{newData} = @var{fh} (@var{newTime}, @var{oldTime},
+    ## @var{oldData})}, with the times as columns and the data with time along
+    ## its first dimension, so three-dimensional data is passed permuted.
+    ##
+    ## @code{@var{ts} = setinterpmethod (@var{ts}, @var{ip})} sets the method
+    ## held by the @code{tsdata.interpolation} object @var{ip}.
+    ##
+    ## @seealso{timeseries.getinterpmethod, timeseries.resample,
+    ## tsdata.interpolation}
+    ## @end deftypefn
+    function this = setinterpmethod (this, method)
+      mustBeScalar (this, 'setinterpmethod');
+      scope = 'timeseries.setinterpmethod';
+      if (nargin < 2)
+        error ("%s: invalid number of input arguments.", scope);
+      endif
+      if (isText (method))
+        method = lower (char (method));
+        if (! any (strcmp (method, {'linear', 'zoh'})))
+          error ("%s: METHOD must be 'linear' or 'zoh': '%s'", scope, method);
+        endif
+        method = tsdata.interpolation (method);
+      elseif (isa (method, 'function_handle') && isscalar (method))
+        method = tsdata.interpolation (method);
+      elseif (! (isa (method, 'tsdata.interpolation') && isscalar (method)))
+        error (strcat ("%s: METHOD must be 'linear', 'zoh', a function", ...
+                       " handle or a tsdata.interpolation object."), scope);
+      endif
+      this.dataInfo_.Interpolation = method;
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timeseries} {@var{ts} =} resample (@var{ts}, @var{time})
+    ## @deftypefnx {timeseries} {@var{ts} =} resample (@var{ts}, @var{time}, @var{method})
+    ## @deftypefnx {timeseries} {@var{ts} =} resample (@var{ts}, @var{time}, @var{method}, @var{code})
+    ##
+    ## Evaluate a series at new times.
+    ##
+    ## @code{@var{ts} = resample (@var{ts}, @var{time})} returns the series
+    ## @var{ts} with its samples replaced by its values at @var{time}, found
+    ## with its own interpolation method.  @var{time} is numeric, in the
+    ## series' units; for a series with a @qcode{TimeInfo.StartDate} it may
+    ## also be dates, as text or a @code{datetime}, and numbers count from the
+    ## start date.  The new times are sorted, repeats kept.  Samples that are
+    ## @code{NaN} are left out before interpolating, as in MATLAB; at a time
+    ## outside the series the data is @code{NaN}.  The class of the data is
+    ## kept.  Every property but the samples is kept.
+    ##
+    ## @code{@var{ts} = resample (@var{ts}, @var{time}, @var{method})} uses
+    ## @var{method}, @qcode{'linear'} or @qcode{'zoh'} in any case, instead;
+    ## @code{[]} keeps the series' own.
+    ##
+    ## @code{@var{ts} = resample (@var{ts}, @var{time}, @var{method},
+    ## @var{code})} gives the quality code @var{code}, an integer listed in
+    ## @qcode{QualityInfo.Code}, to every new time the series did not already
+    ## hold.  @code{[]} gives none.
+    ##
+    ## A series with quality codes gives each other new time the code of the
+    ## nearest sample, a tie going to the later, as MATLAB does; under
+    ## @qcode{'zoh'} a value takes the code of the sample it is held from,
+    ## where MATLAB takes the nearest one's, which may be the next sample's.
+    ## Outside the series a code is the nearest sample's too, where MATLAB
+    ## raises for a series with codes.  Custom methods are called on the data
+    ## only.
+    ##
+    ## @seealso{timeseries.synchronize, timeseries.setinterpmethod}
+    ## @end deftypefn
+    function this = resample (this, varargin)
+      mustBeScalar (this, 'resample');
+      scope = 'timeseries.resample';
+      if (numel (varargin) < 1 || numel (varargin) > 3)
+        error ("%s: invalid number of input arguments.", scope);
+      endif
+      method = '';
+      code = [];
+      if (numel (varargin) >= 2)
+        method = varargin{2};
+      endif
+      if (numel (varargin) == 3)
+        code = varargin{3};
+      endif
+      if (isempty (this.time_) && isempty (this.data_))
+        return;
+      endif
+      [t, ~, errmsg] = relativeTime (this, varargin{1}, false);
+      if (! isempty (errmsg))
+        error ("%s: TIME %s", scope, errmsg);
+      endif
+      if (! all (isfinite (t)))
+        error ("%s: TIME must be finite.", scope);
+      endif
+      [method, errmsg] = interpName (method);
+      if (! isempty (errmsg))
+        error ("%s: METHOD %s", scope, errmsg);
+      endif
+      [this, errmsg] = resampleAt (this, sort (t), method, code);
+      if (! isempty (errmsg))
+        error ("%s: %s", scope, errmsg);
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timeseries} {[@var{ts1}, @var{ts2}] =} synchronize (@var{ts1}, @var{ts2}, @var{method})
+    ## @deftypefnx {timeseries} {[@var{ts1}, @var{ts2}] =} synchronize (@dots{}, @var{name}, @var{value})
+    ##
+    ## Resample two series onto common times.
+    ##
+    ## @code{[@var{ts1}, @var{ts2}] = synchronize (@var{ts1}, @var{ts2},
+    ## @var{method})} resamples both series onto one set of times within the
+    ## span both cover, chosen by @var{method}, matched in any case:
+    ##
+    ## @table @asis
+    ## @item @qcode{'union'}
+    ## every time of either series in that span;
+    ## @item @qcode{'intersection'}
+    ## the times both series hold, within the tolerance;
+    ## @item @qcode{'uniform'}
+    ## times from the start of the span, a step of @qcode{'Interval'} apart.
+    ## @end table
+    ##
+    ## Series that do not overlap become series with no samples.  Each keeps its
+    ## own units, the times converted exactly; MATLAB converts them with errors
+    ## near the tenth digit.  Dated series are placed by their start dates, and
+    ## both results count from the earlier of the two unless
+    ## @qcode{'KeepOriginalTimes'} is @code{true}.  A dated series with an
+    ## undated one is refused, since the undated one has no calendar; MATLAB
+    ## then reads both as undated.
+    ##
+    ## The options, matched in any case:
+    ##
+    ## @table @asis
+    ## @item @qcode{'Interval'}
+    ## the step of @qcode{'uniform'}, a positive number in the first series'
+    ## units, 1 by default; MATLAB accepts zero and negative steps and gives one
+    ## sample or none.
+    ## @item @qcode{'InterpMethod'}
+    ## @qcode{'linear'} or @qcode{'zoh'}, for both series; by default each uses
+    ## its own.
+    ## @item @qcode{'QualityCode'}
+    ## a quality code given to the times each series did not already hold, as
+    ## for @code{resample}.
+    ## @item @qcode{'KeepOriginalTimes'}
+    ## @code{true} to keep each dated series on its own start date.
+    ## @item @qcode{'tolerance'}
+    ## how close two times must be to count as one, in the first series'
+    ## units, @code{1e-10} by default; the second series' time is kept.  This
+    ## is the documented meaning; R2024a ignores any tolerance above about
+    ## @code{1e-10}.
+    ## @end table
+    ##
+    ## Quality codes follow the rules of @code{resample}.
+    ##
+    ## @seealso{timeseries.resample, timeseries.append}
+    ## @end deftypefn
+    function [ts1, ts2] = synchronize (ts1, ts2, varargin)
+      scope = 'timeseries.synchronize';
+      if (nargin < 3)
+        error ("%s: invalid number of input arguments.", scope);
+      endif
+      if (! (isa (ts2, 'timeseries')))
+        error ("%s: TS2 must be a timeseries.", scope);
+      endif
+      mustBeScalar (ts1, 'synchronize');
+      mustBeScalar (ts2, 'synchronize');
+      how = varargin{1};
+      methods = {'union', 'intersection', 'uniform'};
+      if (! (isText (how) && any (strcmpi (how, methods))))
+        error (strcat ("%s: METHOD must be 'union', 'intersection' or", ...
+                       " 'uniform'."), scope);
+      endif
+      how = lower (char (how));
+      opts = varargin(2:end);
+      if (mod (numel (opts), 2) != 0)
+        error ("%s: name-value arguments must be in pairs.", scope);
+      endif
+      optNames = {'Interval', 'InterpMethod', 'QualityCode', ...
+                  'KeepOriginalTimes', 'tolerance'};
+      vals = {1, '', [], false, 1e-10};
+      for i = 1:2:numel (opts)
+        k = [];
+        if (isText (opts{i}))
+          k = find (strcmpi (opts{i}, optNames));
+        endif
+        if (isempty (k))
+          error ("%s: invalid optional paired argument.", scope);
+        endif
+        vals{k} = opts{i+1};
+      endfor
+      [interval, method, code, keep, tol] = vals{:};
+      if (! (isnumeric (interval) && isreal (interval) && isscalar (interval)
+             && isfinite (interval) && interval > 0))
+        error ("%s: 'Interval' must be a positive number.", scope);
+      endif
+      [method, errmsg] = interpName (method);
+      if (! isempty (errmsg))
+        error ("%s: 'InterpMethod' %s", scope, errmsg);
+      endif
+      if (! ((islogical (keep) || isnumeric (keep)) && isscalar (keep)
+             && any (keep == [0, 1])))
+        error ("%s: 'KeepOriginalTimes' must be a logical scalar.", scope);
+      endif
+      if (! (isnumeric (tol) && isreal (tol) && isscalar (tol) && tol >= 0))
+        error ("%s: 'tolerance' must be a non-negative number.", scope);
+      endif
+      if (isempty (ts1.time_) || isempty (ts2.time_))
+        error ("%s: TS1 and TS2 must hold samples.", scope);
+      endif
+      sd1 = ts1.timeInfo_.StartDate;
+      sd2 = ts2.timeInfo_.StartDate;
+      if (isempty (sd1) != isempty (sd2))
+        error (strcat ("%s: one series has a start date and the other has", ...
+                       " none; give the other one with setabstime or", ...
+                       " 'TimeInfo.StartDate'."), scope);
+      endif
+
+      ## Both on one scale: nanoseconds from the earlier start date
+      ns1 = nsPerUnit (ts1.timeInfo_.Units);
+      ns2 = nsPerUnit (ts2.timeInfo_.Units);
+      off1 = 0;
+      off2 = 0;
+      refDate = '';
+      if (! isempty (sd1))
+        [off, ~] = dateOffsets ([datevec(sd1); datevec(sd2)]);
+        off1 = off(1);
+        off2 = off(2);
+        if (off1 == 0)
+          refDate = sd1;
+        else
+          refDate = sd2;
+        endif
+      endif
+      t1 = ts1.time_ * ns1 + off1;
+      t2 = ts2.time_ * ns2 + off2;
+      tolNs = tol * ns1;
+      lo = max (t1(1), t2(1));
+      hi = min (t1(end), t2(end));
+      if (lo > hi + tolNs)
+        grid = zeros (0, 1);
+      else
+        in1 = t1(t1 >= lo - tolNs & t1 <= hi + tolNs);
+        in2 = t2(t2 >= lo - tolNs & t2 <= hi + tolNs);
+        switch (how)
+          case 'union'
+            grid = in2;
+            for i = 1:numel (in1)
+              if (! any (abs (in2 - in1(i)) <= tolNs))
+                grid(end+1,1) = in1(i);
+              endif
+            endfor
+          case 'intersection'
+            grid = zeros (0, 1);
+            for i = 1:numel (in1)
+              k = find (abs (in2 - in1(i)) <= tolNs, 1);
+              if (! isempty (k))
+                grid(end+1,1) = in2(k);
+              endif
+            endfor
+          otherwise
+            step = interval * ns1;
+            grid = lo + (0:floor ((hi - lo) / step + 1e-9))' * step;
+        endswitch
+        grid = unique (grid);
+      endif
+
+      ## Each series resampled in its own frame, then counted from the
+      ## earlier start date unless its own is kept
+      [ts1, errmsg] = resampleAt (ts1, (grid - off1) / ns1, method, code);
+      if (! isempty (errmsg))
+        error ("%s: %s", scope, errmsg);
+      endif
+      [ts2, errmsg] = resampleAt (ts2, (grid - off2) / ns2, method, code);
+      if (! isempty (errmsg))
+        error ("%s: %s", scope, errmsg);
+      endif
+      if (! isempty (refDate) && ! keep)
+        ts1.time_ = grid / ns1;
+        ts1.timeInfo_.TimeVector = ts1.time_;
+        ts1.timeInfo_.StartDate = refDate;
+        ts2.time_ = grid / ns2;
+        ts2.timeInfo_.TimeVector = ts2.time_;
+        ts2.timeInfo_.StartDate = refDate;
+      endif
+    endfunction
+
+  endmethods
+
   methods (Access = private)
 
     ## The series holding only the samples IDX, in that order, with every
@@ -1919,6 +2248,94 @@ classdef timeseries
         endif
       endif
       t = ns / nsPerUnit (this.timeInfo_.Units);
+    endfunction
+
+    ## The series evaluated at the sorted times T, in its own units, by the
+    ## method METHOD ('' for its own), the times it did not hold given the
+    ## quality code CODE.  Returns an empty ERRMSG, or the body of the message
+    ## the caller raises.
+    function [this, errmsg] = resampleAt (this, t, method, code)
+      errmsg = '';
+      t = t(:);
+      n = numel (this.time_);
+      if (n < 2)
+        errmsg = "TS must hold at least two samples.";
+        return;
+      endif
+      ip = this.dataInfo_.Interpolation;
+      if (! isempty (method))
+        ip = tsdata.interpolation (method);
+      elseif (isempty (ip.Fhandle))
+        ip = tsdata.interpolation ('linear');
+      endif
+      hasQ = ! isempty (this.quality_);
+      if (! isempty (code))
+        if (! hasQ)
+          errmsg = "CODE is given for a series without quality codes.";
+          return;
+        endif
+        if (! (isnumeric (code) && isreal (code) && isscalar (code)
+               && code == fix (code)))
+          errmsg = "CODE must be an integer.";
+          return;
+        endif
+        if (! any (this.qualityInfo_.Code == code))
+          errmsg = sprintf ("CODE %d is not listed in 'QualityInfo.Code'.", ...
+                            code);
+          return;
+        endif
+      endif
+
+      ## The data with time first, as the interpolant takes and returns it
+      td = this.timeDim_;
+      ss = sampleSize (this.data_, td);
+      od = this.data_;
+      if (td > 1)
+        od = permute (od, [td, 1:td-1]);
+      endif
+      nd = ip.Fhandle (t, this.time_, double (od));
+      if (! (isnumeric (nd) || islogical (nd)) || size (nd, 1) != numel (t)
+          || numel (nd) != numel (t) * prod (ss))
+        errmsg = "the interpolation function must return one sample per time.";
+        return;
+      endif
+      if (td == 1)
+        nd = reshape (nd, [numel(t), ss(2:end)]);
+      else
+        nd = permute (reshape (nd, [numel(t), ss]), [2:td, 1]);
+      endif
+      if (islogical (this.data_))
+        nd = nd != 0;
+      else
+        nd = cast (nd, class (this.data_));
+      endif
+
+      ## Quality: the sample a 'zoh' value is held from, otherwise the nearest,
+      ## a tie going to the later; CODE at the times not already held
+      if (hasQ)
+        src = zeros (numel (t), 1);
+        isZoh = strcmp (ip.Name, 'zoh');
+        for i = 1:numel (t)
+          k = [];
+          if (isZoh)
+            k = find (this.time_ <= t(i), 1, 'last');
+          endif
+          if (isempty (k))
+            d = abs (this.time_ - t(i));
+            k = find (d == min (d), 1, 'last');
+          endif
+          src(i) = k;
+        endfor
+        q = takeSamples (this.quality_, src, td);
+        if (! isempty (code))
+          isNew = ! ismember (t, this.time_);
+          q = putSample (q, find (isNew), double (code), td);
+        endif
+        this.quality_ = q;
+      endif
+      this.data_ = nd;
+      this.time_ = t;
+      this.timeInfo_.TimeVector = t;
     endfunction
 
     ## Convert user times X to times of this series.  Numbers are relative
@@ -2210,6 +2627,23 @@ endfunction
 function tf = sameEvent (a, b)
   tf = strcmp (a.Name, b.Name) && a.Time == b.Time ...
        && strcmp (a.Units, b.Units) && strcmp (a.StartDate, b.StartDate);
+endfunction
+
+## Read an interpolation method name for 'resample' or 'synchronize': '' or
+## [] for the series' own.  Returns it in lower case and an empty ERRMSG, or
+## the rest of the message the caller raises after naming it.
+function [method, errmsg] = interpName (method)
+  errmsg = '';
+  if (isempty (method) && (isnumeric (method) || ischar (method)))
+    method = '';
+    return;
+  endif
+  if (! isText (method)
+      || ! any (strcmpi (char (method), {'linear', 'zoh'})))
+    errmsg = "must be 'linear' or 'zoh'.";
+    return;
+  endif
+  method = lower (char (method));
 endfunction
 
 ## Raise unless OBJ is a single series.

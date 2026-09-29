@@ -39,16 +39,16 @@ classdef interpolation
     ## The interpolating function.
     ##
     ## A function handle called as
-    ## @code{@var{newData} = @var{fh} (@var{oldTime}, @var{oldData},
-    ## @var{newTime})}, where @var{oldTime} and @var{newTime} are column
-    ## vectors and each row of @var{oldData} is one sample.  It is @code{[]}
-    ## for an object that names no method.  Assigning a function handle sets
-    ## @qcode{Name} to @qcode{'myFuncHandle'}.
+    ## @code{@var{newData} = @var{fh} (@var{newTime}, @var{oldTime},
+    ## @var{oldData})}, as in MATLAB: @var{newTime} and @var{oldTime} are
+    ## column vectors, and @var{oldData} and @var{newData} have time along
+    ## their first dimension, a sample per row.  It is @code{[]} for an object
+    ## that names no method.  Assigning a function handle sets @qcode{Name} to
+    ## @qcode{'myFuncHandle'}.
     ##
     ## MATLAB stores this property in several shapes, among them a cell
-    ## holding a handle and a function name, and calls a user function with an
-    ## undocumented signature, so a handle written for MATLAB does not work
-    ## here, nor the reverse.
+    ## holding the handle and, for a built-in method, a cell holding a handle
+    ## and a function name; here it is always the handle itself.
     ##
     ## @end deftp
     Fhandle
@@ -92,8 +92,8 @@ classdef interpolation
     ##
     ## @code{@var{ip} = tsdata.interpolation (@var{fh})} returns a method
     ## evaluated by the function handle @var{fh}, called as
-    ## @code{@var{newData} = @var{fh} (@var{oldTime}, @var{oldData},
-    ## @var{newTime})}, and names it @qcode{'myFuncHandle'}.
+    ## @code{@var{newData} = @var{fh} (@var{newTime}, @var{oldTime},
+    ## @var{oldData})}, and names it @qcode{'myFuncHandle'}.
     ##
     ## A cell array is refused, where MATLAB returns an empty object for it
     ## without an error.
@@ -145,9 +145,11 @@ classdef interpolation
       endif
       switch (val)
         case 'linear'
-          this.fh = @(t, d, tn) interp1 (t, d, tn, 'linear', NaN);
+          this.fh = @(nt, ot, od) tsdata.interpolation.builtin (nt, ot, od, ...
+                                                                'linear');
         case 'zoh'
-          this.fh = @(t, d, tn) interp1 (t, d, tn, 'previous', NaN);
+          this.fh = @(nt, ot, od) tsdata.interpolation.builtin (nt, ot, od, ...
+                                                                'zoh');
         case 'myFuncHandle'
           if (! strcmp (this.name, 'myFuncHandle'))
             error (strcat ("tsdata.interpolation: 'Name' is set to", ...
@@ -229,6 +231,45 @@ classdef interpolation
 
   endmethods
 
+  methods (Static, Hidden)
+
+    ## The built-in methods, called as a user function is: OT the old times
+    ## and NT the new, both columns, OD the old data with a sample per row of
+    ## its first dimension.  Each data column is interpolated from its own
+    ## samples that are not NaN, as MATLAB does; repeated old times are
+    ## right-continuous.  'linear' interpolates; 'zoh' holds the last sample
+    ## at or before each new time.  Past either end the result is NaN.
+    function nd = builtin (nt, ot, od, method)
+      sz = size (od);
+      od = reshape (double (od), sz(1), []);
+      nt = nt(:);
+      ot = ot(:);
+      nd = NaN (numel (nt), columns (od));
+      for j = 1:columns (od)
+        ok = ! isnan (od(:,j));
+        t = ot(ok);
+        v = od(ok,j);
+        if (isempty (t))
+          continue;
+        endif
+        if (strcmp (method, 'zoh'))
+          for i = 1:numel (nt)
+            k = find (t <= nt(i), 1, 'last');
+            if (! isempty (k) && nt(i) <= t(end))
+              nd(i,j) = v(k);
+            endif
+          endfor
+        elseif (numel (t) == 1)
+          nd(nt == t,j) = v;
+        else
+          nd(:,j) = interp1 (t, v, nt, 'linear', NaN);
+        endif
+      endfor
+      nd = reshape (nd, [numel(nt), sz(2:end)]);
+    endfunction
+
+  endmethods
+
   methods (Hidden)
 
     function display (this)
@@ -266,26 +307,26 @@ endclassdef
 %!test
 %! ip = tsdata.interpolation ('linear');
 %! assert_equal (ip.Name, 'linear');
-%! assert_equal (ip.Fhandle ([0; 2], [0; 10], 1), 5);
+%! assert_equal (ip.Fhandle (1, [0; 2], [0; 10]), 5);
 %!test
 %! ip = tsdata.interpolation ('zoh');
 %! assert_equal (ip.Name, 'zoh');
-%! assert_equal (ip.Fhandle ([0; 2], [0; 10], 1), 0);
+%! assert_equal (ip.Fhandle (1, [0; 2], [0; 10]), 0);
 %!test
 %! ip = tsdata.interpolation (string ('zoh'));
 %! assert_equal (ip.Name, 'zoh');
 %!test
 %! ip = tsdata.interpolation ('linear');
-%! assert_equal (ip.Fhandle ([0; 2], [0, 4; 10, 8], 1), [5, 6]);
+%! assert_equal (ip.Fhandle (1, [0; 2], [0, 4; 10, 8]), [5, 6]);
 %!test
 %! ip = tsdata.interpolation ('linear');
-%! assert_equal (isna (ip.Fhandle ([0; 2], [0; 10], 3)), false);
-%! assert_equal (ip.Fhandle ([0; 2], [0; 10], 3), NaN);
+%! assert_equal (isna (ip.Fhandle (3, [0; 2], [0; 10])), false);
+%! assert_equal (ip.Fhandle (3, [0; 2], [0; 10]), NaN);
 ## Test a function handle names the method 'myFuncHandle'
 %!test
-%! ip = tsdata.interpolation (@(t, d, tn) 2 * tn);
+%! ip = tsdata.interpolation (@(nt, ot, od) 2 * nt);
 %! assert_equal (ip.Name, 'myFuncHandle');
-%! assert_equal (ip.Fhandle ([0; 1], [0; 1], 3), 6);
+%! assert_equal (ip.Fhandle (3, [0; 1], [0; 1]), 6);
 %!test
 %! ip = tsdata.interpolation (@sin);
 %! assert_equal (ip.Fhandle, @sin);
@@ -293,11 +334,11 @@ endclassdef
 %!test
 %! ip = tsdata.interpolation ('linear');
 %! ip.Name = 'zoh';
-%! assert_equal (ip.Fhandle ([0; 2], [0; 10], 1), 0);
+%! assert_equal (ip.Fhandle (1, [0; 2], [0; 10]), 0);
 %!test
 %! ip = tsdata.interpolation (@(t, d, tn) tn);
 %! ip.Name = 'linear';
-%! assert_equal (ip.Fhandle ([0; 2], [0; 10], 1), 5);
+%! assert_equal (ip.Fhandle (1, [0; 2], [0; 10]), 5);
 %!test
 %! ip = tsdata.interpolation ('linear');
 %! ip.Name = '';
@@ -352,6 +393,35 @@ endclassdef
 %!test
 %! obj = tsdata.interpolation ('linear');
 %! assert_equal (fieldnames (set (obj)), fieldnames (get (obj)));
+## Test the built-in methods take MATLAB's arguments and skip NaN samples
+%!test
+%! ip = tsdata.interpolation ('linear');
+%! assert_equal (ip.Fhandle ([0.5; 1.5; 2.5], [0; 1; 2; 3], [1; NaN; 3; 4]), ...
+%!               [1.5; 2.5; 3.5]);
+%!test
+%! ip = tsdata.interpolation ('zoh');
+%! assert_equal (ip.Fhandle ([0.5; 1.5; 2.5], [0; 1; 2; 3], [1; NaN; 3; 4]), ...
+%!               [1; 1; 3]);
+## Test repeated old times are right-continuous
+%!test
+%! ip = tsdata.interpolation ('linear');
+%! assert_equal (ip.Fhandle ([0.9; 1; 1.1], [0; 1; 1; 2], [1; 2; 3; 4]), ...
+%!               [1.9; 3; 3.1], 1e-14);
+%!test
+%! ip = tsdata.interpolation ('zoh');
+%! assert_equal (ip.Fhandle ([0.9; 1; 1.1], [0; 1; 1; 2], [1; 2; 3; 4]), ...
+%!               [1; 3; 3]);
+## Test past either end gives NaN, for 'zoh' too
+%!test
+%! ip = tsdata.interpolation ('zoh');
+%! nd = ip.Fhandle ([-1; 0.5; 4; 5], (0:4)', [10; 20; 40; 80; 160]);
+%! assert_equal (nd, [NaN; 10; 160; NaN]);
+%!test
+%! ip = tsdata.interpolation ('linear');
+%! od = permute (reshape (1:12, 2, 2, 3), [3, 1, 2]);
+%! nd = ip.Fhandle ([0.5; 1.5], [0; 1; 2], od);
+%! assert_equal (size (nd), [2, 2, 2]);
+%! assert_equal (squeeze (nd(1,:,:)), [3, 5; 4, 6]);
 
 %!error <tsdata.interpolation: METHOD must be 'linear', 'zoh' or a function handle.> ...
 %! tsdata.interpolation ({@sin})
