@@ -2043,8 +2043,9 @@ classdef timeseries
     ## @item @qcode{'tolerance'}
     ## how close two times must be to count as one, in the first series'
     ## units, @code{1e-10} by default; the second series' time is kept.  This
-    ## is the documented meaning; R2024a ignores any tolerance above about
-    ## @code{1e-10}.
+    ## is the documented meaning; MATLAB ignores any tolerance above about
+    ## @code{1e-10}, so there @code{0.1} matches no times @code{0.05} apart,
+    ## while here it matches them.
     ## @end table
     ##
     ## Quality codes follow the rules of @code{resample}.

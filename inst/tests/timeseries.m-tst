@@ -1951,6 +1951,20 @@
 %! [a, b] = synchronize (timeseries ([1; 2; 3; 4], [0; 1; 2; 3]), b2, ...
 %!                       'intersection', 'tolerance', 1e-12);
 %! assert_equal (a.Time, 2);
+## Test a larger tolerance widens the match, which MATLAB ignores
+%!test
+%! a4 = timeseries ([1; 2; 3; 4], [0; 1; 2; 3]);
+%! b4 = timeseries ([10; 20], [1.05; 2.05]);
+%! [a, b] = synchronize (a4, b4, 'intersection');
+%! assert_equal (a.Length, 0);
+%! [a, b] = synchronize (a4, b4, 'intersection', 'tolerance', 0.1);
+%! assert_equal (a.Time, [1.05; 2.05]);
+%! assert_equal (a.Data, [2.05; 3.05], 1e-14);
+%! assert_equal (b.Data, [10; 20]);
+%! [a, b] = synchronize (a4, b4, 'union', 'tolerance', 0.1);
+%! assert_equal (a.Time, [1.05; 2.05]);
+%! [a, b] = synchronize (a4, b4, 'union');
+%! assert_equal (a.Time, [1.05; 2; 2.05]);
 ## Test times in different units are converted exactly, where MATLAB is not
 %!test
 %! m = timeseries ([7; 8; 9], [0; 1; 2]);
