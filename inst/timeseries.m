@@ -2184,6 +2184,510 @@ classdef timeseries
 
   endmethods
 
+################################################################################
+##                              ** Statistics **                              ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'mean'             'median'           'mode'             'std'             ##
+## 'var'              'sum'              'min'              'max'             ##
+## 'iqr'              'getqualitydesc'                                        ##
+##                                                                            ##
+################################################################################
+
+  methods (Access = public)
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timeseries} {@var{v} =} mean (@var{ts})
+    ## @deftypefnx {timeseries} {@var{v} =} mean (@var{ts}, @var{name}, @var{value}, @dots{})
+    ##
+    ## Return the mean of a series over time.
+    ##
+    ## @code{@var{v} = mean (@var{ts})} returns the mean of each data element
+    ## over time, so @var{v} has the size of one sample; with @qcode{'time'}
+    ## weighting it is the time-weighted mean.  @var{v} is @code{double}
+    ## whatever the class of the data, and @code{[]} for a series with no
+    ## samples.
+    ##
+    ## @code{@var{v} = mean (@var{ts}, @var{name}, @var{value}, @dots{})} takes
+    ## these options, which all nine statistics share, the names matched in any
+    ## case:
+    ##
+    ## @table @asis
+    ## @item @qcode{'Quality'}
+    ## the quality codes of samples to leave out, as missing; a value left
+    ## without samples is @code{NaN}, a sum 0.  A code no sample has leaves
+    ## nothing out, with a warning.
+    ## @item @qcode{'MissingData'}
+    ## @qcode{'remove'}, the default, leaves missing values out;
+    ## @qcode{'interpolate'} fills those between samples linearly in time
+    ## first.
+    ## @item @qcode{'Weighting'}
+    ## @qcode{'none'}, the default, or @qcode{'time'}, which weights each sample
+    ## by the time it covers: an interior sample by the mean of its two
+    ## intervals, an end sample by its one interval, the weights scaled to a
+    ## mean of 1, so that uniform time changes nothing.
+    ## @end table
+    ##
+    ## @code{NaN} is missing while @qcode{TreatNaNasMissing} is @code{true};
+    ## when it is @code{false}, @code{mean}, @code{median}, @code{std},
+    ## @code{var} and @code{sum} give @code{NaN} where the data holds one,
+    ## while @code{min}, @code{max}, @code{mode} and @code{iqr} still skip it,
+    ## as in MATLAB.
+    ##
+    ## MATLAB applies @qcode{'time'} weighting by multiplying the data by the
+    ## weights and taking the ordinary statistic of the product, which is
+    ## right for @code{mean} and @code{sum} only: there the minimum of
+    ## @code{[1 2 4 8 16]} at times @code{[0 1 3 7 8]} is 0.5556.  Here each
+    ## statistic is the time-weighted one: 1 for that minimum.  MATLAB also
+    ## fails on logical data, and in @code{std}, @code{var} and @code{iqr} on
+    ## integer data, which here are computed in @code{double}.
+    ##
+    ## @seealso{timeseries.median, timeseries.std, timeseries.sum}
+    ## @end deftypefn
+    function v = mean (this, varargin)
+      v = statistic (this, 'mean', varargin{:});
+    endfunction
+
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timeseries} {@var{v} =} median (@var{ts})
+    ## @deftypefnx {timeseries} {@var{v} =} median (@var{ts}, @var{name}, @var{value}, @dots{})
+    ##
+    ## Return the median of a series over time.
+    ##
+    ## @code{@var{v} = median (@var{ts})} returns the median of each data
+    ## element over time, so @var{v} has the size of one sample; with
+    ## @qcode{'time'} weighting it is the time-weighted median.  @var{v} keeps
+    ## the class of the data, and is @code{[]} for a series with no samples.
+    ##
+    ## The options, and where MATLAB differs, are given under
+    ## @code{timeseries.mean}.
+    ##
+    ## @seealso{timeseries.mean, timeseries.mode, timeseries.iqr}
+    ## @end deftypefn
+    function v = median (this, varargin)
+      v = statistic (this, 'median', varargin{:});
+    endfunction
+
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timeseries} {@var{v} =} mode (@var{ts})
+    ## @deftypefnx {timeseries} {@var{v} =} mode (@var{ts}, @var{name}, @var{value}, @dots{})
+    ##
+    ## Return the mode of a series over time.
+    ##
+    ## @code{@var{v} = mode (@var{ts})} returns the most frequent value of each
+    ## data element over time, the smallest on a tie, so @var{v} has the size
+    ## of one sample; with @qcode{'time'} weighting it is the value of most
+    ## total weight.  @var{v} keeps the class of the data, and is @code{[]} for
+    ## a series with no samples.
+    ##
+    ## The options, and where MATLAB differs, are given under
+    ## @code{timeseries.mean}.
+    ##
+    ## @seealso{timeseries.mean, timeseries.median}
+    ## @end deftypefn
+    function v = mode (this, varargin)
+      v = statistic (this, 'mode', varargin{:});
+    endfunction
+
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timeseries} {@var{v} =} std (@var{ts})
+    ## @deftypefnx {timeseries} {@var{v} =} std (@var{ts}, @var{name}, @var{value}, @dots{})
+    ##
+    ## Return the standard deviation of a series over time.
+    ##
+    ## @code{@var{v} = std (@var{ts})} returns the standard deviation of each
+    ## data element over time, normalised by @math{N-1}, so @var{v} has the
+    ## size of one sample; with @qcode{'time'} weighting it is taken about the
+    ## time-weighted mean.  @var{v} is @code{double} whatever the class of the
+    ## data, and @code{[]} for a series with no samples.
+    ##
+    ## The options, and where MATLAB differs, are given under
+    ## @code{timeseries.mean}.
+    ##
+    ## @seealso{timeseries.mean, timeseries.var}
+    ## @end deftypefn
+    function v = std (this, varargin)
+      v = statistic (this, 'std', varargin{:});
+    endfunction
+
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timeseries} {@var{v} =} var (@var{ts})
+    ## @deftypefnx {timeseries} {@var{v} =} var (@var{ts}, @var{name}, @var{value}, @dots{})
+    ##
+    ## Return the variance of a series over time.
+    ##
+    ## @code{@var{v} = var (@var{ts})} returns the variance of each data
+    ## element over time, normalised by @math{N-1}, so @var{v} has the size of
+    ## one sample; with @qcode{'time'} weighting it is taken about the
+    ## time-weighted mean.  @var{v} is @code{double} whatever the class of the
+    ## data, and @code{[]} for a series with no samples.
+    ##
+    ## The options, and where MATLAB differs, are given under
+    ## @code{timeseries.mean}.
+    ##
+    ## @seealso{timeseries.mean, timeseries.std}
+    ## @end deftypefn
+    function v = var (this, varargin)
+      v = statistic (this, 'var', varargin{:});
+    endfunction
+
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timeseries} {@var{v} =} sum (@var{ts})
+    ## @deftypefnx {timeseries} {@var{v} =} sum (@var{ts}, @var{name}, @var{value}, @dots{})
+    ##
+    ## Return the sum of a series over time.
+    ##
+    ## @code{@var{v} = sum (@var{ts})} returns the sum of each data element
+    ## over time, so @var{v} has the size of one sample; with @qcode{'time'}
+    ## weighting it is the sum of the weighted samples.  @var{v} is
+    ## @code{double} whatever the class of the data, and @code{[]} for a series
+    ## with no samples.
+    ##
+    ## The options, and where MATLAB differs, are given under
+    ## @code{timeseries.mean}.
+    ##
+    ## @seealso{timeseries.mean}
+    ## @end deftypefn
+    function v = sum (this, varargin)
+      v = statistic (this, 'sum', varargin{:});
+    endfunction
+
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timeseries} {@var{v} =} min (@var{ts})
+    ## @deftypefnx {timeseries} {@var{v} =} min (@var{ts}, @var{name}, @var{value}, @dots{})
+    ##
+    ## Return the minimum of a series over time.
+    ##
+    ## @code{@var{v} = min (@var{ts})} returns the smallest value of each data
+    ## element over time, so @var{v} has the size of one sample; weighting
+    ## leaves it unchanged.  @var{v} keeps the class of the data, and is
+    ## @code{[]} for a series with no samples.
+    ##
+    ## The options, and where MATLAB differs, are given under
+    ## @code{timeseries.mean}.
+    ##
+    ## @seealso{timeseries.max, timeseries.mean}
+    ## @end deftypefn
+    function v = min (this, varargin)
+      v = statistic (this, 'min', varargin{:});
+    endfunction
+
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timeseries} {@var{v} =} max (@var{ts})
+    ## @deftypefnx {timeseries} {@var{v} =} max (@var{ts}, @var{name}, @var{value}, @dots{})
+    ##
+    ## Return the maximum of a series over time.
+    ##
+    ## @code{@var{v} = max (@var{ts})} returns the largest value of each data
+    ## element over time, so @var{v} has the size of one sample; weighting
+    ## leaves it unchanged.  @var{v} keeps the class of the data, and is
+    ## @code{[]} for a series with no samples.
+    ##
+    ## The options, and where MATLAB differs, are given under
+    ## @code{timeseries.mean}.
+    ##
+    ## @seealso{timeseries.min, timeseries.mean}
+    ## @end deftypefn
+    function v = max (this, varargin)
+      v = statistic (this, 'max', varargin{:});
+    endfunction
+
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timeseries} {@var{v} =} iqr (@var{ts})
+    ## @deftypefnx {timeseries} {@var{v} =} iqr (@var{ts}, @var{name}, @var{value}, @dots{})
+    ##
+    ## Return the interquartile range of a series over time.
+    ##
+    ## @code{@var{v} = iqr (@var{ts})} returns the interquartile range of each
+    ## data element over time, the quartiles placed by the @code{(k - 0.5)/n}
+    ## rule, so @var{v} has the size of one sample; with @qcode{'time'}
+    ## weighting the cumulative weight takes the place of @var{k}.  @var{v} is
+    ## @code{double} whatever the class of the data, and @code{[]} for a series
+    ## with no samples.
+    ##
+    ## The options, and where MATLAB differs, are given under
+    ## @code{timeseries.mean}.
+    ##
+    ## @seealso{timeseries.median, timeseries.mean}
+    ## @end deftypefn
+    function v = iqr (this, varargin)
+      v = statistic (this, 'iqr', varargin{:});
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {timeseries} {@var{desc} =} getqualitydesc (@var{ts})
+    ##
+    ## Return the description of each quality code.
+    ##
+    ## @code{@var{desc} = getqualitydesc (@var{ts})} returns a cell array the
+    ## size of @qcode{@var{ts}.Quality} holding, for each code, its description
+    ## in @qcode{@var{ts}.QualityInfo}: the element of @qcode{Description} at
+    ## the position of the code in @qcode{Code}.  A series without quality
+    ## codes gives @code{@{@}}.  A code with no description is refused.
+    ##
+    ## @seealso{tsdata.qualmetadata}
+    ## @end deftypefn
+    function desc = getqualitydesc (this)
+      mustBeScalar (this, 'getqualitydesc');
+      q = this.quality_;
+      if (isempty (q))
+        desc = {};
+        return;
+      endif
+      codes = this.qualityInfo_.Code;
+      text = this.qualityInfo_.Description;
+      desc = cell (size (q));
+      for i = 1:numel (q)
+        k = find (codes == q(i), 1);
+        if (isempty (k) || ! iscell (text) || k > numel (text))
+          error (strcat ("timeseries.getqualitydesc: quality code %d", ...
+                         " has no description in 'QualityInfo'."), q(i));
+        endif
+        desc{i} = text{k};
+      endfor
+    endfunction
+
+  endmethods
+
+################################################################################
+##                     ** Arithmetic and comparison **                        ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'plus'             'minus'            'times'            'mtimes'          ##
+## 'rdivide'          'ldivide'          'mrdivide'         'mldivide'        ##
+## 'eq'               'isequal'          'isequalwithequalnans'               ##
+##                                                                            ##
+################################################################################
+
+  methods (Access = public)
+
+    ## -*- texinfo -*-
+    ## @deftypefn {timeseries} {@var{ts} =} plus (@var{a}, @var{b})
+    ##
+    ## The sum of series, @code{@var{a} + @var{b}}.
+    ##
+    ## @code{@var{ts} = plus (@var{a}, @var{b})} returns the sum of @var{a} and
+    ## @var{b}, sample by sample.  One of them may be a number: a scalar, or an
+    ## array the size of one sample.
+    ##
+    ## Two series must hold as many samples, of sizes the operator accepts,
+    ## at times in the same units.  Two dated series must be at the same
+    ## instants; two undated ones may also differ by a constant offset, and
+    ## the result then takes the times of @var{a}, with a warning.  A dated
+    ## series and an undated one are refused.  The result is named
+    ## @qcode{'unnamed'} and takes its other properties from @var{a}, with the
+    ## events of both, no quality codes and linear interpolation;
+    ## @qcode{DataInfo.Units} is kept where both series have the same.  With a
+    ## number, every property of the series is kept.  The data is
+    ## @code{double} whatever its class.
+    ##
+    ## @seealso{timeseries.minus, timeseries.times, timeseries.mtimes}
+    ## @end deftypefn
+    function ts = plus (a, b)
+      ts = arithmetic (a, b, 'plus');
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {timeseries} {@var{ts} =} minus (@var{a}, @var{b})
+    ##
+    ## The difference of series, @code{@var{a} - @var{b}}.
+    ##
+    ## @code{@var{ts} = minus (@var{a}, @var{b})} returns the difference of
+    ## @var{a} and @var{b}, sample by sample.  One of them may be a number: a
+    ## scalar, or an array the size of one sample.
+    ##
+    ## The rules for two series are given under @code{timeseries.plus}.
+    ##
+    ## @seealso{timeseries.plus}
+    ## @end deftypefn
+    function ts = minus (a, b)
+      ts = arithmetic (a, b, 'minus');
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {timeseries} {@var{ts} =} times (@var{a}, @var{b})
+    ##
+    ## The element-wise product of series, @code{@var{a} .* @var{b}}.
+    ##
+    ## @code{@var{ts} = times (@var{a}, @var{b})} returns the element-wise
+    ## product of @var{a} and @var{b}, sample by sample.  One of them may be a
+    ## number: a scalar, or an array the size of one sample.
+    ##
+    ## The rules for two series are given under @code{timeseries.plus},
+    ## save that @qcode{DataInfo.Units} is dropped, since a product or
+    ## quotient of units is the unit of neither; MATLAB keeps it where both
+    ## series have the same.
+    ##
+    ## @seealso{timeseries.mtimes, timeseries.plus}
+    ## @end deftypefn
+    function ts = times (a, b)
+      ts = arithmetic (a, b, 'times');
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {timeseries} {@var{ts} =} mtimes (@var{a}, @var{b})
+    ##
+    ## The matrix product of series, @code{@var{a} * @var{b}}.
+    ##
+    ## @code{@var{ts} = mtimes (@var{a}, @var{b})} returns the matrix product
+    ## of @var{a} and @var{b}, sample by sample.  One of them may be a number
+    ## whose size fits the product with one sample.
+    ##
+    ## The rules for two series are given under @code{timeseries.plus},
+    ## save that @qcode{DataInfo.Units} is dropped, since a product or
+    ## quotient of units is the unit of neither; MATLAB keeps it where both
+    ## series have the same.
+    ##
+    ## @seealso{timeseries.times, timeseries.plus}
+    ## @end deftypefn
+    function ts = mtimes (a, b)
+      ts = arithmetic (a, b, 'mtimes');
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {timeseries} {@var{ts} =} rdivide (@var{a}, @var{b})
+    ##
+    ## The element-wise quotient of series, @code{@var{a} ./ @var{b}}.
+    ##
+    ## @code{@var{ts} = rdivide (@var{a}, @var{b})} returns the element-wise
+    ## quotient of @var{a} and @var{b}, sample by sample.  One of them may be a
+    ## number: a scalar, or an array the size of one sample.
+    ##
+    ## The rules for two series are given under @code{timeseries.plus},
+    ## save that @qcode{DataInfo.Units} is dropped, since a product or
+    ## quotient of units is the unit of neither; MATLAB keeps it where both
+    ## series have the same.
+    ##
+    ## @seealso{timeseries.ldivide, timeseries.mrdivide}
+    ## @end deftypefn
+    function ts = rdivide (a, b)
+      ts = arithmetic (a, b, 'rdivide');
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {timeseries} {@var{ts} =} ldivide (@var{a}, @var{b})
+    ##
+    ## The element-wise left quotient, @code{@var{a} .@backslash{} @var{b}}.
+    ##
+    ## @code{@var{ts} = ldivide (@var{a}, @var{b})} returns the element-wise
+    ## quotient of @var{b} by @var{a}, sample by sample.  One of them may be
+    ## a number: a scalar, or an array the size of one sample.
+    ##
+    ## The rules for two series are given under @code{timeseries.plus},
+    ## save that @qcode{DataInfo.Units} is dropped, since a product or
+    ## quotient of units is the unit of neither; MATLAB keeps it where both
+    ## series have the same.
+    ##
+    ## @seealso{timeseries.rdivide, timeseries.mldivide}
+    ## @end deftypefn
+    function ts = ldivide (a, b)
+      ts = arithmetic (a, b, 'ldivide');
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {timeseries} {@var{ts} =} mrdivide (@var{a}, @var{b})
+    ##
+    ## The matrix right division of series, @code{@var{a} / @var{b}}.
+    ##
+    ## @code{@var{ts} = mrdivide (@var{a}, @var{b})} returns the matrix right
+    ## division of @var{a} by @var{b}, sample by sample; each result keeps the
+    ## size of one sample.  One of them may be a number whose size fits the
+    ## division with one sample.
+    ##
+    ## The rules for two series are given under @code{timeseries.plus},
+    ## save that @qcode{DataInfo.Units} is dropped, since a product or
+    ## quotient of units is the unit of neither; MATLAB keeps it where both
+    ## series have the same.
+    ##
+    ## A number divided by a series, @code{2 / @var{ts}}, divides each sample;
+    ## MATLAB divides by the whole data column as one matrix.
+    ##
+    ## @seealso{timeseries.mldivide, timeseries.rdivide}
+    ## @end deftypefn
+    function ts = mrdivide (a, b)
+      ts = arithmetic (a, b, 'mrdivide');
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {timeseries} {@var{ts} =} mldivide (@var{a}, @var{b})
+    ##
+    ## The matrix left division of series, @code{@var{a} @backslash{} @var{b}}.
+    ##
+    ## @code{@var{ts} = mldivide (@var{a}, @var{b})} returns the matrix left
+    ## division of @var{b} by @var{a}, sample by sample; each result keeps the
+    ## size of one sample.  One of them may be a number whose size fits the
+    ## division with one sample.
+    ##
+    ## The rules for two series are given under @code{timeseries.plus},
+    ## save that @qcode{DataInfo.Units} is dropped, since a product or
+    ## quotient of units is the unit of neither; MATLAB keeps it where both
+    ## series have the same.
+    ##
+    ## @seealso{timeseries.mrdivide, timeseries.ldivide}
+    ## @end deftypefn
+    function ts = mldivide (a, b)
+      ts = arithmetic (a, b, 'mldivide');
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {timeseries} {@var{tf} =} eq (@var{a}, @var{b})
+    ##
+    ## True when two series are equal, @code{@var{a} == @var{b}}.
+    ##
+    ## @code{@var{tf} = eq (@var{a}, @var{b})} returns a single logical for the
+    ## whole series, as in MATLAB, not one per sample: @code{true} when
+    ## @var{a} and @var{b} are series equal in every property but
+    ## @qcode{UserData}, the class of the data aside, and @code{false} when
+    ## either is not a series.  @code{NaN} is unequal to itself.
+    ##
+    ## @seealso{timeseries.isequal, timeseries.isequalwithequalnans}
+    ## @end deftypefn
+    function tf = eq (a, b)
+      tf = sameSeries (a, b, false);
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {timeseries} {@var{tf} =} isequal (@var{a}, @var{b})
+    ##
+    ## True when two series are equal.
+    ##
+    ## @code{@var{tf} = isequal (@var{a}, @var{b})} is @code{@var{a} ==
+    ## @var{b}}: every property but @qcode{UserData} compared, the class of the
+    ## data aside, @code{NaN} unequal to itself.
+    ##
+    ## @seealso{timeseries.eq, timeseries.isequalwithequalnans}
+    ## @end deftypefn
+    function tf = isequal (a, b)
+      tf = sameSeries (a, b, false);
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {timeseries} {@var{tf} =} isequalwithequalnans (@var{a}, @var{b})
+    ##
+    ## True when two series are equal, @code{NaN} equal to itself.
+    ##
+    ## @code{@var{tf} = isequalwithequalnans (@var{a}, @var{b})} is
+    ## @code{isequal (@var{a}, @var{b})} with @code{NaN} counted as equal to
+    ## @code{NaN}.
+    ##
+    ## @seealso{timeseries.isequal, timeseries.eq}
+    ## @end deftypefn
+    function tf = isequalwithequalnans (a, b)
+      tf = sameSeries (a, b, true);
+    endfunction
+
+  endmethods
+
   methods (Access = private)
 
     ## The series holding only the samples IDX, in that order, with every
@@ -2337,6 +2841,227 @@ classdef timeseries
       this.data_ = nd;
       this.time_ = t;
       this.timeInfo_.TimeVector = t;
+    endfunction
+
+    ## The statistic FN of the series over time, with the options in
+    ## VARARGIN: one value per data element, shaped as one sample.
+    function v = statistic (this, fn, varargin)
+      scope = ['timeseries.', fn];
+      mustBeScalar (this, fn);
+      if (mod (numel (varargin), 2) != 0)
+        error ("%s: name-value arguments must be in pairs.", scope);
+      endif
+      codes = [];
+      fill = false;
+      weighted = false;
+      for i = 1:2:numel (varargin)
+        [name, val] = varargin{i:i+1};
+        if (! isText (name))
+          error ("%s: invalid optional paired argument.", scope);
+        endif
+        switch (lower (char (name)))
+          case 'quality'
+            if (! ((isnumeric (val) || islogical (val)) && isreal (val)
+                   && all (val(:) == fix (val(:)))))
+              error ("%s: 'Quality' must hold integer codes.", scope);
+            endif
+            codes = double (val(:));
+          case 'missingdata'
+            if (! (isText (val)
+                   && any (strcmpi (val, {'remove', 'interpolate'}))))
+              error ("%s: 'MissingData' must be 'remove' or 'interpolate'.", ...
+                     scope);
+            endif
+            fill = strcmpi (val, 'interpolate');
+          case 'weighting'
+            if (! (isText (val) && any (strcmpi (val, {'none', 'time'}))))
+              error ("%s: 'Weighting' must be 'none' or 'time'.", scope);
+            endif
+            weighted = strcmpi (val, 'time');
+          otherwise
+            error ("%s: invalid optional paired argument.", scope);
+        endswitch
+      endfor
+      n = numel (this.time_);
+      if (n == 0 || isempty (this.data_))
+        v = [];
+        return;
+      endif
+      td = this.timeDim_;
+      ss = sampleSize (this.data_, td);
+      cls = class (this.data_);
+
+      ## Time first, one column per data element
+      X = this.data_;
+      if (td > 1)
+        X = permute (X, [td, 1:td-1]);
+      endif
+      X = double (reshape (X, n, []));
+      m = columns (X);
+
+      ## Missing: NaN while it counts as missing, and the excluded codes
+      miss = false (n, m);
+      if (this.treatNaN_)
+        miss = isnan (X);
+      endif
+      if (! isempty (codes))
+        q = this.quality_;
+        if (isempty (q) || ! any (ismember (codes, q(:))))
+          warning ("%s: no sample has the quality codes given.", scope);
+        else
+          if (td > 1)
+            q = permute (q, [td, 1:td-1]);
+          endif
+          q = reshape (q, n, []);
+          if (columns (q) == 1)
+            q = repmat (q, 1, m);
+          endif
+          miss |= ismember (q, codes);
+        endif
+      endif
+
+      ## Missing values between samples filled linearly in time
+      t = this.time_;
+      if (fill)
+        for j = 1:m
+          ok = ! miss(:,j);
+          if (sum (ok) >= 2)
+            inner = miss(:,j) & t > min (t(ok)) & t < max (t(ok));
+            X(inner,j) = interp1 (t(ok), X(ok,j), t(inner), 'linear');
+            miss(inner,j) = false;
+          endif
+        endfor
+      endif
+
+      ## The time each sample covers, scaled to a mean of 1
+      w = ones (n, 1);
+      if (weighted && n > 1)
+        d = diff (t);
+        w = [d(1); (d(1:end-1) + d(2:end)) / 2; d(end)];
+        if (all (w == 0))
+          w = ones (n, 1);
+        endif
+        w = w / mean (w);
+      endif
+
+      v = NaN (1, m);
+      skipsNaN = any (strcmp (fn, {'min', 'max', 'mode', 'iqr'}));
+      for j = 1:m
+        keep = ! miss(:,j);
+        if (skipsNaN)
+          keep &= ! isnan (X(:,j));
+        endif
+        v(j) = columnStatistic (fn, X(keep,j), w(keep));
+      endfor
+      v = reshape (v, [ss, 1]);
+      if (numel (ss) == 2 && ss(1) == 1)
+        v = reshape (v, ss);
+      endif
+      if (any (strcmp (fn, {'median', 'mode', 'min', 'max'})))
+        if (strcmp (cls, 'logical'))
+          v = v != 0 & ! isnan (v);
+        else
+          v = cast (v, cls);
+        endif
+      endif
+    endfunction
+
+    ## The arithmetic OP of A and B, either or both a series.
+    function ts = arithmetic (a, b, op)
+      scope = ['timeseries.', op];
+      matrixOp = any (strcmp (op, {'mtimes', 'mrdivide', 'mldivide'}));
+      f = str2func (op);
+      aIs = isa (a, 'timeseries');
+      bIs = isa (b, 'timeseries');
+      if (aIs)
+        mustBeScalar (a, op);
+      endif
+      if (bIs)
+        mustBeScalar (b, op);
+      endif
+      if (aIs && bIs)
+        n = numel (a.time_);
+        if (numel (b.time_) != n)
+          error ("%s: A and B must hold as many samples.", scope);
+        endif
+        if (! strcmp (a.timeInfo_.Units, b.timeInfo_.Units))
+          error ("%s: A and B must have their times in the same units.", ...
+                 scope);
+        endif
+        sdA = a.timeInfo_.StartDate;
+        sdB = b.timeInfo_.StartDate;
+        if (isempty (sdA) != isempty (sdB))
+          error (strcat ("%s: A and B must both have a start date or", ...
+                         " neither."), scope);
+        endif
+        if (! isempty (sdA))
+          [off, ~] = dateOffsets ([datevec(sdA); datevec(sdB)]);
+          nsu = nsPerUnit (a.timeInfo_.Units);
+          if (! isequal (a.time_ * nsu + off(1), b.time_ * nsu + off(2)))
+            error ("%s: A and B must be dated at the same instants.", scope);
+          endif
+        else
+          d = b.time_ - a.time_;
+          tol = 1e-12 * max ([1; abs(a.time_)]);
+          if (any (abs (d - d(1)) > tol))
+            error (strcat ("%s: the times of A and B must be equal or", ...
+                           " differ by a constant offset."), scope);
+          endif
+          if (n > 0 && d(1) != 0)
+            warning (strcat ("%s: the times of A and B differ by a", ...
+                             " constant offset; the result takes", ...
+                             " the times of A."), scope);
+          endif
+        endif
+        if (a.timeDim_ != b.timeDim_)
+          error ("%s: A and B must hold samples of the same shape.", scope);
+        endif
+        [data, errmsg] = sampleOp (f, double (a.data_), double (b.data_), ...
+                                   a.timeDim_, n, matrixOp, true);
+        ts = a;
+        ts.name_ = 'unnamed';
+        units = '';
+        if (any (strcmp (op, {'plus', 'minus'}))
+            && strcmp (a.dataInfo_.Units, b.dataInfo_.Units))
+          units = a.dataInfo_.Units;
+        endif
+        ts.dataInfo_.Units = units;
+        ts.dataInfo_.Interpolation = tsdata.interpolation ('linear');
+        ts.quality_ = [];
+        ts.qualityInfo_ = tsdata.qualmetadata ();
+        if (isempty (a.events_))
+          ts.events_ = b.events_;
+        elseif (! isempty (b.events_))
+          ts.events_ = [a.events_(:)', b.events_(:)'];
+        endif
+      else
+        if (aIs)
+          ts = a;
+          num = b;
+          left = true;
+        else
+          ts = b;
+          num = a;
+          left = false;
+        endif
+        if (! ((isnumeric (num) || islogical (num)) && ! isempty (num)))
+          error ("%s: the other operand must be a series or a number.", scope);
+        endif
+        n = numel (ts.time_);
+        td = ts.timeDim_;
+        num = double (num);
+        if (left)
+          [data, errmsg] = sampleOp (f, double (ts.data_), num, td, n, ...
+                                     matrixOp, false);
+        else
+          [data, errmsg] = sampleOp (@(x, y) f (y, x), double (ts.data_), ...
+                                     num, td, n, matrixOp, false);
+        endif
+      endif
+      if (! isempty (errmsg))
+        error ("%s: %s", scope, errmsg);
+      endif
+      ts.data_ = data;
     endfunction
 
     ## Convert user times X to times of this series.  Numbers are relative
@@ -2645,6 +3370,207 @@ function [method, errmsg] = interpName (method)
     return;
   endif
   method = lower (char (method));
+endfunction
+
+## The statistic FN of the column X with the weights W, W all ones when
+## unweighted.  Unweighted they are MATLAB's; weighted, the time-weighted
+## statistic, which with equal weights is the same.
+function v = columnStatistic (fn, x, w)
+  n = numel (x);
+  if (n == 0)
+    if (strcmp (fn, 'sum'))
+      v = 0;
+    else
+      v = NaN;
+    endif
+    return;
+  endif
+  switch (fn)
+    case 'mean'
+      v = sum (w .* x) / sum (w);
+    case 'sum'
+      v = sum (w .* x);
+    case {'var', 'std'}
+      if (n == 1)
+        v = 0;
+      else
+        w = w / mean (w);
+        mu = sum (w .* x) / sum (w);
+        v = sum (w .* (x - mu) .^ 2) / (n - 1);
+      endif
+      if (strcmp (fn, 'std'))
+        v = sqrt (v);
+      endif
+    case 'median'
+      v = weightedQuantile (x, w, 0.5);
+    case 'iqr'
+      v = weightedQuantile (x, w, 0.75) - weightedQuantile (x, w, 0.25);
+    case 'min'
+      v = min (x);
+    case 'max'
+      v = max (x);
+    case 'mode'
+      [u, ~, k] = unique (x);
+      total = accumarray (k(:), w(:));
+      [~, i] = max (total);
+      v = u(i);
+  endswitch
+endfunction
+
+## The quantile P of X under the weights W: the (k - 0.5)/n rule, with the
+## cumulative weight for k, linear between and constant beyond the ends.
+## NaN in X gives NaN.
+function v = weightedQuantile (x, w, p)
+  if (any (isnan (x)))
+    v = NaN;
+    return;
+  endif
+  [x, i] = sort (x(:));
+  w = w(i);
+  if (numel (x) == 1)
+    v = x;
+    return;
+  endif
+  pos = (cumsum (w) - w / 2) / sum (w);
+  if (p <= pos(1))
+    v = x(1);
+  elseif (p >= pos(end))
+    v = x(end);
+  else
+    k = find (pos <= p, 1, 'last');
+    if (pos(k) == p)
+      v = x(k);
+    else
+      v = x(k) + (p - pos(k)) / (pos(k+1) - pos(k)) * (x(k+1) - x(k));
+    endif
+  endif
+endfunction
+
+## Apply F to the data X, N samples along dimension TD, and Y: another
+## series' data when BOTHSERIES, else a number, a scalar or one sample's
+## size.  Element-wise operators broadcast; matrix operators run per sample.
+## Returns the data and an empty ERRMSG, or the body of the message the caller
+## raises.
+function [data, errmsg] = sampleOp (f, x, y, td, n, matrixOp, bothSeries)
+  data = [];
+  errmsg = '';
+  ss = sampleSize (x, td);
+  if (! matrixOp)
+    if (bothSeries)
+      if (! isequal (size (x), size (y)))
+        errmsg = "A and B must hold samples of the same size.";
+        return;
+      endif
+    elseif (! (isscalar (y) || isequal (size (y), ss)
+               || (td == 1 && isequal (size (y), [1, ss(2)]))))
+      errmsg = "a number must be a scalar or the size of one sample.";
+      return;
+    endif
+    data = f (x, y);
+    return;
+  endif
+  if (n == 0)
+    data = x;
+    return;
+  endif
+  ## A scalar sample is multiplied only by a number, as MATLAB applies matrix
+  ## rules there; a division keeps the size of the sample
+  opName = func2str (f);
+  isDivision = ! isempty (strfind (opName, 'divide'));
+  if (isequal (ss, [1, 1]) && ! bothSeries && ! isscalar (y)
+      && ! isempty (strfind (opName, 'mtimes')))
+    errmsg = "the sizes of the samples do not fit the operator.";
+    return;
+  endif
+  parts = cell (1, n);
+  for k = 1:n
+    xk = reshape (takeSamples (x, k, td), ss);
+    if (bothSeries)
+      yk = reshape (takeSamples (y, k, td), ss);
+    else
+      yk = y;
+    endif
+    try
+      r = f (xk, yk);
+    catch
+      errmsg = "the sizes of the samples do not fit the operator.";
+      return;
+    end_try_catch
+    if ((k > 1 && ! isequal (size (r), size (parts{1})))
+        || (isDivision && ! isequal (size (r), ss)))
+      errmsg = "the sizes of the samples do not fit the operator.";
+      return;
+    endif
+    parts{k} = r;
+  endfor
+  rs = size (parts{1});
+  if (td == 1 && rs(1) == 1)
+    data = vertcat (parts{:});
+  else
+    data = cat (numel (rs) + 1, parts{:});
+    if (isequal (rs, [1, 1]))
+      data = data(:);
+    endif
+  endif
+endfunction
+
+## True when the series A and B agree in every property but UserData, the
+## class of the data aside; NaN equal to itself when EQUALNANS.
+function tf = sameSeries (a, b, equalNans)
+  tf = false;
+  if (! (isa (a, 'timeseries') && isa (b, 'timeseries'))
+      || ! isequal (size (a), size (b)))
+    return;
+  endif
+  if (equalNans)
+    same = @(x, y) isequaln (x, y);
+  else
+    same = @(x, y) isequal (x, y);
+  endif
+  for k = 1:numel (a)
+    x = a(k);
+    y = b(k);
+    ok = strcmp (x.Name, y.Name) && same (double (x.Data), double (y.Data)) ...
+         && isequal (x.Time, y.Time) && x.IsTimeFirst == y.IsTimeFirst ...
+         && isequal (x.Quality, y.Quality) ...
+         && x.TreatNaNasMissing == y.TreatNaNasMissing;
+    ti = {x.TimeInfo, y.TimeInfo};
+    ok = ok && strcmp (ti{1}.Units, ti{2}.Units) ...
+         && strcmp (ti{1}.StartDate, ti{2}.StartDate) ...
+         && strcmp (ti{1}.Format, ti{2}.Format) ...
+         && isequal (ti{1}.UserData, ti{2}.UserData);
+    di = {x.DataInfo, y.DataInfo};
+    ok = ok && strcmp (di{1}.Units, di{2}.Units) ...
+         && strcmp (di{1}.Interpolation.Name, di{2}.Interpolation.Name) ...
+         && isequal (di{1}.UserData, di{2}.UserData) ...
+         && isequal (di{1}.InterpretSingleRowDataAs3D, ...
+                     di{2}.InterpretSingleRowDataAs3D);
+    if (ok && strcmp (di{1}.Interpolation.Name, 'myFuncHandle'))
+      ok = strcmp (func2str (di{1}.Interpolation.Fhandle), ...
+                   func2str (di{2}.Interpolation.Fhandle));
+    endif
+    qi = {x.QualityInfo, y.QualityInfo};
+    ok = ok && isequal (qi{1}.Code, qi{2}.Code) ...
+         && isequal (qi{1}.Description, qi{2}.Description) ...
+         && isequal (qi{1}.UserData, qi{2}.UserData);
+    ev = {x.Events, y.Events};
+    ok = ok && numel (ev{1}) == numel (ev{2});
+    for j = 1:numel (ev{1})
+      if (! ok)
+        break;
+      endif
+      e1 = ev{1}(j);
+      e2 = ev{2}(j);
+      ok = strcmp (e1.Name, e2.Name) && e1.Time == e2.Time ...
+           && strcmp (e1.Units, e2.Units) ...
+           && strcmp (e1.StartDate, e2.StartDate) ...
+           && isequal (e1.EventData, e2.EventData);
+    endfor
+    if (! ok)
+      return;
+    endif
+  endfor
+  tf = true;
 endfunction
 
 ## Raise unless OBJ is a single series.

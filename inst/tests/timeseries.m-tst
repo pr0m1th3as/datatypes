@@ -2037,6 +2037,382 @@
 %! [a, b] = synchronize ([S1, S1], S2, 'union');
 
 ################################################################################
+##                              ** Statistics **                              ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'mean'             'median'           'mode'             'std'             ##
+## 'var'              'sum'              'min'              'max'             ##
+## 'iqr'              'getqualitydesc'                                        ##
+##                                                                            ##
+################################################################################
+
+%!shared SV, SNU, SM, ST3, SN, SNF, SQ, SI8, SL
+%! SV = timeseries ([1; 2; 4; 8; 16], (0:4)');
+%! SNU = timeseries ([1; 2; 4; 8; 16], [0; 1; 3; 7; 8]);
+%! SM = timeseries ([1, 10; 2, 20; 4, 40], [0; 1; 2]);
+%! ST3 = timeseries (reshape ([1 5 2 9 3 4 8 6 7 12 10 11], 2, 2, 3), ...
+%!                  [0, 1, 2]);
+%! SN = timeseries ([1; NaN; 3; 100], [0; 1; 2; 3]);
+%! SNF = SN;
+%! SNF.TreatNaNasMissing = false;
+%! SQ = timeseries ([10; 20; 30; 40; 50], (0:4)', [1; 1; 0; 0; 1]);
+%! SI8 = timeseries (int8 ([1; 2; 4; 9]), (0:3)');
+%! SL = timeseries (logical ([1; 0; 1; 1]), (0:3)');
+
+%!assert_equal (mean (SV), 6.2)
+%!assert_equal (mean (SM), [7, 70] / 3, 1e-14)
+%!assert_equal (mean (ST3), [11, 20; 21, 26] / 3, 1e-14)
+%!assert_equal (mean (SN), 104 / 3, 1e-14)
+%!assert_equal (mean (SNF), NaN)
+%!assert_equal (mean (timeseries ([NaN; 2; 3; NaN], [0; 1; 2; 3])), 2.5)
+%!assert_equal (mean (timeseries ()), [])
+%!assert_equal (mean (timeseries (5, 0)), 5)
+%!assert_equal (mean (SI8), 4)
+%!assert_equal (mean (SL), 0.75)
+%!assert_equal (mean (SQ, 'Quality', 1), 35)
+%!assert_equal (mean (SQ, 'quality', 1), 35)
+%!assert_equal (mean (SQ, 'Quality', [0, 1]), NaN)
+%!assert_equal (mean (SN, 'MissingData', 'interpolate'), 26.5)
+%!assert_equal (mean (SN, 'MissingData', 'remove'), 104 / 3, 1e-14)
+%!assert_equal (mean (SNU, 'Weighting', 'time'), 52 / 9, 1e-14)
+%!assert_equal (mean (SV, 'Weighting', 'time'), 6.2, 1e-14)
+%!assert_equal (mean (SNU, 'Weighting', 'none'), 6.2)
+%!assert_equal (mean (timeseries ([1; NaN; 4; 8], [0; 1; 3; 4]), ...
+%!                   'MissingData', 'interpolate', 'Weighting', 'time'), ...
+%!              3.6, 1e-14)
+%!test
+%! Q3 = timeseries (reshape (1:12, 2, 2, 3), [0, 1, 2], ...
+%!                  reshape ([0 1 0 1 1 1 0 0 0 1 0 1], 2, 2, 3));
+%! assert_equal (mean (Q3, 'Quality', 1), [5, 7; NaN, 8]);
+%!warning <timeseries.mean: no sample has the quality codes given.> ...
+%! mean (SQ, 'Quality', 7);
+%!error <timeseries.mean: invalid optional paired argument.> ...
+%! mean (SV, 'Bogus', 1)
+%!error <timeseries.mean: name-value arguments must be in pairs.> mean (SV, 1)
+%!error <timeseries.mean: 'MissingData' must be 'remove' or 'interpolate'.> ...
+%! mean (SV, 'MissingData', 'bogus')
+%!error <timeseries.mean: 'Weighting' must be 'none' or 'time'.> ...
+%! mean (SV, 'Weighting', 'bogus')
+%!error <timeseries.mean: 'Quality' must hold integer codes.> ...
+%! mean (SQ, 'Quality', 1.5)
+%!error <timeseries.mean: TS must be a single series.> mean ([SV, SV])
+
+%!assert_equal (median (SV), 4)
+%!assert_equal (median (SM), [2, 20])
+%!assert_equal (median (ST3), [3, 8; 5, 9])
+%!assert_equal (median (SN), 3)
+%!assert_equal (median (SNF), NaN)
+%!assert_equal (median (SI8), int8 (3))
+%!assert_equal (median (SL), true)
+%!assert_equal (median (SQ, 'Quality', 1), 35)
+%!assert_equal (median (SN, 'MissingData', 'interpolate'), 2.5)
+## Test the time-weighted median, where MATLAB gives 6.667
+%!assert_equal (median (SNU, 'Weighting', 'time'), 52 / 11, 1e-14)
+%!assert_equal (median (SV, 'Weighting', 'time'), 4)
+%!error <timeseries.median: invalid optional paired argument.> ...
+%! median (SV, 'Bogus', 1)
+
+%!assert_equal (mode (SV), 1)
+%!assert_equal (mode (SM), [1, 10])
+%!assert_equal (mode (SNF), 1)
+%!assert_equal (mode (SI8), int8 (1))
+%!assert_equal (mode (SL), true)
+%!assert_equal (mode (timeseries ([3; 1; 3; 1; 2], (0:4)')), 1)
+## Test the value of most weight, where MATLAB gives 0.5556
+%!assert_equal (mode (SNU, 'Weighting', 'time'), 4)
+%!error <timeseries.mode: invalid optional paired argument.> ...
+%! mode (SV, 'Bogus', 1)
+
+%!assert_equal (std (SV), sqrt (37.2), 1e-14)
+%!assert_equal (std (SM), sqrt ([7, 700] / 3), 1e-14)
+%!assert_equal (std (SNF), NaN)
+%!assert_equal (std (timeseries (5, 0)), 0)
+%!assert_equal (std (SI8), sqrt (38 / 3), 1e-14)
+%!assert_equal (std (SL), 0.5)
+%!assert_equal (std (SQ, 'Quality', 1), sqrt (50), 1e-14)
+## Test the time-weighted spread, where MATLAB gives 4.558
+%!assert_equal (std (SNU, 'Weighting', 'time'), sqrt (23.688271604938272), ...
+%!              1e-12)
+%!assert_equal (std (SV, 'Weighting', 'time'), sqrt (37.2), 1e-14)
+%!error <timeseries.std: invalid optional paired argument.> std (SV, 'Bogus', 1)
+
+%!assert_equal (var (SV), 37.2, 1e-14)
+%!assert_equal (var (ST3), [28, 52; 57, 19] / 3, 1e-13)
+%!assert_equal (var (SN), 3202 + 1 / 3, 1e-10)
+%!assert_equal (var (timeseries (5, 0)), 0)
+%!assert_equal (var (SI8), 38 / 3, 1e-14)
+%!assert_equal (var (SNU, 'Weighting', 'time'), 23.688271604938272, 1e-12)
+%!error <timeseries.var: invalid optional paired argument.> var (SV, 'Bogus', 1)
+
+%!assert_equal (sum (SV), 31)
+%!assert_equal (sum (SM), [7, 70])
+%!assert_equal (sum (SNF), NaN)
+%!assert_equal (sum (SI8), 16)
+%!assert_equal (sum (SL), 3)
+%!assert_equal (sum (SQ, 'Quality', 1), 70)
+%!assert_equal (sum (SQ, 'Quality', [0, 1]), 0)
+%!assert_equal (sum (SN, 'MissingData', 'interpolate'), 106)
+%!assert_equal (sum (SNU, 'Weighting', 'time'), 260 / 9, 1e-13)
+%!error <timeseries.sum: invalid optional paired argument.> sum (SV, 'Bogus', 1)
+
+%!assert_equal (min (SV), 1)
+%!assert_equal (min (ST3), [1, 2; 4, 6])
+%!assert_equal (min (SNF), 1)
+%!assert_equal (min (SI8), int8 (1))
+%!assert_equal (min (SL), false)
+%!assert_equal (min (SQ, 'Quality', 1), 30)
+%!assert_equal (min (SQ, 'Quality', [0, 1]), NaN)
+## Test weighting leaves the extremes, where MATLAB gives 0.5556 and 11.11
+%!assert_equal (min (SNU, 'Weighting', 'time'), 1)
+%!error <timeseries.min: invalid optional paired argument.> min (SV, 'Bogus', 1)
+
+%!assert_equal (max (SV), 16)
+%!assert_equal (max (SM), [4, 40])
+%!assert_equal (max (SNF), 100)
+%!assert_equal (max (SI8), int8 (9))
+%!assert_equal (max (SL), true)
+%!assert_equal (max (SNU, 'Weighting', 'time'), 16)
+%!error <timeseries.max: invalid optional paired argument.> max (SV, 'Bogus', 1)
+
+%!assert_equal (iqr (SV), 8.25)
+%!assert_equal (iqr (SM), [2.25, 22.5])
+%!assert_equal (iqr (ST3), [4.5, 6; 6, 3.75], 1e-14)
+%!assert_equal (iqr (SNF), 74.25, 1e-13)
+%!assert_equal (iqr (timeseries (5, 0)), 0)
+%!assert_equal (iqr (SI8), 5)
+%!assert_equal (iqr (SL), 0.5)
+%!assert_equal (iqr (SQ, 'Quality', 1), 10)
+%!assert_equal (iqr (SNU, 'Weighting', 'time'), 50 / 9, 1e-13)
+%!assert_equal (iqr (SV, 'Weighting', 'time'), 8.25)
+%!error <timeseries.iqr: invalid optional paired argument.> iqr (SV, 'Bogus', 1)
+
+%!test
+%! G = timeseries ([1; 2; 3; 4], (0:3)', [0; 1; 1; 0]);
+%! G.QualityInfo.Code = [0, 1];
+%! G.QualityInfo.Description = {'good', 'bad'};
+%! assert_equal (getqualitydesc (G), {'good'; 'bad'; 'bad'; 'good'});
+%!test
+%! G3 = timeseries (reshape (1:8, 2, 2, 2), [0, 1], ...
+%!                  reshape ([0 1 1 0 0 0 1 1], 2, 2, 2));
+%! G3.QualityInfo.Code = [0, 1];
+%! G3.QualityInfo.Description = {'good', 'bad'};
+%! d = getqualitydesc (G3);
+%! assert_equal (size (d), [2, 2, 2]);
+%! assert_equal (d(:,:,2), {'good', 'bad'; 'good', 'bad'});
+%!assert_equal (getqualitydesc (SV), {})
+%!error <timeseries.getqualitydesc: quality code 2 has no description in 'QualityInfo'.> ...
+%! G = timeseries ([1; 2], [0; 1], [0; 2]); G.QualityInfo.Code = [0, 1];
+%! G.QualityInfo.Description = {'good', 'bad'}; getqualitydesc (G);
+%!error <timeseries.getqualitydesc: quality code 1 has no description in 'QualityInfo'.> ...
+%! G = timeseries ([1; 2], [0; 1], [0; 1]); G.QualityInfo.Code = [0, 1];
+%! G.QualityInfo.Description = {'good'}; getqualitydesc (G);
+%!error <timeseries.getqualitydesc: TS must be a single series.> ...
+%! getqualitydesc ([SV, SV])
+
+################################################################################
+##                     ** Arithmetic and comparison **                        ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'plus'             'minus'            'times'            'mtimes'          ##
+## 'rdivide'          'ldivide'          'mrdivide'         'mldivide'        ##
+## 'eq'               'isequal'          'isequalwithequalnans'               ##
+##                                                                            ##
+################################################################################
+
+%!shared XA, XB, XC, XA2, XA3, XB3
+%! XA = timeseries ([1; 2; 3], [0; 1; 2], [1; 1; 0], 'Name', 'a');
+%! XA.DataInfo.Units = 'volts';
+%! XA.UserData = 7;
+%! XA.Events = tsdata.event ('ea', 1);
+%! XB = timeseries ([10; 20; 30], [0; 1; 2], [0; 0; 1], 'Name', 'b');
+%! XB.DataInfo.Units = 'volts';
+%! XB.UserData = 9;
+%! XB.Events = tsdata.event ('eb', 2);
+%! XB = setinterpmethod (XB, 'zoh');
+%! XC = timeseries ([4; 5; 6], [0; 1; 2]);
+%! XC.DataInfo.Units = 'amps';
+%! XA2 = timeseries ([1, 2; 3, 4; 5, 6], [0; 1; 2]);
+%! XA3 = timeseries (reshape (1:12, 2, 2, 3), [0, 1, 2]);
+%! XB3 = timeseries (reshape (12:-1:1, 2, 2, 3), [0, 1, 2]);
+
+%!test
+%! ts = XA + XB;
+%! assert_equal (ts.Data, [11; 22; 33]);
+%! assert_equal (ts.Name, 'unnamed');
+%! assert_equal (ts.DataInfo.Units, 'volts');
+%! assert_equal (ts.UserData, 7);
+%! assert_equal ({ts.Events.Name}, {'ea', 'eb'});
+%! assert_equal (ts.Quality, []);
+%! assert_equal (getinterpmethod (ts), 'linear');
+%!test
+%! ts = XB + XA;
+%! assert_equal (ts.UserData, 9);
+%! assert_equal ({ts.Events.Name}, {'eb', 'ea'});
+%!test
+%! ts = XA + XC;
+%! assert_equal (ts.Data, [5; 7; 9]);
+%! assert_equal (ts.DataInfo.Units, '');
+%!test
+%! ts = XA + 2;
+%! assert_equal (ts.Data, [3; 4; 5]);
+%! assert_equal (ts.Name, 'a');
+%! assert_equal (ts.Quality, [1; 1; 0]);
+%! assert_equal (ts.DataInfo.Units, 'volts');
+%!assert_equal ((2 + XA).Data, [3; 4; 5])
+%!assert_equal ((XA2 + [10, 20]).Data, [11, 22; 13, 24; 15, 26])
+%!assert_equal (([10, 20] + XA2).Data, [11, 22; 13, 24; 15, 26])
+%!assert_equal ((XA3 + XB3).Data, 13 * ones (2, 2, 3))
+%!assert_equal ((XA3 + [1, 2; 3, 4]).Data(:,:,1), [2, 5; 5, 8])
+%!assert_equal ((XA + int8 (2)).Data, [3; 4; 5])
+%!assert_equal (class ((timeseries (int8 ([1; 2; 3])) + 2.6).Data), 'double')
+%!assert_equal ((timeseries (logical ([1; 0; 1])) + ...
+%!              timeseries (logical ([1; 1; 0]))).Data, [2; 1; 1])
+## Test undated times may differ by a constant offset, the left's kept
+%!test
+%! w = warning ('off', 'all');
+%! ts = XA + timeseries ([4; 5; 6], [5; 6; 7]);
+%! warning (w);
+%! assert_equal (ts.Time, [0; 1; 2]);
+%! assert_equal (ts.Data, [5; 7; 9]);
+%!warning <timeseries.plus: the times of A and B differ by a constant offset; the result takes the times of A.> ...
+%! XA + timeseries ([4; 5; 6], [0.5; 1.5; 2.5]);
+%!test
+%! d1 = timeseries ([1; 2; 3], {'01-Jan-2024', '02-Jan-2024', '03-Jan-2024'});
+%! ts = d1 + d1;
+%! assert_equal (ts.Data, [2; 4; 6]);
+%! assert_equal (ts.TimeInfo.StartDate, '01-Jan-2024 00:00:00');
+%!error <timeseries.plus: A and B must hold as many samples.> ...
+%! XA + timeseries ([4; 5], [0; 1])
+%!error <timeseries.plus: the times of A and B must be equal or differ by a constant offset.> ...
+%! XA + timeseries ([4; 5; 6], [0; 1; 3])
+%!error <timeseries.plus: A and B must have their times in the same units.> ...
+%! XA + setfield (XC, 'TimeInfo', setfield (XC.TimeInfo, 'Units', 'minutes'))
+%!error <timeseries.plus: A and B must both have a start date or neither.> ...
+%! x = XC; x.TimeInfo.StartDate = '01-Jan-2024'; XA + x;
+## Test dated series a day apart, refused as in MATLAB
+%!error <timeseries.plus: A and B must be dated at the same instants.> ...
+%! timeseries ([1; 2; 3], {'01-Jan-2024', '02-Jan-2024', '03-Jan-2024'}) + ...
+%! timeseries ([4; 5; 6], {'02-Jan-2024', '03-Jan-2024', '04-Jan-2024'})
+%!error <timeseries.plus: a number must be a scalar or the size of one sample.> ...
+%! XA + [1; 2; 3]
+%!error <timeseries.plus: a number must be a scalar or the size of one sample.> ...
+%! XA2 + [1, 2; 3, 4]
+%!error <timeseries.plus: A and B must hold samples of the same size.> ...
+%! XA + XA2
+%!error <timeseries.plus: the other operand must be a series or a number.> ...
+%! XA + {1}
+%!error <timeseries.plus: TS must be a single series.> [XA, XA] + 1
+
+%!assert_equal ((XA - XB).Data, [-9; -18; -27])
+%!assert_equal ((XA - XB).DataInfo.Units, 'volts')
+%!assert_equal ((2 - XA).Data, [1; 0; -1])
+%!assert_equal ((XA3 - XB3).Data(:)', -11:2:11)
+%!error <timeseries.minus: A and B must hold as many samples.> ...
+%! XA - timeseries ([4; 5], [0; 1])
+
+%!assert_equal ((XA .* XB).Data, [10; 40; 90])
+## Test units are dropped through a product, where MATLAB keeps them
+%!assert_equal ((XA .* XB).DataInfo.Units, '')
+%!assert_equal ((XA .* 2).DataInfo.Units, 'volts')
+%!assert_equal ((XA2 .* [10, 20]).Data, [10, 40; 30, 80; 50, 120])
+%!error <timeseries.times: A and B must hold as many samples.> ...
+%! XA .* timeseries ([4; 5], [0; 1])
+
+%!assert_equal ((XA * XB).Data, [10; 40; 90])
+%!assert_equal ((XA * XB).DataInfo.Units, '')
+%!assert_equal ((XA * 2).Data, [2; 4; 6])
+%!assert_equal ((2 * XA).Data, [2; 4; 6])
+%!assert_equal ((XA2 * [1; 2]).Data, [5; 11; 17])
+%!assert_equal ((XA2 * [1, 2; 3, 4]).Data, [7, 10; 15, 22; 23, 34])
+%!assert_equal ((XA3 * XB3).Data(:)', [45 68 37 56 89 104 65 76 69 76 29 32])
+%!error <timeseries.mtimes: the sizes of the samples do not fit the operator.> ...
+%! XA * [1; 2; 3]
+%!error <timeseries.mtimes: A and B must hold samples of the same shape.> ...
+%! XA2 * XA3
+
+%!assert_equal ((XA ./ XB).Data, [0.1; 0.1; 0.1])
+%!assert_equal ((XA ./ XB).DataInfo.Units, '')
+%!assert_equal ((2 ./ XA).Data, [2; 1; 2 / 3])
+%!assert_equal ((XA ./ 2).Data, [0.5; 1; 1.5])
+
+%!assert_equal ((XA .\ XB).Data, [10; 10; 10])
+%!assert_equal ((XA .\ 2).Data, [2; 1; 2 / 3])
+%!assert_equal ((2 .\ XA).Data, [0.5; 1; 1.5])
+
+%!assert_equal ((XA / XB).Data, [0.1; 0.1; 0.1], 1e-15)
+%!assert_equal ((XA / 2).Data, [0.5; 1; 1.5])
+## Test a number divided by a series works per sample, where MATLAB gives
+## [0 0 0.667]
+%!assert_equal ((2 / XA).Data, [2; 1; 2 / 3])
+%!assert_equal ((XA3 / XB3).Data(:,:,1), [12, -13; 13, -14], 1e-12)
+%!assert_equal ((XA2 / [1, 2; 3, 4]).Data, [1, 0; 0, 1; -1, 2], 1e-14)
+%!error <timeseries.mrdivide: the sizes of the samples do not fit the operator.> ...
+%! XA / [1; 2; 3]
+%!error <timeseries.mrdivide: the sizes of the samples do not fit the operator.> ...
+%! XA2 / timeseries ([1, 0; 0, 1; 2, 2], [0; 1; 2])
+
+%!assert_equal ((XA \ XB).Data, [10; 10; 10], 1e-14)
+%!assert_equal ((2 \ XA).Data, [0.5; 1; 1.5])
+%!assert_equal ((XA3 \ XB3).Data(:,:,1), [-7.5, -6.5; 6.5, 5.5], 1e-12)
+%!error <timeseries.mldivide: the sizes of the samples do not fit the operator.> ...
+%! XA \ [1; 2; 3]
+
+%!test
+%! assert_equal (XA == XA, true);
+%! assert_equal (XA == XB, false);
+%! assert_equal (XA == 2, false);
+%! assert_equal (XA == timeseries ([4; 5], [0; 1]), false);
+## Test every property is compared but 'UserData' and the data class
+%!test
+%! x = XA;
+%! x.UserData = 1;
+%! assert_equal (XA == x, true);
+%! x = XA;
+%! x.Data = int8 ([1; 2; 3]);
+%! assert_equal (XA == x, true);
+%! x = XA;
+%! x.Name = 'z';
+%! assert_equal (XA == x, false);
+%! x = XA;
+%! x.DataInfo.Units = 'amps';
+%! assert_equal (XA == x, false);
+%! x = XA;
+%! x.DataInfo.UserData = 5;
+%! assert_equal (XA == x, false);
+%! x = XA;
+%! x.Quality = [0; 0; 0];
+%! assert_equal (XA == x, false);
+%! x = XA;
+%! x.TimeInfo.Units = 'minutes';
+%! assert_equal (XA == x, false);
+%! x = XA;
+%! x.TimeInfo.StartDate = '01-Jan-2024';
+%! assert_equal (XA == x, false);
+%! x = XA;
+%! x.TimeInfo.Format = 'dd-mmm-yyyy';
+%! assert_equal (XA == x, false);
+%! x = XA;
+%! x.TreatNaNasMissing = false;
+%! assert_equal (XA == x, false);
+%! x = XA;
+%! x.Events = [];
+%! assert_equal (XA == x, false);
+%! assert_equal (XA == setinterpmethod (XA, 'zoh'), false);
+%! assert_equal (XA == addevent (XA, 'eb', 2), false);
+
+%!assert_equal (isequal (XA, XA), true)
+%!assert_equal (isequal (XA, XB), false)
+%!assert_equal (isequal (XA, 5), false)
+%!assert_equal (isequal (timeseries ([1; NaN; 3]), ...
+%!                       timeseries ([1; NaN; 3])), false)
+
+%!assert_equal (isequalwithequalnans (timeseries ([1; NaN; 3]), ...
+%!                                    timeseries ([1; NaN; 3])), true)
+%!assert_equal (isequalwithequalnans (XA, XB), false)
+
+################################################################################
 ##                        ** 'timeseries' properties **                       ##
 ################################################################################
 
