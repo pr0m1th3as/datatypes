@@ -50,6 +50,10 @@ timetable arrays
  readtimetable
  istimetable
  eventtable
+timeseries objects
+ timeseries
+ istimeseries
+ istscollection
 supplementary classes
  tabular
  missing

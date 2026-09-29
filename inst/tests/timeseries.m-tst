@@ -1,0 +1,755 @@
+## Copyright (C) 2026 Andreas Bertsatos <abertsatos@biol.uoa.gr>
+##
+## This file is part of the datatypes package for GNU Octave.
+##
+## This program is free software; you can redistribute it and/or modify it under
+## the terms of the GNU General Public License as published by the Free Software
+## Foundation; either version 3 of the License, or (at your option) any later
+## version.
+##
+## This program is distributed in the hope that it will be useful, but WITHOUT
+## ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+## FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+## details.
+##
+## You should have received a copy of the GNU General Public License along with
+## this program; if not, see <http://www.gnu.org/licenses/>.
+
+## Expected values measured on MATLAB R2024a.
+
+################################################################################
+##                   ** Create and describe 'timeseries' **                   ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'timeseries'       'get'              'set'                                ##
+##                                                                            ##
+################################################################################
+
+## Test an empty series has no name, where every other form is 'unnamed'
+%!test
+%! ts = timeseries ();
+%! assert_equal (ts.Name, '');
+%! assert_equal (ts.Data, []);
+%! assert_equal (ts.Time, zeros (0, 1));
+%! assert_equal (ts.Length, 0);
+%! assert_equal (ts.IsTimeFirst, true);
+%! assert_equal (ts.Events, []);
+%! assert_equal (ts.Quality, []);
+%! assert_equal (ts.UserData, []);
+%! assert_equal (ts.TreatNaNasMissing, true);
+%!test
+%! ts = timeseries ();
+%! assert_equal (ts.TimeInfo.Units, 'seconds');
+%! assert_equal (ts.TimeInfo.StartDate, '');
+%! assert_equal (ts.TimeInfo.Format, '');
+%! assert_equal (ts.TimeInfo.Length, 0);
+%! assert_equal (ts.TimeInfo.Start, []);
+%! assert_equal (ts.TimeInfo.End, []);
+%! assert_equal (ts.TimeInfo.Increment, []);
+%!test
+%! ts = timeseries ();
+%! assert_equal (ts.DataInfo.Units, '');
+%! assert_equal (ts.DataInfo.Interpolation.Name, 'linear');
+%! assert_equal (ts.DataInfo.InterpretSingleRowDataAs3D, false);
+%! assert_equal (ts.QualityInfo.Code, []);
+%! assert_equal (ts.QualityInfo.Description, []);
+## Test a name alone
+%!test
+%! ts = timeseries ('myname');
+%! assert_equal (ts.Name, 'myname');
+%! assert_equal (ts.Length, 0);
+%!test
+%! ts = timeseries ('a b-c');
+%! assert_equal (ts.Name, 'a b-c');
+%!test
+%! ts = timeseries (string ('myname'));
+%! assert_equal (ts.Name, 'myname');
+%! assert_equal (ts.Data, []);
+## Test data alone takes default times
+%!test
+%! ts = timeseries ([1; 2; 3]);
+%! assert_equal (ts.Name, 'unnamed');
+%! assert_equal (ts.Data, [1; 2; 3]);
+%! assert_equal (ts.Time, [0; 1; 2]);
+%! assert_equal (ts.Length, 3);
+%! assert_equal (ts.IsTimeFirst, true);
+%! assert_equal (ts.TimeInfo.Start, 0);
+%! assert_equal (ts.TimeInfo.End, 2);
+%! assert_equal (ts.TimeInfo.Increment, 1);
+%!test
+%! ts = timeseries (5);
+%! assert_equal (ts.Time, 0);
+%! assert_equal (ts.Length, 1);
+%! assert_equal (ts.TimeInfo.Increment, NaN);
+%!test
+%! ts = timeseries ([1, 2, 3; 4, 5, 6]);
+%! assert_equal (size (ts.Data), [2, 3]);
+%! assert_equal (ts.Time, [0; 1]);
+%! assert_equal (ts.IsTimeFirst, true);
+%!test
+%! ts = timeseries (ones (2, 3, 4));
+%! assert_equal (ts.Time, [0; 1; 2; 3]);
+%! assert_equal (ts.Length, 4);
+%! assert_equal (ts.IsTimeFirst, false);
+%!test
+%! ts = timeseries (ones (3, 3, 3));
+%! assert_equal (ts.Length, 3);
+%! assert_equal (ts.IsTimeFirst, false);
+%!test
+%! ts = timeseries (ones (1, 1, 3));
+%! assert_equal (ts.Length, 3);
+%! assert_equal (ts.IsTimeFirst, false);
+## Test a row vector is that many scalar samples
+%!test
+%! ts = timeseries ([1, 2, 3]);
+%! assert_equal (size (ts.Data), [1, 1, 3]);
+%! assert_equal (ts.Data(:), [1; 2; 3]);
+%! assert_equal (ts.Time, [0; 1; 2]);
+%! assert_equal (ts.IsTimeFirst, false);
+%!test
+%! ts = timeseries ([1, 2, 3], [1, 2, 3]);
+%! assert_equal (size (ts.Data), [1, 1, 3]);
+%! assert_equal (ts.Time, [1; 2; 3]);
+%!test
+%! ts = timeseries (1:3, (1:3)');
+%! assert_equal (size (ts.Data), [1, 1, 3]);
+## Test a row vector with a single time is one sample
+%!test
+%! ts = timeseries (ones (1, 3), 1);
+%! assert_equal (size (ts.Data), [1, 3]);
+%! assert_equal (ts.Length, 1);
+%! assert_equal (ts.IsTimeFirst, true);
+%! assert_equal (ts.TimeInfo.Increment, NaN);
+## Test empty data
+%!test
+%! ts = timeseries ([]);
+%! assert_equal (ts.Name, 'unnamed');
+%! assert_equal (ts.Length, 0);
+%! assert_equal (ts.TimeInfo.Increment, []);
+%!test
+%! ts = timeseries (zeros (0, 1));
+%! assert_equal (ts.Length, 0);
+%!test
+%! ts = timeseries (zeros (0, 3));
+%! assert_equal (size (ts.Data), [0, 3]);
+%! assert_equal (ts.Length, 0);
+## Test the data class is kept
+%!test
+%! ts = timeseries (int8 ([1; 2; 3]));
+%! assert_equal (ts.Data, int8 ([1; 2; 3]));
+%!test
+%! ts = timeseries (single ([1; 2; 3]));
+%! assert_equal (ts.Data, single ([1; 2; 3]));
+%!test
+%! ts = timeseries (logical ([1; 0; 1]));
+%! assert_equal (ts.Data, logical ([1; 0; 1]));
+%!test
+%! ts = timeseries ([1; 2; 3] + 1i);
+%! assert_equal (ts.Data, [1; 2; 3] + 1i);
+## Test a time vector
+%!test
+%! ts = timeseries ([1; 2; 3], [10; 20; 30]);
+%! assert_equal (ts.Time, [10; 20; 30]);
+%! assert_equal (ts.TimeInfo.Start, 10);
+%! assert_equal (ts.TimeInfo.End, 30);
+%! assert_equal (ts.TimeInfo.Increment, 10);
+%!test
+%! ts = timeseries ([1; 2; 3], [10, 20, 30]);
+%! assert_equal (ts.Time, [10; 20; 30]);
+%!test
+%! ts = timeseries (ones (2, 3, 4), [1, 2, 3, 4]);
+%! assert_equal (ts.Time, [1; 2; 3; 4]);
+%! assert_equal (ts.TimeInfo.Start, 1);
+%!test
+%! ts = timeseries ([1; 2; 3], [0; 0.5; 1.5]);
+%! assert_equal (ts.TimeInfo.End, 1.5);
+%! assert_equal (ts.TimeInfo.Increment, NaN);
+%!test
+%! ts = timeseries ([1; 2; 3], [], []);
+%! assert_equal (ts.Time, [0; 1; 2]);
+%! assert_equal (ts.Quality, []);
+%!test
+%! ts = timeseries ([1; 2; 3], {1, 2, 3});
+%! assert_equal (ts.Time, [1; 2; 3]);
+%! assert_equal (ts.TimeInfo.Units, 'seconds');
+## Test an unsorted time vector sorts the samples with it
+%!test
+%! ts = timeseries ([1; 2; 3], [3; 1; 2]);
+%! assert_equal (ts.Time, [1; 2; 3]);
+%! assert_equal (ts.Data, [2; 3; 1]);
+%!test
+%! ts = timeseries ([1; 2; 3], [3; 1; 2], [7; 8; 9]);
+%! assert_equal (ts.Quality, [8; 9; 7]);
+%!test
+%! ts = timeseries ([1, 2; 3, 4; 5, 6], [2; 0; 1]);
+%! assert_equal (ts.Data, [3, 4; 5, 6; 1, 2]);
+%!test
+%! ts = timeseries (cat (3, 1, 2, 3), [3; 1; 2]);
+%! assert_equal (ts.Data(:), [2; 3; 1]);
+## Test repeated times are kept in order
+%!test
+%! ts = timeseries ([1; 2; 3], [1; 1; 2]);
+%! assert_equal (ts.Time, [1; 1; 2]);
+%! assert_equal (ts.Data, [1; 2; 3]);
+%! assert_equal (ts.TimeInfo.Increment, NaN);
+%!test
+%! ts = timeseries ([1; 2; 3], [2; 1; 1]);
+%! assert_equal (ts.Data, [2; 3; 1]);
+## Test integer and single time vectors are stored as double
+%!test
+%! ts = timeseries ([1; 2; 3], int32 ([1; 2; 3]));
+%! assert_equal (ts.Time, [1; 2; 3]);
+%! assert_equal (ts.TimeInfo.Increment, 1);
+%! assert_equal (class (ts.TimeInfo.Start), 'double');
+%!test
+%! ts = timeseries ([1; 2; 3], uint8 ([1; 2; 3]));
+%! assert_equal (class (ts.Time), 'double');
+%!test
+%! ts = timeseries ([1; 2; 3], single ([0.5; 1; 1.5]));
+%! assert_equal (ts.Time, [0.5; 1; 1.5]);
+## Test dates give a time vector in days from the first
+%!test
+%! ts = timeseries ([1; 2; 3], {'01-Jan-2024', '02-Jan-2024', '03-Jan-2024'});
+%! assert_equal (ts.Time, [0; 1; 2]);
+%! assert_equal (ts.TimeInfo.Units, 'days');
+%! assert_equal (ts.TimeInfo.StartDate, '01-Jan-2024 00:00:00');
+%!test
+%! ts = timeseries ([1; 2; 3], {'03-Jan-2024', '01-Jan-2024', '02-Jan-2024'});
+%! assert_equal (ts.Time, [0; 1; 2]);
+%! assert_equal (ts.Data, [2; 3; 1]);
+%! assert_equal (ts.TimeInfo.StartDate, '01-Jan-2024 00:00:00');
+%!test
+%! ts = timeseries ([1; 2; 3], {'2024-01-01', '2024-01-02', '2024-01-03'});
+%! assert_equal (ts.Time, [0; 1; 2]);
+%! assert_equal (ts.TimeInfo.StartDate, '01-Jan-2024 00:00:00');
+%!test
+%! ts = timeseries ([1; 2; 3], string ({'01-Jan-2024', '02-Jan-2024', ...
+%!                                      '03-Jan-2024'}));
+%! assert_equal (ts.Time, [0; 1; 2]);
+%! assert_equal (ts.TimeInfo.Units, 'days');
+%!test
+%! ts = timeseries (1, {'01-Jan-2024'});
+%! assert_equal (ts.Time, 0);
+%! assert_equal (ts.TimeInfo.StartDate, '01-Jan-2024 00:00:00');
+%!test
+%! ts = timeseries ([1; 2], {'01-Jan-2024 06:00:00', '01-Jan-2024 18:00:00'});
+%! assert_equal (ts.Time, [0; 0.5]);
+%! assert_equal (ts.TimeInfo.StartDate, '01-Jan-2024 06:00:00');
+## Test quality codes
+%!test
+%! ts = timeseries ([1; 2; 3], [10; 20; 30], [0; 1; 0]);
+%! assert_equal (ts.Quality, [0; 1; 0]);
+%!test
+%! ts = timeseries ([1; 2; 3], [1; 2; 3], int8 ([1; 2; 3]));
+%! assert_equal (ts.Quality, [1; 2; 3]);
+%! assert_equal (class (ts.Quality), 'double');
+%!test
+%! ts = timeseries (ones (3, 2), [1; 2; 3], [1; 2; 3]);
+%! assert_equal (ts.Quality, [1; 2; 3]);
+%!test
+%! ts = timeseries (ones (3, 2), [1; 2; 3], ones (3, 2));
+%! assert_equal (ts.Quality, ones (3, 2));
+%!test
+%! ts = timeseries (ones (2, 3, 4), 1:4, ones (2, 3, 4));
+%! assert_equal (size (ts.Quality), [2, 3, 4]);
+%!test
+%! ts = timeseries (ones (2, 3, 4), 1:4, [1, 2, 3, 4]);
+%! assert_equal (size (ts.Quality), [1, 1, 4]);
+%! assert_equal (ts.Quality(:), [1; 2; 3; 4]);
+## Test the 'Name' option
+%!test
+%! ts = timeseries ([1; 2; 3], 'Name', 'abc');
+%! assert_equal (ts.Name, 'abc');
+%! assert_equal (ts.Time, [0; 1; 2]);
+%!test
+%! ts = timeseries ([1; 2; 3], [10; 20; 30], 'Name', 'abc');
+%! assert_equal (ts.Name, 'abc');
+%! assert_equal (ts.Time, [10; 20; 30]);
+%!test
+%! ts = timeseries ([1; 2; 3], [10; 20; 30], [0; 1; 0], 'Name', 'abc');
+%! assert_equal (ts.Name, 'abc');
+%! assert_equal (ts.Quality, [0; 1; 0]);
+%!test
+%! ts = timeseries ([1; 2; 3], [10; 20; 30], 'name', 'abc');
+%! assert_equal (ts.Name, 'abc');
+%!test
+%! ts = timeseries ([1; 2; 3], [1; 2; 3], 'Name', 'a', 'Name', 'b');
+%! assert_equal (ts.Name, 'b');
+%!test
+%! ts = timeseries ([1; 2; 3], [1; 2; 3], 'Name', string ('str'));
+%! assert_equal (ts.Name, 'str');
+%!test
+%! ts = timeseries ([1; 2; 3], [1; 2; 3], 'Name', '');
+%! assert_equal (ts.Name, '');
+%!test
+%! ts = timeseries ([1; 2; 3], string ('Name'), 'abc');
+%! assert_equal (ts.Name, 'abc');
+## Test a series is returned as it is
+%!test
+%! ts0 = timeseries ([1; 2], 'Name', 'x');
+%! ts = timeseries (ts0);
+%! assert_equal (ts.Name, 'x');
+%! assert_equal (ts.Data, [1; 2]);
+## Test value semantics
+%!test
+%! a = timeseries ([1; 2; 3]);
+%! b = a;
+%! b.Name = 'changed';
+%! assert_equal (a.Name, 'unnamed');
+%!test
+%! a = timeseries ([1; 2; 3]);
+%! b = a;
+%! b.TimeInfo.Units = 'days';
+%! assert_equal (a.TimeInfo.Units, 'seconds');
+%!test
+%! a = timeseries ([1; 2; 3]);
+%! b = a;
+%! b.DataInfo.Interpolation = 'zoh';
+%! assert_equal (a.DataInfo.Interpolation.Name, 'linear');
+## Test arrays of series
+%!test
+%! ts = timeseries ([1; 2]);
+%! assert_equal (size (ts), [1, 1]);
+%! assert_equal (numel (ts), 1);
+%! assert_equal (isempty (ts), false);
+%! assert_equal (isempty (timeseries ()), false);
+%!test
+%! ts = timeseries ([1; 2]);
+%! A = [ts, ts];
+%! assert_equal (size (A), [1, 2]);
+%! assert_equal (class (A), 'timeseries');
+%! assert_equal (A(2).Length, 2);
+%!test
+%! ts = timeseries ([1; 2]);
+%! assert_equal (size ([ts; ts]), [2, 1]);
+## Test the property list
+%!test
+%! assert_equal (properties (timeseries ()), {'Events'; 'Name'; ...
+%!               'UserData'; 'Data'; 'DataInfo'; 'Time'; 'TimeInfo'; ...
+%!               'Quality'; 'QualityInfo'; 'IsTimeFirst'; ...
+%!               'TreatNaNasMissing'; 'Length'});
+%!test
+%! assert_equal (fieldnames (timeseries ()), properties (timeseries ()));
+%!error <timeseries: DATA must be a numeric or logical array.> timeseries ({1, 2})
+%!error <timeseries: DATA must be a numeric or logical array.> ...
+%! timeseries (struct ('a', 1))
+%!error <timeseries: DATA must be a numeric or logical array.> ...
+%! timeseries ('abc', [1, 2, 3])
+%!error <timeseries: DATA must be a numeric or logical array.> ...
+%! timeseries ('Name', 'abc')
+%!error <timeseries: too many input arguments.> ...
+%! timeseries ([1; 2; 3], [1; 2; 3], [1; 2; 3], [1; 2; 3])
+%!error <timeseries: name-value arguments must be in pairs.> ...
+%! timeseries ([1; 2; 3], [10; 20; 30], 'Name')
+%!error <timeseries: name-value arguments must be in pairs.> ...
+%! timeseries (ones (3, 2), 'myname')
+%!error <timeseries: name-value arguments must be in pairs.> ...
+%! timeseries ([1; 2; 3], '01-Jan-2024')
+%!error <timeseries: invalid optional paired argument.> ...
+%! timeseries ([1; 2; 3], [10; 20; 30], 'Bogus', 1)
+%!error <timeseries: invalid optional paired argument.> ...
+%! timeseries ([1; 2; 3], 'UserData', 5)
+%!error <timeseries: 'Name' must be a character vector.> ...
+%! timeseries ([1; 2; 3], [1; 2; 3], 'Name', 5)
+%!error <timeseries: DATA and TIME must have the same number of samples.> ...
+%! timeseries ([1; 2; 3], [1; 2])
+%!error <timeseries: DATA and TIME must have the same number of samples.> ...
+%! timeseries (ones (2, 3, 4), [1, 2])
+%!error <timeseries: TIME must be finite.> ...
+%! timeseries ([1; 2; 3], [1; NaN; 2])
+%!error <timeseries: TIME must be finite.> ...
+%! timeseries ([1; 2; 3], [1; Inf; 2])
+%!error <timeseries: TIME must be a numeric vector or dates as text.> ...
+%! timeseries ([1; 2; 3], datetime (2024, 1, 1:3))
+%!error <timeseries: TIME must be a numeric vector or dates as text.> ...
+%! timeseries ([1; 2; 3], seconds ([1, 2, 3]))
+%!error <timeseries: TIME must be a numeric vector or dates as text.> ...
+%! timeseries ([1; 2; 3], ones (3, 3))
+%!error <timeseries: TIME must be a numeric vector or dates as text.> ...
+%! timeseries ([1; 2; 3], [1; 2; 3] + 1i)
+%!error <timeseries: TIME holds text that is not a date.> ...
+%! timeseries ([1; 2; 3], {'bogus', '02-Jan-2024', '03-Jan-2024'})
+%!error <timeseries: QUALITY must have one code per sample or the size of the data.> ...
+%! timeseries ([1; 2; 3], [1; 2; 3], [1; 2])
+%!error <timeseries: QUALITY must be an integer array.> ...
+%! timeseries ([1; 2; 3], [1; 2; 3], {1; 2; 3})
+%!error <timeseries: QUALITY must hold integers from -128 to 127.> ...
+%! timeseries ([1; 2; 3], [1; 2; 3], [0.5; 1; 2])
+%!error <timeseries: QUALITY must hold integers from -128 to 127.> ...
+%! timeseries ([1; 2; 3], [1; 2; 3], [200; 1; 2])
+
+%!test
+%! ts = timeseries ([1; 2; 3; 4]);
+%! S = get (ts);
+%! assert_equal (fieldnames (S), properties (ts));
+%! assert_equal (S.Length, 4);
+%! assert_equal (S.Name, 'unnamed');
+%!test
+%! ts = timeseries ([1; 2; 3; 4]);
+%! assert_equal (get (ts, 'Name'), 'unnamed');
+%! assert_equal (get (ts, 'Length'), 4);
+%!test
+%! ts = timeseries ([1; 2; 3; 4]);
+%! assert_equal (get (ts, 'name'), 'unnamed');
+%! assert_equal (get (ts, string ('Name')), 'unnamed');
+%!test
+%! ts = timeseries ([1; 2; 3; 4]);
+%! assert_equal (get (ts, {'Name', 'Length'}), {'unnamed', 4});
+%! assert_equal (get (ts, {'Name'; 'Length'}), {'unnamed', 4});
+%!test
+%! ts = timeseries ([1; 2; 3; 4]);
+%! assert_equal (get ([ts, ts], 'Name'), {'unnamed', 'unnamed'});
+%!test
+%! A = [timeseries([1; 2], 'Name', 'a'), timeseries([1; 2], 'Name', 'b')];
+%! assert_equal (get (A, {'Name', 'Length'}), {'a', 2; 'b', 2});
+%!error <timeseries.get: too many input arguments.> ...
+%! get (timeseries ([1; 2]), 'Length', 'Name')
+%!error <timeseries.get: NAME must be a character vector or a cell array of character vectors.> ...
+%! get (timeseries ([1; 2]), 5)
+%!error <timeseries.get: unknown property: 'Bogus'> ...
+%! get (timeseries ([1; 2]), 'Bogus')
+%!error <timeseries.get: unknown property: 'Bogus'> ...
+%! get (timeseries ([1; 2]), {'Name', 'Bogus'})
+
+%!test
+%! ts = timeseries ([1; 2; 3; 4]);
+%! ts2 = set (ts, 'Name', 'x');
+%! assert_equal (ts2.Name, 'x');
+%! assert_equal (ts.Name, 'unnamed');
+%!test
+%! ts = set (timeseries ([1; 2; 3; 4]), 'name', 'x');
+%! assert_equal (ts.Name, 'x');
+## Test 'set' with no output sets the caller's variable, as in MATLAB
+%!test
+%! ts = timeseries ([1; 2; 3; 4]);
+%! set (ts, 'Name', 'viaset');
+%! assert_equal (ts.Name, 'viaset');
+%!test
+%! ts = timeseries ([1; 2; 3; 4]);
+%! set (ts, 'Name', 'x', 'UserData', 3);
+%! assert_equal (ts.Name, 'x');
+%! assert_equal (ts.UserData, 3);
+%!test
+%! A = [timeseries([1; 2]), timeseries([3; 4])];
+%! set (A, 'Name', 'z');
+%! assert_equal (A(2).Name, 'z');
+%!test
+%! ts = timeseries ([1; 2; 3; 4]);
+%! f = @(x) set (x, 'Name', 'inner');
+%! f (ts);
+%! assert_equal (ts.Name, 'unnamed');
+%!test
+%! ts = set (timeseries ([1; 2; 3; 4]), 'Name', 'x', 'UserData', 3);
+%! assert_equal (ts.Name, 'x');
+%! assert_equal (ts.UserData, 3);
+%!test
+%! ts = set (timeseries ([1; 2; 3; 4]), string ('Name'), 'q');
+%! assert_equal (ts.Name, 'q');
+%!test
+%! ts = timeseries ([1; 2; 3; 4]);
+%! S = set (ts);
+%! assert_equal (fieldnames (S), properties (ts));
+%! assert_equal (S.Data, [1; 2; 3; 4]);
+%!test
+%! A = set ([timeseries([1; 2]), timeseries([3; 4])], 'Name', 'z');
+%! assert_equal (A(1).Name, 'z');
+%! assert_equal (A(2).Name, 'z');
+%!error <timeseries.set: with no output argument, TS must be a variable; set anything else with dot assignment.> ...
+%! set (timeseries ([1; 2]), 'Name', 'x')
+%!error <timeseries.set: with no output argument, TS must be a variable; set anything else with dot assignment.> ...
+%! A = [timeseries([1; 2]), timeseries([3; 4])]; set (A(1), 'Name', 'x');
+%!error <timeseries.set: name-value arguments must be in pairs.> ...
+%! set (timeseries ([1; 2]), 'Name')
+%!error <timeseries.set: name-value arguments must be in pairs.> ...
+%! set (timeseries ([1; 2]), 'Name', 'a', 'UserData')
+%!error <timeseries.set: NAME must be a character vector.> ...
+%! set (timeseries ([1; 2]), 5, 1)
+%!error <timeseries.set: unknown property: 'Bogus'> ...
+%! set (timeseries ([1; 2]), 'Bogus', 1)
+%!error <timeseries: 'Length' is read-only.> ...
+%! set (timeseries ([1; 2]), 'Length', 3)
+
+################################################################################
+##                        ** 'timeseries' properties **                       ##
+################################################################################
+
+## Test 'Events'
+%!test
+%! ts = timeseries ([1; 2; 3; 4]);
+%! ts.Events = tsdata.event ('a', 1);
+%! assert_equal (class (ts.Events), 'tsdata.event');
+%! assert_equal (ts.Events.Name, 'a');
+%!test
+%! ts = timeseries ([1; 2; 3; 4]);
+%! ts.Events = [tsdata.event('a', 1), tsdata.event('b', 2)];
+%! assert_equal (numel (ts.Events), 2);
+%!test
+%! ts = timeseries ([1; 2; 3; 4]);
+%! ts.Events = tsdata.event ('a', 1);
+%! ts.Events = [];
+%! assert_equal (ts.Events, []);
+%!error <timeseries: 'Events' must be a vector of tsdata.event objects.> ...
+%! setfield (timeseries ([1; 2]), 'Events', 5)
+%!error <timeseries: 'Events' must be a vector of tsdata.event objects.> ...
+%! setfield (timeseries ([1; 2]), 'Events', {tsdata.event('a', 1)})
+
+## Test 'Name'
+%!test
+%! ts = timeseries ([1; 2; 3; 4]);
+%! ts.Name = 'str';
+%! assert_equal (ts.Name, 'str');
+%!test
+%! ts = timeseries ([1; 2; 3; 4]);
+%! ts.Name = string ('str');
+%! assert_equal (ts.Name, 'str');
+%!test
+%! ts = timeseries ([1; 2; 3; 4]);
+%! ts.Name = '';
+%! assert_equal (ts.Name, '');
+%!error <timeseries: 'Name' must be a character vector.> ...
+%! setfield (timeseries ([1; 2]), 'Name', 5)
+%!error <timeseries: 'Name' must be a character vector.> ...
+%! setfield (timeseries ([1; 2]), 'Name', {'a'})
+
+## Test 'UserData'
+%!test
+%! ts = timeseries ([1; 2; 3; 4]);
+%! ts.UserData = {1, 'a'};
+%! assert_equal (ts.UserData, {1, 'a'});
+
+## Test 'Data'
+%!test
+%! ts = timeseries ([1; 2; 3; 4], [0; 1; 2; 3]);
+%! ts.Data = ones (4, 2);
+%! assert_equal (ts.Data, ones (4, 2));
+%! assert_equal (ts.IsTimeFirst, true);
+%!test
+%! ts = timeseries ([1; 2; 3; 4], [0; 1; 2; 3]);
+%! ts.Data = ones (2, 2, 4);
+%! assert_equal (size (ts.Data), [2, 2, 4]);
+%! assert_equal (ts.IsTimeFirst, false);
+%!test
+%! ts = timeseries ([1; 2; 3; 4], [0; 1; 2; 3]);
+%! ts.Data = [1, 2, 3, 4];
+%! assert_equal (size (ts.Data), [1, 1, 4]);
+%! assert_equal (ts.IsTimeFirst, false);
+%!test
+%! ts = timeseries ([1; 2; 3; 4]);
+%! ts.Data = int16 ([4; 3; 2; 1]);
+%! assert_equal (ts.Data, int16 ([4; 3; 2; 1]));
+## Test an empty series is built by assigning 'Time' and 'Data' in turn
+%!test
+%! ts = timeseries ();
+%! ts.Time = [1; 2; 3];
+%! assert_equal (ts.Length, 3);
+%! assert_equal (ts.Data, []);
+%! ts.Data = [4; 5; 6];
+%! assert_equal (ts.Data, [4; 5; 6]);
+%!test
+%! ts = timeseries ();
+%! ts.Data = [1; 2; 3];
+%! assert_equal (ts.Data, [1; 2; 3]);
+%! assert_equal (ts.Length, 0);
+%! ts.Time = [0; 1; 2];
+%! assert_equal (ts.Length, 3);
+%!test
+%! ts = timeseries ('n');
+%! ts.Data = 5;
+%! assert_equal (ts.Data, 5);
+%! assert_equal (ts.Length, 0);
+%!error <timeseries: 'Data' must have one sample per time.> ...
+%! setfield (timeseries ([1; 2; 3; 4]), 'Data', [1; 2; 3])
+%!error <timeseries: 'Data' must have one sample per time.> ...
+%! setfield (timeseries ([1; 2; 3; 4]), 'Data', ones (4, 3, 2))
+%!error <timeseries: 'Data' must not be a cell array.> ...
+%! setfield (timeseries ([1; 2; 3; 4]), 'Data', {1; 2; 3; 4})
+%!error <timeseries: 'Data' must be a numeric or logical array.> ...
+%! setfield (timeseries ([1; 2; 3; 4]), 'Data', 'abcd')
+
+## Test 'DataInfo'
+%!test
+%! ts = timeseries ([1; 2; 3; 4]);
+%! ts.DataInfo.Units = 'volts';
+%! assert_equal (ts.DataInfo.Units, 'volts');
+%!test
+%! ts = timeseries ([1; 2; 3; 4]);
+%! ts.DataInfo.Interpolation = tsdata.interpolation ('zoh');
+%! assert_equal (ts.DataInfo.Interpolation.Name, 'zoh');
+%!test
+%! ts = timeseries ([1; 2; 3; 4]);
+%! di = tsdata.datametadata ();
+%! di.Units = 'amps';
+%! ts.DataInfo = di;
+%! assert_equal (ts.DataInfo.Units, 'amps');
+## Test 'InterpretSingleRowDataAs3D' never moves 'IsTimeFirst'
+%!test
+%! ts = timeseries (ones (1, 3), 1);
+%! ts.DataInfo.InterpretSingleRowDataAs3D = true;
+%! assert_equal (ts.DataInfo.InterpretSingleRowDataAs3D, true);
+%! assert_equal (ts.IsTimeFirst, true);
+%! assert_equal (ts.Length, 1);
+%!error <timeseries: 'DataInfo' must be a tsdata.datametadata object.> ...
+%! setfield (timeseries ([1; 2]), 'DataInfo', 5)
+%!error <timeseries: 'DataInfo' must be a tsdata.datametadata object.> ...
+%! setfield (timeseries ([1; 2]), 'DataInfo', tsdata.timemetadata ())
+%!error <tsdata.datametadata: 'Units' must be a character vector.> ...
+%! ts = timeseries ([1; 2]); ts.DataInfo.Units = 5;
+
+## Test 'Time'
+%!test
+%! ts = timeseries ([1; 2; 3; 4], [0; 1; 2; 3]);
+%! ts.Time = [0, 1, 2, 3];
+%! assert_equal (ts.Time, [0; 1; 2; 3]);
+%!test
+%! ts = timeseries ([1; 2; 3; 4], [0; 1; 2; 3]);
+%! ts.Time = [0; 1; 1; 2];
+%! assert_equal (ts.Time, [0; 1; 1; 2]);
+%! assert_equal (ts.TimeInfo.End, 2);
+%! assert_equal (ts.TimeInfo.Increment, NaN);
+%!test
+%! ts = timeseries ([1; 2; 3; 4], [0; 1; 2; 3]);
+%! ts.Time = [10; 11; 12; 13];
+%! assert_equal (ts.TimeInfo.Start, 10);
+%! assert_equal (ts.TimeInfo.End, 13);
+%! assert_equal (ts.TimeInfo.Increment, 1);
+%!test
+%! ts = timeseries ([1; 2; 3; 4], [0; 1; 2; 3]);
+%! ts.Time = int32 ([0; 2; 4; 6]);
+%! assert_equal (class (ts.Time), 'double');
+%! assert_equal (ts.TimeInfo.Increment, 2);
+%!test
+%! ts = timeseries ([1; 2; 3; 4], [0; 1; 3; 7]);
+%! assert_equal (ts.TimeInfo.Increment, NaN);
+%! assert_equal (ts.TimeInfo.End, 7);
+%!error <timeseries: 'Time' must be non-decreasing.> ...
+%! setfield (timeseries ([1; 2; 3; 4]), 'Time', [3; 2; 1; 0])
+%!error <timeseries: 'Time' must have one time per sample.> ...
+%! setfield (timeseries ([1; 2; 3; 4]), 'Time', [0; 1; 2])
+%!error <timeseries: 'Time' must be finite.> ...
+%! setfield (timeseries ([1; 2; 3; 4]), 'Time', [0; 1; NaN; 3])
+%!error <timeseries: 'Time' must be a numeric vector.> ...
+%! setfield (timeseries ([1; 2; 3; 4]), 'Time', datetime (2024, 1, 1:4))
+%!error <timeseries: 'Time' must be a numeric vector.> ...
+%! setfield (timeseries ([1; 2; 3; 4]), 'Time', {1; 2; 3; 4})
+%!error <timeseries: 'Time' must have one time per quality code.> ...
+%! ts = timeseries ('n'); ts.Time = [1; 2]; ts.Quality = [1; 2]; ts.Time = 1;
+
+## Test 'TimeInfo'
+%!test
+%! ts = timeseries ([1; 2; 3; 4]);
+%! ts.TimeInfo.Units = 'minutes';
+%! assert_equal (ts.TimeInfo.Units, 'minutes');
+%! assert_equal (ts.Time, [0; 1; 2; 3]);
+%!test
+%! ts = timeseries ([1; 2; 3; 4]);
+%! ts.TimeInfo.StartDate = '01-Jan-2024';
+%! assert_equal (ts.TimeInfo.StartDate, '01-Jan-2024');
+%!test
+%! ts = timeseries ([1; 2; 3; 4]);
+%! ts.TimeInfo.Format = 'dd-mmm-yyyy';
+%! assert_equal (ts.TimeInfo.Format, 'dd-mmm-yyyy');
+## Test a new 'TimeInfo' takes the series' own time vector
+%!test
+%! ts = timeseries ([1; 2; 3; 4]);
+%! ti = tsdata.timemetadata ([5, 6]);
+%! ti.Units = 'hours';
+%! ts.TimeInfo = ti;
+%! assert_equal (ts.TimeInfo.Units, 'hours');
+%! assert_equal (ts.TimeInfo.Length, 4);
+%! assert_equal (ts.TimeInfo.End, 3);
+%!error <timeseries: 'TimeInfo' must be a tsdata.timemetadata object.> ...
+%! setfield (timeseries ([1; 2]), 'TimeInfo', 5)
+%!error <tsdata.timemetadata: 'Units' must be 'weeks', 'days', 'hours', 'minutes', 'seconds', 'milliseconds', 'microseconds' or 'nanoseconds'.> ...
+%! ts = timeseries ([1; 2]); ts.TimeInfo.Units = 'bogus';
+%!error <tsdata.timemetadata: 'Start' is read-only; use 'setuniformtime' to give a series a uniform time vector.> ...
+%! ts = timeseries ([1; 2]); ts.TimeInfo.Start = 5;
+%!error <tsdata.timemetadata: 'Increment' is read-only; use 'setuniformtime' to give a series a uniform time vector.> ...
+%! ts = timeseries ([1; 2]); ts.TimeInfo.Increment = 2;
+%!error <tsdata.timemetadata: 'End' is read-only; use 'setuniformtime' to give a series a uniform time vector.> ...
+%! ts = timeseries ([1; 2]); ts.TimeInfo.End = 10;
+%!error <tsdata.timemetadata: 'Length' is read-only.> ...
+%! ts = timeseries ([1; 2]); ts.TimeInfo.Length = 10;
+%!error <tsdata.timemetadata: 'StartDate' is not a date: 'bogus'> ...
+%! ts = timeseries ([1; 2]); ts.TimeInfo.StartDate = 'bogus';
+
+## Test 'Quality'
+%!test
+%! ts = timeseries ([1; 2; 3; 4]);
+%! ts.Quality = int8 ([1; 2; 3; 4]);
+%! assert_equal (ts.Quality, [1; 2; 3; 4]);
+%!test
+%! ts = timeseries ([1; 2; 3; 4]);
+%! ts.Quality = logical ([1; 0; 1; 0]);
+%! assert_equal (ts.Quality, [1; 0; 1; 0]);
+%!test
+%! ts = timeseries ([1; 2; 3; 4]);
+%! ts.Quality = [1, 2, 3, 4];
+%! assert_equal (ts.Quality, [1; 2; 3; 4]);
+%!test
+%! ts = timeseries ([1; 2; 3; 4]);
+%! ts.Quality = [1; 2; 3; 4];
+%! ts.Quality = [];
+%! assert_equal (ts.Quality, []);
+%!error <timeseries: 'Quality' must have one code per sample or the size of the data.> ...
+%! setfield (timeseries ([1; 2; 3; 4]), 'Quality', [1; 2])
+%!error <timeseries: 'Quality' must have one code per sample or the size of the data.> ...
+%! setfield (timeseries (), 'Quality', [1; 2; 3])
+%!error <timeseries: 'Quality' must hold integers from -128 to 127.> ...
+%! setfield (timeseries ([1; 2; 3; 4]), 'Quality', 1.5 * [1; 2; 3; 4])
+%!error <timeseries: 'Quality' must be an integer array.> ...
+%! setfield (timeseries ([1; 2; 3; 4]), 'Quality', {1; 2; 3; 4})
+
+## Test 'QualityInfo'
+%!test
+%! ts = timeseries ([1; 2; 3; 4]);
+%! ts.QualityInfo.Code = [0, 1];
+%! ts.QualityInfo.Description = {'good', 'bad'};
+%! assert_equal (ts.QualityInfo.Code, [0, 1]);
+%! assert_equal (ts.QualityInfo.Description, {'good', 'bad'});
+%!error <timeseries: 'QualityInfo' must be a tsdata.qualmetadata object.> ...
+%! setfield (timeseries ([1; 2]), 'QualityInfo', 5)
+%!error <tsdata.qualmetadata: 'Code' must not repeat a code.> ...
+%! ts = timeseries ([1; 2]); ts.QualityInfo.Code = [0, 0];
+
+## Test 'IsTimeFirst' follows the data
+%!test
+%! ts = timeseries ([1; 2; 3; 4]);
+%! ts.IsTimeFirst = true;
+%! assert_equal (ts.IsTimeFirst, true);
+%!test
+%! ts = timeseries (ones (2, 3, 4));
+%! ts.IsTimeFirst = false;
+%! assert_equal (ts.IsTimeFirst, false);
+%!error <timeseries: 'IsTimeFirst' cannot be true: the time vector runs along the last dimension of data of 3 dimensions.> ...
+%! setfield (timeseries (ones (2, 3, 4)), 'IsTimeFirst', true)
+%!error <timeseries: 'IsTimeFirst' cannot be true: the time vector runs along the last dimension of data of 3 dimensions.> ...
+%! setfield (timeseries (ones (3, 3, 3)), 'IsTimeFirst', true)
+%!error <timeseries: 'IsTimeFirst' cannot be false: the time vector runs along the first dimension of data of 2 dimensions.> ...
+%! setfield (timeseries ([1; 2; 3; 4]), 'IsTimeFirst', false)
+%!error <timeseries: 'IsTimeFirst' must be a logical scalar.> ...
+%! setfield (timeseries ([1; 2; 3; 4]), 'IsTimeFirst', 'yes')
+
+## Test 'TreatNaNasMissing'
+%!test
+%! ts = timeseries ([1; 2; 3; 4]);
+%! ts.TreatNaNasMissing = 0;
+%! assert_equal (ts.TreatNaNasMissing, false);
+%!test
+%! ts = timeseries ([1; 2; 3; 4]);
+%! ts.TreatNaNasMissing = false;
+%! ts.TreatNaNasMissing = true;
+%! assert_equal (ts.TreatNaNasMissing, true);
+%!error <timeseries: 'TreatNaNasMissing' must be a logical scalar.> ...
+%! setfield (timeseries ([1; 2]), 'TreatNaNasMissing', 'yes')
+%!error <timeseries: 'TreatNaNasMissing' must be a logical scalar.> ...
+%! setfield (timeseries ([1; 2]), 'TreatNaNasMissing', [true, false])
+%!error <timeseries: 'TreatNaNasMissing' must be a logical scalar.> ...
+%! setfield (timeseries ([1; 2]), 'TreatNaNasMissing', 2)
+
+## Test 'Length'
+%!test
+%! assert_equal (timeseries ([1; 2; 3; 4]).Length, 4);
+%! assert_equal (timeseries (ones (2, 3, 4)).Length, 4);
+%!error <timeseries: 'Length' is read-only.> ...
+%! setfield (timeseries ([1; 2]), 'Length', 5)
