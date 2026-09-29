@@ -60,7 +60,11 @@ classdef timemetadata
     ##
     ## The display format of absolute times.
     ##
-    ## A @code{datestr} format as a character vector, @qcode{''} by default.
+    ## A @code{datestr} format as a character vector, @qcode{''} by default,
+    ## which @code{getabstime} writes the dates in.  Text holding no date field
+    ## at all, such as @qcode{'bogus'}, is refused, where MATLAB accepts any
+    ## value; MATLAB also ignores every format but the few its documentation
+    ## lists, while here any @code{datestr} format is used.
     ##
     ## @end deftp
     Format = ''
@@ -194,6 +198,9 @@ classdef timemetadata
       endif
       if (isempty (val))
         val = '';
+      elseif (isempty (regexp (val, '[ymdHMSF]|AM|PM', 'once')))
+        error (strcat ("tsdata.timemetadata: 'Format' holds no date", ...
+                       " field: '%s'"), val);
       endif
       this.Format = val;
     endfunction
@@ -599,6 +606,8 @@ endclassdef
 %! setfield (tsdata.timemetadata (), 'Units', 5)
 %!error <tsdata.timemetadata: 'Format' must be a character vector.> ...
 %! setfield (tsdata.timemetadata (), 'Format', 5)
+%!error <tsdata.timemetadata: 'Format' holds no date field: 'bogus'> ...
+%! setfield (tsdata.timemetadata (), 'Format', 'bogus')
 %!error <tsdata.timemetadata: 'StartDate' must be a date as a character vector.> ...
 %! setfield (tsdata.timemetadata (), 'StartDate', 5)
 %!error <tsdata.timemetadata: 'StartDate' is not a date: 'bogus'> ...

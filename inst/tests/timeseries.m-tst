@@ -264,6 +264,46 @@
 %! ts = timeseries ([1; 2], {'01-Jan-2024 06:00:00', '01-Jan-2024 18:00:00'});
 %! assert_equal (ts.Time, [0; 0.5]);
 %! assert_equal (ts.TimeInfo.StartDate, '01-Jan-2024 06:00:00');
+## Test each date is read by its own format
+%!test
+%! ts = timeseries ([1; 2; 3], {'01-Jan-2024', '2024-01-02', '03-Jan-2024'});
+%! assert_equal (ts.Time, [0; 1; 2]);
+%! assert_equal (ts.TimeInfo.StartDate, '01-Jan-2024 00:00:00');
+## Test a datetime array is read as its dates, which MATLAB refuses
+%!test
+%! ts = timeseries ([1; 2; 3], datetime (2024, 1, 1:3));
+%! assert_equal (ts.Time, [0; 1; 2]);
+%! assert_equal (ts.TimeInfo.Units, 'days');
+%! assert_equal (ts.TimeInfo.StartDate, '01-Jan-2024 00:00:00');
+%!test
+%! ts = timeseries ([1; 2; 3], datetime (2024, 1, [3, 1, 2], 6, 0, 0));
+%! assert_equal (ts.Data, [2; 3; 1]);
+%! assert_equal (ts.TimeInfo.StartDate, '01-Jan-2024 06:00:00');
+%!test
+%! t = datetime (2024, 1, 1:2, 6, 0, 0, 'TimeZone', 'Europe/Athens');
+%! ts = timeseries ([1; 2], t);
+%! assert_equal (ts.TimeInfo.StartDate, '01-Jan-2024 06:00:00');
+## Test a duration array is relative time in the units of its format
+%!test
+%! ts = timeseries ([1; 2; 3], hours ([1, 2, 3]));
+%! assert_equal (ts.Time, [1; 2; 3]);
+%! assert_equal (ts.TimeInfo.Units, 'hours');
+%! assert_equal (ts.TimeInfo.StartDate, '');
+%!test
+%! ts = timeseries ([1; 2; 3], minutes ([0, 1, 2]));
+%! assert_equal (ts.TimeInfo.Units, 'minutes');
+%!test
+%! ts = timeseries ([1; 2; 3], days ([0, 1, 2]));
+%! assert_equal (ts.TimeInfo.Units, 'days');
+%!test
+%! ts = timeseries ([1; 2; 3], seconds ([3, 1, 2]));
+%! assert_equal (ts.Time, [1; 2; 3]);
+%! assert_equal (ts.Data, [2; 3; 1]);
+%! assert_equal (ts.TimeInfo.Units, 'seconds');
+%!test
+%! ts = timeseries ([1; 2], duration ([0; 1], 30, 0));
+%! assert_equal (ts.Time, [1800; 5400]);
+%! assert_equal (ts.TimeInfo.Units, 'seconds');
 ## Test quality codes
 %!test
 %! ts = timeseries ([1; 2; 3], [10; 20; 30], [0; 1; 0]);
@@ -388,15 +428,15 @@
 %! timeseries ([1; 2; 3], [1; NaN; 2])
 %!error <timeseries: TIME must be finite.> ...
 %! timeseries ([1; 2; 3], [1; Inf; 2])
-%!error <timeseries: TIME must be a numeric vector or dates as text.> ...
-%! timeseries ([1; 2; 3], datetime (2024, 1, 1:3))
-%!error <timeseries: TIME must be a numeric vector or dates as text.> ...
-%! timeseries ([1; 2; 3], seconds ([1, 2, 3]))
-%!error <timeseries: TIME must be a numeric vector or dates as text.> ...
+%!error <timeseries: TIME must not hold NaT.> ...
+%! timeseries ([1; 2; 3], [datetime(2024, 1, 1), NaT, datetime(2024, 1, 3)])
+%!error <timeseries: TIME must be finite.> ...
+%! timeseries ([1; 2; 3], seconds ([1, NaN, 3]))
+%!error <timeseries: TIME must be a numeric vector, dates or durations.> ...
 %! timeseries ([1; 2; 3], ones (3, 3))
-%!error <timeseries: TIME must be a numeric vector or dates as text.> ...
+%!error <timeseries: TIME must be a numeric vector, dates or durations.> ...
 %! timeseries ([1; 2; 3], [1; 2; 3] + 1i)
-%!error <timeseries: TIME holds text that is not a date.> ...
+%!error <timeseries: TIME holds text that is not a date: 'bogus'> ...
 %! timeseries ([1; 2; 3], {'bogus', '02-Jan-2024', '03-Jan-2024'})
 %!error <timeseries: QUALITY must have one code per sample or the size of the data.> ...
 %! timeseries ([1; 2; 3], [1; 2; 3], [1; 2])
@@ -1109,6 +1149,298 @@
 %!assert_equal (hasduplicatetimes (timeseries (ones (2, 2, 3), ...
 %!                                             [0, 0, 1])), true)
 %!assert_equal (hasduplicatetimes ([A, D]), [false, true])
+
+################################################################################
+##                        ** Time representation **                           ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'getabstime'       'setabstime'       'setuniformtime'                     ##
+##                                                                            ##
+################################################################################
+
+%!shared R, I
+%! R = timeseries ([10; 20; 30], [0; 1; 2], [7; 8; 9], 'Name', 'r');
+%! I = timeseries ([1; 2; 3], [1; 2; 3]);
+
+%!test
+%! ts = timeseries ([1; 2; 3], {'01-Jan-2024', '02-Jan-2024', '03-Jan-2024'});
+%! assert_equal (getabstime (ts), {'01-Jan-2024 00:00:00'; ...
+%!                                 '02-Jan-2024 00:00:00'; ...
+%!                                 '03-Jan-2024 00:00:00'});
+%!test
+%! ts = timeseries ([1; 2; 3], [0; 1.5; 3]);
+%! ts.TimeInfo.StartDate = '01-Jan-2024';
+%! ts.TimeInfo.Units = 'hours';
+%! assert_equal (getabstime (ts), {'01-Jan-2024 00:00:00'; ...
+%!                                 '01-Jan-2024 01:30:00'; ...
+%!                                 '01-Jan-2024 03:00:00'});
+%!test
+%! ts = timeseries ([1; 2; 3], [-1; 0; 1]);
+%! ts.TimeInfo.StartDate = '02-Jan-2024';
+%! ts.TimeInfo.Units = 'days';
+%! assert_equal (getabstime (ts){1}, '01-Jan-2024 00:00:00');
+%!test
+%! ts = timeseries ([1; 2], [0; 1]);
+%! ts.TimeInfo.StartDate = '01-Jan-2024';
+%! ts.TimeInfo.Units = 'weeks';
+%! assert_equal (getabstime (ts){2}, '08-Jan-2024 00:00:00');
+%!test
+%! ts = timeseries ([1; 2], [0; 1500]);
+%! ts.TimeInfo.StartDate = '01-Jan-2024';
+%! ts.TimeInfo.Units = 'milliseconds';
+%! assert_equal (getabstime (ts){2}, '01-Jan-2024 00:00:01');
+%!test
+%! ts = timeseries ([1; 2], [0; 1]);
+%! ts.TimeInfo.StartDate = '2024-01-01';
+%! assert_equal (getabstime (ts){2}, '01-Jan-2024 00:00:01');
+## Test seconds are rounded to the millisecond, then cut
+%!test
+%! ts = timeseries ([1; 2; 3; 4], [0; 0.5; 0.9999; 59.9999]);
+%! ts.TimeInfo.StartDate = '01-Jan-2024';
+%! assert_equal (getabstime (ts), {'01-Jan-2024 00:00:00'; ...
+%!                                 '01-Jan-2024 00:00:00'; ...
+%!                                 '01-Jan-2024 00:00:01'; ...
+%!                                 '01-Jan-2024 00:01:00'});
+## Test 'TimeInfo.Format' writes the dates
+%!test
+%! ts = timeseries ([1; 2], [0; 1.25]);
+%! ts.TimeInfo.StartDate = '15-Mar-2024 13:45:30';
+%! ts.TimeInfo.Units = 'days';
+%! ts.TimeInfo.Format = 'dd-mmm-yyyy';
+%! assert_equal (getabstime (ts), {'15-Mar-2024'; '16-Mar-2024'});
+%! ts.TimeInfo.Format = 'mm/dd/yyyy';
+%! assert_equal (getabstime (ts), {'03/15/2024'; '03/16/2024'});
+%! ts.TimeInfo.Format = 'HH:MM';
+%! assert_equal (getabstime (ts), {'13:45'; '19:45'});
+%! ts.TimeInfo.Format = 'HH:MM PM';
+%! assert_equal (getabstime (ts), {' 1:45 PM'; ' 7:45 PM'});
+%! ts.TimeInfo.Format = 'dd-mmm-yyyy HH:MM:SS.FFF';
+%! assert_equal (getabstime (ts){1}, '15-Mar-2024 13:45:30.000');
+## Test any format is used, where MATLAB writes the default for this one
+%!test
+%! ts = timeseries ([1; 2], [0; 1.25]);
+%! ts.TimeInfo.StartDate = '15-Mar-2024 13:45:30';
+%! ts.TimeInfo.Units = 'days';
+%! ts.TimeInfo.Format = 'yyyy-mm-dd';
+%! assert_equal (getabstime (ts), {'2024-03-15'; '2024-03-16'});
+%!test
+%! ts = timeseries ([1; 2; 3], {'01-Jan-2024', '02-Jan-2024', '03-Jan-2024'});
+%! ts.TimeInfo.Units = 'hours';
+%! assert_equal (getabstime (ts){3}, '01-Jan-2024 02:00:00');
+%!test
+%! ts = timeseries ();
+%! ts.TimeInfo.StartDate = '01-Jan-2024';
+%! assert_equal (getabstime (ts), {});
+%!error <timeseries.getabstime: TS has no 'TimeInfo.StartDate'.> getabstime (R)
+%!error <timeseries.getabstime: TS must be a single series.> getabstime ([R, R])
+
+%!test
+%! ts = setabstime (R, {'01-Jan-2024', '02-Jan-2024', '03-Jan-2024'});
+%! assert_equal (ts.Time, [0; 86400; 172800]);
+%! assert_equal (ts.TimeInfo.Units, 'seconds');
+%! assert_equal (ts.TimeInfo.StartDate, '01-Jan-2024 00:00:00');
+%! assert_equal (ts.TimeInfo.Increment, 86400);
+%! assert_equal (ts.Data, [10; 20; 30]);
+%! assert_equal (ts.Name, 'r');
+## Test unsorted dates move the samples with them, where MATLAB does not
+%!test
+%! ts = setabstime (R, {'03-Jan-2024', '01-Jan-2024', '02-Jan-2024'});
+%! assert_equal (ts.Data, [20; 30; 10]);
+%! assert_equal (ts.Quality, [8; 9; 7]);
+%! assert_equal (ts.Time, [0; 86400; 172800]);
+%!test
+%! ts = setabstime (timeseries (reshape (1:12, 2, 2, 3)), ...
+%!                  {'03-Jan-2024', '01-Jan-2024', '02-Jan-2024'});
+%! assert_equal (ts.Data, reshape ([5:12, 1:4], 2, 2, 3));
+%!test
+%! ts = setabstime (R, ['01-Jan-2024'; '02-Jan-2024'; '03-Jan-2024']);
+%! assert_equal (ts.Time, [0; 86400; 172800]);
+%!test
+%! ts = setabstime (R, string ({'01-Jan-2024', '02-Jan-2024', '03-Jan-2024'}));
+%! assert_equal (ts.Time, [0; 86400; 172800]);
+%!test
+%! ts = setabstime (R, {'01-Jan-2024'; '02-Jan-2024'; '03-Jan-2024'});
+%! assert_equal (ts.Time, [0; 86400; 172800]);
+%!test
+%! ts = setabstime (timeseries (5), '01-Jan-2024 06:00:00');
+%! assert_equal (ts.Time, 0);
+%! assert_equal (ts.TimeInfo.StartDate, '01-Jan-2024 06:00:00');
+## Test a datetime is read as its dates, where MATLAB drops them
+%!test
+%! ts = setabstime (R, datetime (2024, 1, 1:3));
+%! assert_equal (ts.Time, [0; 86400; 172800]);
+%! assert_equal (ts.TimeInfo.StartDate, '01-Jan-2024 00:00:00');
+%!test
+%! ts = setabstime (R, {'01-Jan-2024 00:00:00', '01-Jan-2024 12:00:00', ...
+%!                      '02-Jan-2024 00:00:00'});
+%! assert_equal (ts.Time, [0; 43200; 86400]);
+%!test
+%! ts = timeseries ([1; 2; 3], [0; 1.5; 3]);
+%! ts.TimeInfo.Units = 'hours';
+%! ts = setabstime (ts, {'01-Jan-2024', '02-Jan-2024', '03-Jan-2024'});
+%! assert_equal (ts.Time, [0; 24; 48]);
+%! assert_equal (ts.TimeInfo.Units, 'hours');
+%!test
+%! ts = timeseries ([1; 2; 3], {'01-Jan-2024', '02-Jan-2024', '03-Jan-2024'});
+%! ts = setabstime (ts, {'05-Jan-2024', '06-Jan-2024', '07-Jan-2024'});
+%! assert_equal (ts.Time, [0; 1; 2]);
+%! assert_equal (ts.TimeInfo.StartDate, '05-Jan-2024 00:00:00');
+%!test
+%! ts = setabstime (R, {'01-Jan-2024', '01-Jan-2024', '02-Jan-2024'});
+%! assert_equal (ts.Time, [0; 0; 86400]);
+%!test
+%! ts = setabstime (R, {'01-Jan-2024', '02-Jan-2024', '04-Jan-2024'});
+%! assert_equal (ts.TimeInfo.Increment, NaN);
+%!test
+%! ts = setabstime (R, {'01/02/2024', '01/03/2024', '01/04/2024'});
+%! assert_equal (ts.TimeInfo.StartDate, '02-Jan-2024 00:00:00');
+%!test
+%! ts = I;
+%! ts.Events = tsdata.event ('e', 2);
+%! ts = setabstime (ts, {'01-Jan-2024', '02-Jan-2024', '03-Jan-2024'});
+%! assert_equal (ts.Events.Time, 2);
+%! assert_equal (ts.Events.StartDate, '');
+## Test each date is read by its own format, where MATLAB misreads the second
+%!test
+%! ts = setabstime (R, {'01-Jan-2024', '2024-01-02', '03-Jan-2024'});
+%! assert_equal (ts.Time, [0; 86400; 172800]);
+%! assert_equal (ts.TimeInfo.StartDate, '01-Jan-2024 00:00:00');
+%!test
+%! ts = setabstime (R, {'02-Jan-2024 06:00:00', '03-Jan-2024', '04-Jan-2024'});
+%! assert_equal (ts.Time, [0; 64800; 151200]);
+## Test a format reads the dates and writes the start date
+%!test
+%! ts = setabstime (R, {'2024-01-01', '2024-01-02', '2024-01-03'}, ...
+%!                  'yyyy-mm-dd');
+%! assert_equal (ts.Time, [0; 86400; 172800]);
+%! assert_equal (ts.TimeInfo.StartDate, '2024-01-01');
+%!test
+%! ts = setabstime (R, {'01-Jan-2024', '02-Jan-2024', '03-Jan-2024'}, ...
+%!                  'dd-mmm-yyyy');
+%! assert_equal (ts.TimeInfo.StartDate, '01-Jan-2024');
+%! assert_equal (ts.TimeInfo.Format, '');
+%! assert_equal (getabstime (ts){2}, '02-Jan-2024 00:00:00');
+## Test times of day alone give times since midnight and no start date
+%!test
+%! ts = setabstime (I, {'13:00:00', '14:00:00', '15:00:00'});
+%! assert_equal (ts.Time, [46800; 50400; 54000]);
+%! assert_equal (ts.TimeInfo.StartDate, '');
+%!test
+%! ts = setabstime (timeseries (), {});
+%! assert_equal (ts.Length, 0);
+%!error <timeseries.setabstime: invalid number of input arguments.> setabstime (R)
+%!error <timeseries.setabstime: DATES must be dates, as text or datetime values; convert a datenum X with datetime \(X, 'ConvertFrom', 'datenum'\).> ...
+%! setabstime (R, datenum (2024, 1, 1:3))
+%!error <timeseries.setabstime: DATES must be dates, as text or datetime values; convert a datenum X with datetime \(X, 'ConvertFrom', 'datenum'\).> ...
+%! setabstime (R, [1, 2, 3])
+%!error <timeseries.setabstime: DATES must be dates, as text or datetime values.> ...
+%! setabstime (R, {1, 2, 3})
+%!error <timeseries.setabstime: DATES must not hold NaT.> ...
+%! setabstime (R, [datetime(2024, 1, 1), NaT, datetime(2024, 1, 3)])
+%!error <timeseries.setabstime: DATES must hold one date per sample.> ...
+%! setabstime (R, {'01-Jan-2024', '02-Jan-2024'})
+%!error <timeseries.setabstime: DATES must hold one date per sample.> ...
+%! setabstime (R, '01-Jan-2024')
+%!error <timeseries.setabstime: DATES holds text that is not a date: 'bogus'> ...
+%! setabstime (R, {'bogus', '02-Jan-2024', '03-Jan-2024'})
+%!error <timeseries.setabstime: DATES holds a date not written as 'yyyy-mm-dd': '01-Jan-2024'> ...
+%! setabstime (R, {'01-Jan-2024', '02-Jan-2024', '03-Jan-2024'}, 'yyyy-mm-dd')
+%!error <timeseries.setabstime: DATES holds a date not written as 'dd-mmm-yyyy HH:MM:SS': '01-Jan-2024'> ...
+%! setabstime (I, {'01-Jan-2024', '02-Jan-2024', '03-Jan-2024'}, ...
+%!             'dd-mmm-yyyy HH:MM:SS')
+%!error <timeseries.setabstime: FORMAT must be a character vector.> ...
+%! setabstime (R, {'01-Jan-2024', '02-Jan-2024', '03-Jan-2024'}, 5)
+%!error <timeseries.setabstime: TS must be a single series.> ...
+%! setabstime ([R, R], {'01-Jan-2024', '02-Jan-2024', '03-Jan-2024'})
+
+%!assert_equal (setuniformtime (I, 'StartTime', 10).Time, [10; 11; 12])
+%!assert_equal (setuniformtime (I, 'Interval', 0.5).Time, [0; 0.5; 1])
+%!assert_equal (setuniformtime (I, 'EndTime', 20).Time, [0; 10; 20])
+%!assert_equal (setuniformtime (I, 'StartTime', 10, 'Interval', 2).Time, ...
+%!              [10; 12; 14])
+%!assert_equal (setuniformtime (I, 'StartTime', 10, 'EndTime', 20).Time, ...
+%!              [10; 15; 20])
+%!assert_equal (setuniformtime (I, 'Interval', 2, 'EndTime', 20).Time, ...
+%!              [16; 18; 20])
+%!assert_equal (setuniformtime (I, 'EndTime', 20, 'Interval', 2).Time, ...
+%!              [16; 18; 20])
+%!assert_equal (setuniformtime (I, 'StartTime', 10, 'Interval', 2, ...
+%!                             'EndTime', 14).Time, [10; 12; 14])
+%!assert_equal (setuniformtime (I, 'Interval', 2, 'Interval', 3).Time, ...
+%!              [0; 3; 6])
+%!assert_equal (setuniformtime (I, 'interval', 2).Time, [0; 2; 4])
+%!assert_equal (setuniformtime (I, 'StartTime', -4).Time, [-4; -3; -2])
+%!assert_equal (setuniformtime (I, 'Interval', 0).Time, [0; 0; 0])
+%!assert_equal (setuniformtime (I, 'StartTime', 10, 'EndTime', 10).Time, ...
+%!              [10; 10; 10])
+%!assert_equal (setuniformtime (I, 'Interval', 0.1).Time, [0; 0.1; 0.2])
+%!assert_equal (setuniformtime (I, 'StartTime', 0.1, 'EndTime', 0.3).Time, ...
+%!              [0.1; 0.2; 0.3])
+%!assert_equal (setuniformtime (timeseries (5, 3), 'StartTime', 10).Time, 10)
+%!assert_equal (setuniformtime (timeseries (5, 3), 'Interval', 2).Time, 0)
+## Test one sample with equal start and end, which MATLAB refuses
+%!assert_equal (setuniformtime (timeseries (5, 3), 'StartTime', 10, ...
+%!                             'EndTime', 10).Time, 10)
+%!test
+%! ts = setuniformtime (timeseries ([1; 2; 3; 4], [0; 1; 3; 7]), ...
+%!                      'StartTime', 10);
+%! assert_equal (ts.Time, [10; 11; 12; 13]);
+%! assert_equal (ts.TimeInfo.Increment, 1);
+%!test
+%! ts = setuniformtime (R, 'Interval', 0.5);
+%! assert_equal (ts.Data, [10; 20; 30]);
+%! assert_equal (ts.Quality, [7; 8; 9]);
+%! assert_equal (ts.Name, 'r');
+%!test
+%! ts = timeseries ([1; 2; 3], {'01-Jan-2024', '02-Jan-2024', '03-Jan-2024'});
+%! ts = setuniformtime (ts, 'Interval', 2);
+%! assert_equal (ts.Time, [0; 2; 4]);
+%! assert_equal (ts.TimeInfo.Units, 'days');
+%! assert_equal (getabstime (ts){3}, '05-Jan-2024 00:00:00');
+%!test
+%! ts = I;
+%! ts.Events = tsdata.event ('e', 2);
+%! ts = setuniformtime (ts, 'Interval', 2);
+%! assert_equal (ts.Events.Time, 2);
+%!test
+%! ts = setuniformtime (timeseries (reshape (1:12, 2, 2, 3)), 'Interval', 5);
+%! assert_equal (ts.Time, [0; 5; 10]);
+%! assert_equal (size (ts.Data), [2, 2, 3]);
+%!error <timeseries.setuniformtime: at least one of 'StartTime', 'Interval' or 'EndTime' is required.> ...
+%! setuniformtime (I)
+%!error <timeseries.setuniformtime: name-value arguments must be in pairs.> ...
+%! setuniformtime (I, 'Interval')
+%!error <timeseries.setuniformtime: invalid optional paired argument.> ...
+%! setuniformtime (I, 'Bogus', 2)
+%!error <timeseries.setuniformtime: 'Interval' must be a real scalar.> ...
+%! setuniformtime (I, 'Interval', [1, 2])
+%!error <timeseries.setuniformtime: 'Interval' must be a real scalar.> ...
+%! setuniformtime (I, 'Interval', 'x')
+%!error <timeseries.setuniformtime: 'StartTime' must be a real scalar.> ...
+%! setuniformtime (I, 'StartTime', '05-Jan-2024')
+%!error <timeseries.setuniformtime: 'Interval' must be finite.> ...
+%! setuniformtime (I, 'Interval', NaN)
+%!error <timeseries.setuniformtime: 'StartTime' must be finite.> ...
+%! setuniformtime (I, 'StartTime', Inf)
+%!error <timeseries.setuniformtime: 'EndTime' must be finite.> ...
+%! setuniformtime (I, 'EndTime', Inf)
+%!error <timeseries.setuniformtime: 'Interval' must not be negative.> ...
+%! setuniformtime (I, 'Interval', -1)
+%!error <timeseries.setuniformtime: 'StartTime' must not come after 'EndTime'.> ...
+%! setuniformtime (I, 'StartTime', 20, 'EndTime', 10)
+%!error <timeseries.setuniformtime: 'EndTime' given alone must not be negative, since the times start at 0.> ...
+%! setuniformtime (I, 'EndTime', -4)
+%!error <timeseries.setuniformtime: 'StartTime', 'Interval' and 'EndTime' do not fit the number of samples.> ...
+%! setuniformtime (I, 'StartTime', 10, 'Interval', 2, 'EndTime', 20)
+%!error <timeseries.setuniformtime: 'StartTime', 'Interval' and 'EndTime' do not fit the number of samples.> ...
+%! setuniformtime (timeseries (5, 3), 'EndTime', 20)
+%!error <timeseries.setuniformtime: 'StartTime', 'Interval' and 'EndTime' do not fit the number of samples.> ...
+%! setuniformtime (timeseries (5, 3), 'StartTime', 10, 'EndTime', 20)
+%!error <timeseries.setuniformtime: TS has no samples.> ...
+%! setuniformtime (timeseries (), 'Interval', 2)
+%!error <timeseries.setuniformtime: TS must be a single series.> ...
+%! setuniformtime ([I, I], 'Interval', 2)
 
 ################################################################################
 ##                        ** 'timeseries' properties **                       ##

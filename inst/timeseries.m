@@ -389,9 +389,14 @@ classdef timeseries
     ##
     ## @itemize
     ## @item a numeric vector of one time per sample, in seconds;
-    ## @item a cell array of character vectors or a string array of dates, one
-    ## per sample, which gives @qcode{Time} in days from the earliest of them,
-    ## with that date as @qcode{TimeInfo.StartDate};
+    ## @item a cell array of character vectors, a string array or a
+    ## @code{datetime} array of dates, one per sample, which gives @qcode{Time}
+    ## in days from the earliest of them, with that date as
+    ## @qcode{TimeInfo.StartDate}; each date is read by its own format, a time
+    ## zone is dropped and the clock time kept, and @code{NaT} is refused;
+    ## @item a @code{duration} array, relative times in the units its display
+    ## format names: @qcode{'s'}, @qcode{'m'}, @qcode{'h'} and @qcode{'d'} give
+    ## seconds, minutes, hours and days, any other format seconds;
     ## @item a cell array of numeric scalars, read as a numeric vector;
     ## @item @code{[]}, for the default times.
     ## @end itemize
@@ -402,9 +407,9 @@ classdef timeseries
     ## @code{Rx1xN} array, a sample per column, so a row vector of @var{N}
     ## elements gives @var{N} scalar samples; and with a single time the whole
     ## matrix is one sample.  The times need not be sorted: the samples are
-    ## sorted with them, keeping the order of samples at equal times.  They are stored as @code{double}
-    ## whatever their class.  @code{datetime} and @code{duration} arrays are
-    ## not accepted, as in MATLAB.
+    ## sorted with them, keeping the order of samples at equal times.  They
+    ## are stored as @code{double} whatever their class.  MATLAB accepts
+    ## neither @code{datetime} nor @code{duration} arrays here.
     ##
     ## @code{@var{ts} = timeseries (@var{data}, @var{time}, @var{quality})}
     ## also sets a quality code per sample: integers from -128 to 127, as a
@@ -475,8 +480,9 @@ classdef timeseries
       ## Time vector
       time = [];
       startDate = '';
+      units = '';
       if (nPos >= 1)
-        [time, startDate, errmsg] = parseTime (args{1});
+        [time, startDate, units, errmsg] = parseTime (args{1});
         if (! isempty (errmsg))
           error ("timeseries: %s", errmsg);
         endif
@@ -518,8 +524,10 @@ classdef timeseries
       this.time_ = time;
       this.quality_ = quality;
       this.timeInfo_.TimeVector = time;
+      if (! isempty (units))
+        this.timeInfo_.Units = units;
+      endif
       if (! isempty (startDate))
-        this.timeInfo_.Units = 'days';
         this.timeInfo_.StartDate = startDate;
       endif
 
@@ -1183,6 +1191,291 @@ classdef timeseries
 
   endmethods
 
+################################################################################
+##                        ** Time representation **                           ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'getabstime'       'setabstime'       'setuniformtime'                     ##
+##                                                                            ##
+################################################################################
+
+  methods (Access = public)
+
+    ## -*- texinfo -*-
+    ## @deftypefn {timeseries} {@var{dates} =} getabstime (@var{ts})
+    ##
+    ## Return the dates of the samples as text.
+    ##
+    ## @code{@var{dates} = getabstime (@var{ts})} returns a column cell array
+    ## of character vectors, the date of each sample of the series @var{ts}:
+    ## its time, in @qcode{TimeInfo.Units}, counted from
+    ## @qcode{TimeInfo.StartDate}.  They are written in the @code{datestr}
+    ## format @qcode{TimeInfo.Format}, or @qcode{'dd-mmm-yyyy HH:MM:SS'} when
+    ## that is empty; seconds are rounded to the millisecond and the rest cut
+    ## off, as @code{datestr} does.  A series with no samples gives @code{@{@}}.
+    ## A series with no @qcode{TimeInfo.StartDate} is refused.
+    ##
+    ## MATLAB uses @qcode{TimeInfo.Format} only when it is one of the formats
+    ## its documentation lists, such as @qcode{'dd-mmm-yyyy'} or
+    ## @qcode{'mm/dd/yyyy'}, and writes the default for any other,
+    ## @qcode{'yyyy-mm-dd'} included; here every format is used.
+    ##
+    ## @seealso{timeseries.setabstime, tsdata.timemetadata}
+    ## @end deftypefn
+    function dates = getabstime (this)
+      mustBeScalar (this, 'getabstime');
+      startDate = this.timeInfo_.StartDate;
+      if (isempty (startDate))
+        error ("timeseries.getabstime: TS has no 'TimeInfo.StartDate'.");
+      endif
+      if (isempty (this.time_))
+        dates = {};
+        return;
+      endif
+      fmt = this.timeInfo_.Format;
+      if (isempty (fmt))
+        fmt = 'dd-mmm-yyyy HH:MM:SS';
+      endif
+      dn = datenum (startDate) ...
+           + this.time_ * nsPerUnit (this.timeInfo_.Units) / 864e11;
+      dates = cellstr (datestr (dn, fmt));
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timeseries} {@var{ts} =} setabstime (@var{ts}, @var{dates})
+    ## @deftypefnx {timeseries} {@var{ts} =} setabstime (@var{ts}, @var{dates}, @var{format})
+    ##
+    ## Set the time vector of a series from dates.
+    ##
+    ## @code{@var{ts} = setabstime (@var{ts}, @var{dates})} gives the samples
+    ## of the series @var{ts} the dates @var{dates}, one per sample, in order:
+    ## a cell array of character vectors, a string array, a character matrix
+    ## of one date per row, a character vector for a single sample, or a
+    ## @code{datetime} array.  The earliest date becomes
+    ## @qcode{TimeInfo.StartDate}, written @qcode{'dd-mmm-yyyy HH:MM:SS'}, and
+    ## @qcode{Time} holds each date's offset from it in the series' own
+    ## @qcode{TimeInfo.Units}, which are kept: a series in seconds given one
+    ## date a day gets times @code{[0 86400 172800 @dots{}]}.  Each date is read
+    ## by its own format.  Dates given as times of day alone, such as
+    ## @qcode{'13:00:00'}, give times since midnight and no start date, as in
+    ## MATLAB.
+    ##
+    ## @code{@var{ts} = setabstime (@var{ts}, @var{dates}, @var{format})} reads
+    ## every date strictly in the @code{datestr} format @var{format}, and
+    ## writes the start date in it.  A date not written in @var{format} is
+    ## refused.
+    ##
+    ## The dates need not be sorted: the samples, with their quality codes,
+    ## are sorted with them, keeping the order of samples at equal dates, as
+    ## the constructor sorts them.
+    ##
+    ## MATLAB differs in four ways.  It does not move the samples with unsorted
+    ## dates, so each is given another sample's date.  It reads every date by
+    ## the format of the first, so @code{@{'01-Jan-2024', '2024-01-02'@}} gives
+    ## a date in year 7.  It forces text into @var{format} when it does not
+    ## fit, so @qcode{'yyyy-mm-dd'} on @qcode{'01-Jan-2024'} gives a date in
+    ## year 6.  And it takes @code{datenum} values, @code{datetime} values and
+    ## plain numbers as relative seconds, dropping the dates; here numbers are
+    ## refused, since a @code{datenum} cannot be told from a plain number, and
+    ## a @code{datetime} is read as its dates.  Convert a @code{datenum}
+    ## @var{x} with @code{datetime (@var{x}, 'ConvertFrom', 'datenum')}.
+    ##
+    ## @seealso{timeseries.getabstime, timeseries.setuniformtime}
+    ## @end deftypefn
+    function this = setabstime (this, dates, format)
+      mustBeScalar (this, 'setabstime');
+      scope = 'timeseries.setabstime';
+      if (nargin < 2)
+        error ("%s: invalid number of input arguments.", scope);
+      endif
+      if (nargin < 3)
+        format = '';
+      elseif (isa (format, 'string') && isscalar (format))
+        format = char (format);
+      elseif (! (ischar (format) && isrow (format)))
+        error ("%s: FORMAT must be a character vector.", scope);
+      endif
+      if (isnumeric (dates) || islogical (dates))
+        error (strcat ("%s: DATES must be dates, as text or datetime", ...
+                       " values; convert a datenum X with datetime (X,", ...
+                       " 'ConvertFrom', 'datenum')."), scope);
+      endif
+      [dv, errmsg] = dateVectors (dates, format);
+      if (! isempty (errmsg))
+        error ("%s: DATES %s", scope, errmsg);
+      endif
+      n = numel (this.time_);
+      if (rows (dv) != n)
+        error ("%s: DATES must hold one date per sample.", scope);
+      endif
+      if (n == 0)
+        return;
+      endif
+
+      ## Times of day alone give times since midnight and no start date
+      isTimeOnly = false;
+      if (! isa (dates, 'datetime'))
+        txt = dates;
+        if (ischar (txt) || isa (txt, 'string'))
+          txt = cellstr (txt);
+        endif
+        timeOfDay = ['^\s*\d{1,2}:\d{2}(:\d{2}(\.\d+)?)?', ...
+                     '\s*([AaPp][Mm])?\s*$'];
+        isTimeOnly = all (cellfun (@(x) ! isempty (regexp (x, timeOfDay, ...
+                                                           'once')), txt(:)));
+      endif
+      if (isTimeOnly)
+        ns = (dv(:,4) * 3600 + dv(:,5) * 60 + dv(:,6)) * 1e9;
+        startDate = '';
+      else
+        [ns, dv0] = dateOffsets (dv);
+        if (isempty (format))
+          startDate = datestr (dv0, 'dd-mmm-yyyy HH:MM:SS');
+        else
+          startDate = datestr (dv0, format);
+        endif
+      endif
+      time = ns / nsPerUnit (this.timeInfo_.Units);
+
+      ## Sort the whole record, as the constructor does (MATLAB sorts the
+      ## times alone and leaves each sample with another's date)
+      [time, idx] = sort (time);
+      this.data_ = takeSamples (this.data_, idx, this.timeDim_);
+      if (! isempty (this.quality_))
+        this.quality_ = takeSamples (this.quality_, idx, this.timeDim_);
+      endif
+      this.time_ = time;
+      this.timeInfo_.TimeVector = time;
+      this.timeInfo_.StartDate = startDate;
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timeseries} {@var{ts} =} setuniformtime (@var{ts}, @qcode{'StartTime'}, @var{start})
+    ## @deftypefnx {timeseries} {@var{ts} =} setuniformtime (@var{ts}, @qcode{'Interval'}, @var{step})
+    ## @deftypefnx {timeseries} {@var{ts} =} setuniformtime (@var{ts}, @qcode{'EndTime'}, @var{end})
+    ## @deftypefnx {timeseries} {@var{ts} =} setuniformtime (@var{ts}, @var{name1}, @var{value1}, @var{name2}, @var{value2}, @dots{})
+    ##
+    ## Give a series a uniform time vector.
+    ##
+    ## @code{@var{ts} = setuniformtime (@var{ts}, @dots{})} replaces the time
+    ## vector of the series @var{ts} by one of evenly spaced times, one per
+    ## sample, in its own units; the samples are not moved.  The times are
+    ## fixed by any one or two of these options, or all three when they
+    ## agree, the names matched in any case and a later occurrence overriding
+    ## an earlier one:
+    ##
+    ## @multitable @columnfractions 0.4 0.6
+    ## @headitem Given @tab Times
+    ## @item @qcode{'StartTime'} @tab from @var{start}, a step of 1
+    ## @item @qcode{'Interval'} @tab from 0, a step of @var{step}
+    ## @item @qcode{'EndTime'} @tab from 0 to @var{end}
+    ## @item @qcode{'StartTime'}, @qcode{'Interval'} @tab from @var{start}, a
+    ## step of @var{step}
+    ## @item @qcode{'StartTime'}, @qcode{'EndTime'} @tab from @var{start} to
+    ## @var{end}, both exact
+    ## @item @qcode{'Interval'}, @qcode{'EndTime'} @tab to @var{end}, a step of
+    ## @var{step}
+    ## @end multitable
+    ##
+    ## Each value is a finite real scalar in the series' units, relative to
+    ## @qcode{TimeInfo.StartDate} when the series has one.  A step of zero gives
+    ## equal times.  A negative step, a start after the end, or an end below
+    ## zero given alone are refused, since the times would run backwards;
+    ## MATLAB then empties the time vector and keeps the data.  MATLAB also
+    ## ignores @code{NaN}, which is refused here, and a series of one sample
+    ## given equal start and end times, which MATLAB refuses, gets that time.
+    ##
+    ## @seealso{timeseries.setabstime, tsdata.timemetadata}
+    ## @end deftypefn
+    function this = setuniformtime (this, varargin)
+      mustBeScalar (this, 'setuniformtime');
+      scope = 'timeseries.setuniformtime';
+      if (isempty (varargin))
+        error (strcat ("%s: at least one of 'StartTime', 'Interval' or", ...
+                       " 'EndTime' is required."), scope);
+      endif
+      if (mod (numel (varargin), 2) != 0)
+        error ("%s: name-value arguments must be in pairs.", scope);
+      endif
+      optNames = {'StartTime', 'Interval', 'EndTime'};
+      vals = {[], [], []};
+      for i = 1:2:numel (varargin)
+        k = [];
+        if (isText (varargin{i}))
+          k = find (strcmpi (varargin{i}, optNames));
+        endif
+        if (isempty (k))
+          error ("%s: invalid optional paired argument.", scope);
+        endif
+        v = varargin{i+1};
+        if (! (isnumeric (v) && isreal (v) && isscalar (v)))
+          error ("%s: '%s' must be a real scalar.", scope, optNames{k});
+        endif
+        if (! isfinite (v))
+          error ("%s: '%s' must be finite.", scope, optNames{k});
+        endif
+        vals{k} = double (v);
+      endfor
+      n = numel (this.time_);
+      if (n == 0)
+        error ("%s: TS has no samples.", scope);
+      endif
+      [t0, dt, t1] = vals{:};
+      given = ! cellfun (@isempty, vals);
+      if (given(2) && dt < 0)
+        error ("%s: 'Interval' must not be negative.", scope);
+      endif
+      if (given(1) && given(3) && t0 > t1)
+        error ("%s: 'StartTime' must not come after 'EndTime'.", scope);
+      endif
+      if (isequal (given, [false, false, true]) && t1 < 0)
+        error (strcat ("%s: 'EndTime' given alone must not be negative,", ...
+                       " since the times start at 0."), scope);
+      endif
+      mismatch = strcat ("%s: 'StartTime', 'Interval' and 'EndTime' do", ...
+                         " not fit the number of samples.");
+      k = (0:n-1)';
+      switch (bin2dec (char (given + '0')))
+        case 4    # StartTime
+          time = t0 + k;
+        case 2    # Interval
+          time = k * dt;
+        case 1    # EndTime
+          if (n == 1)
+            error (mismatch, scope);
+          endif
+          time = linspace (0, t1, n)';
+        case 6    # StartTime and Interval
+          time = t0 + k * dt;
+        case 5    # StartTime and EndTime
+          if (n == 1)
+            if (t0 != t1)
+              error (mismatch, scope);
+            endif
+            time = t0;
+          else
+            time = linspace (t0, t1, n)';
+          endif
+        case 3    # Interval and EndTime
+          time = t1 - flipud (k) * dt;
+        otherwise # all three
+          tol = 1e-12 * max ([1, abs(t0), abs(t1)]);
+          if (abs (t0 + (n - 1) * dt - t1) > tol)
+            error (mismatch, scope);
+          endif
+          if (n == 1)
+            time = t0;
+          else
+            time = linspace (t0, t1, n)';
+          endif
+      endswitch
+      this.time_ = time;
+      this.timeInfo_.TimeVector = time;
+    endfunction
+
+  endmethods
+
   methods (Access = private)
 
     ## The series holding only the samples IDX, in that order, with every
@@ -1596,40 +1889,125 @@ function sz = sampleSize (data, td)
 endfunction
 
 ## Read a constructor TIME argument.  Returns a double column, the start date
-## of a time vector given as dates ('' otherwise), and an empty ERRMSG, or the
-## body of the message the caller raises.
-function [time, startDate, errmsg] = parseTime (time)
+## of a time vector given as dates ('' otherwise), the units the argument
+## implies ('' for plain numbers), and an empty ERRMSG, or the body of the
+## message the caller raises.
+function [time, startDate, units, errmsg] = parseTime (time)
   startDate = '';
+  units = '';
   errmsg = '';
-  if (isa (time, 'datetime') || isa (time, 'duration'))
-    errmsg = "TIME must be a numeric vector or dates as text.";
+  if (isa (time, 'duration'))
+    if (! all (isfinite (seconds (time(:)))))
+      errmsg = "TIME must be finite.";
+      return;
+    endif
+    ## MATLAB's own pairing of units and formats in 'timeseries2timetable',
+    ## read backwards
+    switch (time.Format)
+      case 'm'
+        units = 'minutes';
+        time = minutes (time(:));
+      case 'h'
+        units = 'hours';
+        time = hours (time(:));
+      case 'd'
+        units = 'days';
+        time = days (time(:));
+      otherwise
+        units = 'seconds';
+        time = seconds (time(:));
+    endswitch
+    time = double (time);
     return;
   endif
   if (iscell (time) && ! isempty (time)
       && all (cellfun (@(x) isnumeric (x) && isscalar (x), time(:))))
     time = cell2mat (time(:));
   endif
-  if (iscellstr (time) || isa (time, 'string'))
-    try
-      days = datenum (cellstr (time(:)));
-    catch
-      errmsg = "TIME holds text that is not a date.";
+  if (iscellstr (time) || isa (time, 'string') || isa (time, 'datetime'))
+    [dv, errmsg] = dateVectors (time, '');
+    if (! isempty (errmsg))
+      errmsg = ["TIME ", errmsg];
       return;
-    end_try_catch
-    t0 = min (days);
-    startDate = datestr (t0, 'dd-mmm-yyyy HH:MM:SS');
-    time = days - t0;
+    endif
+    [ns, dv0] = dateOffsets (dv);
+    time = ns / 864e11;
+    startDate = datestr (dv0, 'dd-mmm-yyyy HH:MM:SS');
+    units = 'days';
     return;
   endif
   if (! (isnumeric (time) && isreal (time)
          && (isvector (time) || isempty (time))))
-    errmsg = "TIME must be a numeric vector or dates as text.";
+    errmsg = "TIME must be a numeric vector, dates or durations.";
     return;
   endif
   time = double (time(:));
   if (! all (isfinite (time)))
     errmsg = "TIME must be finite.";
   endif
+endfunction
+
+## Read dates given as text (a cellstr, a string array, a character matrix
+## of one date per row, a character vector) or as a datetime array, into a
+## date vector per row.  With FMT each text date is read strictly in that
+## format; without, each is read by its own.  Returns an empty ERRMSG, or
+## the end of the message the caller raises after naming the argument.
+function [dv, errmsg] = dateVectors (x, fmt)
+  dv = zeros (0, 6);
+  errmsg = '';
+  if (isa (x, 'datetime'))
+    if (any (isnat (x(:))))
+      errmsg = "must not hold NaT.";
+      return;
+    endif
+    dv = datevec (x(:));
+    return;
+  endif
+  if (ischar (x))
+    x = cellstr (x);
+  elseif (isa (x, 'string'))
+    x = cellstr (x);
+  endif
+  if (! iscellstr (x))
+    errmsg = "must be dates, as text or datetime values.";
+    return;
+  endif
+  x = x(:);
+  dv = zeros (numel (x), 6);
+  for i = 1:numel (x)
+    try
+      if (isempty (fmt))
+        dv(i,:) = datevec (x{i});
+      else
+        dv(i,:) = datevec (x{i}, fmt);
+      endif
+    catch
+      if (isempty (fmt))
+        errmsg = sprintf ("holds text that is not a date: '%s'", x{i});
+      else
+        errmsg = sprintf ("holds a date not written as '%s': '%s'", ...
+                          fmt, x{i});
+      endif
+      dv = zeros (0, 6);
+      return;
+    end_try_catch
+  endfor
+endfunction
+
+## The offsets of the dates DV, one date vector per row, from the earliest,
+## in nanoseconds, and the earliest as a date vector.  Whole days and the
+## seconds of the day are taken apart, so a whole number of seconds is exact.
+function [ns, dv0] = dateOffsets (dv)
+  ns = zeros (rows (dv), 1);
+  dv0 = [];
+  if (isempty (dv))
+    return;
+  endif
+  dayNum = datenum (dv(:,1), dv(:,2), dv(:,3));
+  secs = dv(:,4) * 3600 + dv(:,5) * 60 + dv(:,6);
+  [~, i0] = min (dayNum * 86400 + secs);
+  ns = (dayNum - dayNum(i0)) * 864e11 + (secs - secs(i0)) * 1e9;
+  dv0 = dv(i0,:);
 endfunction
 
 ## Validate quality codes for data DATA of N samples along dimension TD.
