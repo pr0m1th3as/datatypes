@@ -121,6 +121,34 @@
 %! assert_equal (ts.Length, 1);
 %! assert_equal (ts.IsTimeFirst, true);
 %! assert_equal (ts.TimeInfo.Increment, NaN);
+## Test a matrix with a column per time is stored as an Rx1xN array
+%!test
+%! ts = timeseries (ones (2, 3), [5, 6, 7]);
+%! assert_equal (size (ts.Data), [2, 1, 3]);
+%! assert_equal (ts.IsTimeFirst, false);
+%! assert_equal (getdatasamplesize (ts), [2, 1]);
+%!test
+%! ts = timeseries (ones (2, 3), [5, 6]);
+%! assert_equal (size (ts.Data), [2, 3]);
+%! assert_equal (ts.IsTimeFirst, true);
+%! assert_equal (getdatasamplesize (ts), [1, 3]);
+## Test a matrix with a single time is one sample
+%!test
+%! ts = timeseries (ones (2, 3), 5);
+%! assert_equal (size (ts.Data), [2, 3]);
+%! assert_equal (ts.Length, 1);
+%! assert_equal (ts.IsTimeFirst, false);
+%! assert_equal (getdatasamplesize (ts), [2, 3]);
+%!test
+%! ts = timeseries (ones (3, 1), 5);
+%! assert_equal (ts.Length, 1);
+%! assert_equal (ts.IsTimeFirst, false);
+%! assert_equal (getdatasamplesize (ts), [3, 1]);
+%!test
+%! ts = timeseries ([1, 2; 3, 4]);
+%! ts1 = getsamples (ts, 1);
+%! assert_equal (ts1.IsTimeFirst, true);
+%! assert_equal (getdatasamplesize (ts1), [1, 2]);
 ## Test empty data
 %!test
 %! ts = timeseries ([]);
@@ -471,6 +499,618 @@
 %! set (timeseries ([1; 2]), 'Length', 3)
 
 ################################################################################
+##                    ** Data and sample operations **                        ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'getdatasamples'   'getdatasamplesize' 'getsamples'   'getsampleusingtime' ##
+## 'addsample'        'delsample'         'append'       'hasduplicatetimes'  ##
+##                                                                            ##
+################################################################################
+
+%!shared A, M, T3, Q3, D, Ab
+%! A = timeseries ([10; 20; 30; 40; 50], [0; 1; 2; 3; 4], [1; 2; 3; 4; 5], ...
+%!                 'Name', 'a');
+%! A.DataInfo.Units = 'volts';
+%! A.UserData = 7;
+%! A.Events = tsdata.event ('ev', 2);
+%! M = timeseries ([1, 2; 3, 4; 5, 6; 7, 8], [0; 1; 2; 3]);
+%! T3 = timeseries (reshape (1:24, 2, 3, 4), [0, 1, 2, 3]);
+%! Q3 = timeseries (reshape (1:24, 2, 3, 4), [0, 1, 2, 3], ...
+%!                  reshape (mod (1:24, 3), 2, 3, 4));
+%! D = timeseries ([1; 2; 3; 4], [0; 1; 1; 2]);
+%! Ab = timeseries ([1; 2; 3], {'01-Jan-2024', '02-Jan-2024', '03-Jan-2024'});
+
+%!assert_equal (getdatasamples (A, 2), 20)
+%!assert_equal (getdatasamples (A, [1, 3]), [10; 30])
+%!assert_equal (getdatasamples (A, [3, 1]), [30; 10])
+%!assert_equal (getdatasamples (A, [2, 2]), [20; 20])
+%!assert_equal (getdatasamples (A, [1; 2]), [10; 20])
+%!assert_equal (getdatasamples (A, int8 (2)), 20)
+%!assert_equal (getdatasamples (A, logical ([1, 0, 1, 0, 0])), [10; 30])
+%!assert_equal (getdatasamples (A, logical ([1, 0, 1])), [10; 30])
+%!assert_equal (getdatasamples (A, []), [])
+%!assert_equal (getdatasamples (M, [1, 2]), [1, 2; 3, 4])
+%!assert_equal (getdatasamples (T3, [1, 2]), reshape (1:12, 2, 3, 2))
+%!assert_equal (getdatasamples (Q3, 2), [7, 9, 11; 8, 10, 12])
+%!assert_equal (getdatasamples (timeseries ([1, 2, 3]), [1, 3]), cat (3, 1, 3))
+%!error <timeseries.getdatasamples: invalid number of input arguments.> ...
+%! getdatasamples (A)
+%!error <timeseries.getdatasamples: invalid number of input arguments.> ...
+%! getdatasamples (A, 2, 3)
+%!error <timeseries.getdatasamples: IND must be positive integers not exceeding the number of samples.> ...
+%! getdatasamples (A, 6)
+%!error <timeseries.getdatasamples: IND must be positive integers not exceeding the number of samples.> ...
+%! getdatasamples (A, 0)
+%!error <timeseries.getdatasamples: IND must be positive integers not exceeding the number of samples.> ...
+%! getdatasamples (A, 1.5)
+%!error <timeseries.getdatasamples: IND must be positive integers not exceeding the number of samples.> ...
+%! getdatasamples (A, ':')
+%!error <timeseries.getdatasamples: IND must be positive integers not exceeding the number of samples.> ...
+%! getdatasamples (timeseries (), 1)
+%!error <timeseries.getdatasamples: IND must not be a logical mask longer than the series.> ...
+%! getdatasamples (A, true (1, 6))
+%!error <timeseries.getdatasamples: TS must be a single series.> ...
+%! getdatasamples ([A, A], 1)
+
+%!assert_equal (getdatasamplesize (A), [1, 1])
+%!assert_equal (getdatasamplesize (M), [1, 2])
+%!assert_equal (getdatasamplesize (T3), [2, 3])
+%!assert_equal (getdatasamplesize (timeseries (ones (2, 3, 4, 5))), [2, 3, 4])
+%!assert_equal (getdatasamplesize (timeseries (ones (1, 3), 1)), [1, 3])
+%!assert_equal (getdatasamplesize (timeseries ([1, 2, 3])), [1, 1])
+%!assert_equal (getdatasamplesize (timeseries ()), [])
+%!assert_equal (getdatasamplesize (timeseries ('n')), [])
+%!assert_equal (getdatasamplesize (timeseries (zeros (0, 3))), [])
+%!assert_equal (getdatasamplesize (getsamples (T3, 2)), [2, 3])
+%!error <timeseries.getdatasamplesize: TS must be a single series.> ...
+%! getdatasamplesize ([A, A])
+
+%!test
+%! ts = getsamples (A, [2, 4]);
+%! assert_equal (ts.Data, [20; 40]);
+%! assert_equal (ts.Time, [1; 3]);
+%! assert_equal (ts.Quality, [2; 4]);
+%! assert_equal (ts.TimeInfo.Increment, 2);
+%! assert_equal (ts.DataInfo.Units, 'volts');
+%! assert_equal (ts.UserData, 7);
+%! assert_equal (ts.Events.Name, 'ev');
+## Test the name is kept, where MATLAB gives 'unnamed'
+%!test
+%! ts = getsamples (A, [2, 4]);
+%! assert_equal (ts.Name, 'a');
+## Test the samples are taken in time order, repeats kept
+%!test
+%! ts = getsamples (A, [4, 2]);
+%! assert_equal (ts.Data, [20; 40]);
+%!test
+%! ts = getsamples (A, [2, 2]);
+%! assert_equal (ts.Data, [20; 20]);
+%! assert_equal (ts.Time, [1; 1]);
+%! assert_equal (ts.TimeInfo.Increment, NaN);
+%!test
+%! ts = getsamples (A, logical ([0, 1, 0, 1, 0]));
+%! assert_equal (ts.Time, [1; 3]);
+%!test
+%! ts = getsamples (A, 3);
+%! assert_equal (ts.Data, 30);
+%! assert_equal (ts.TimeInfo.Increment, NaN);
+## Test no samples keep every property, where MATLAB resets them
+%!test
+%! ts = getsamples (A, []);
+%! assert_equal (ts.Length, 0);
+%! assert_equal (ts.Name, 'a');
+%! assert_equal (ts.DataInfo.Units, 'volts');
+%! assert_equal (ts.UserData, 7);
+%!test
+%! ts = getsamples (T3, [1, 3]);
+%! assert_equal (ts.Data, reshape ([1:6, 13:18], 2, 3, 2));
+%! assert_equal (ts.Time, [0; 2]);
+%! assert_equal (ts.IsTimeFirst, false);
+%!test
+%! ts = getsamples (Q3, [2, 3]);
+%! assert_equal (ts.Quality, reshape (mod (7:18, 3), 2, 3, 2));
+%!test
+%! ts = getsamples (T3, 2);
+%! assert_equal (ts.Data, [7, 9, 11; 8, 10, 12]);
+%! assert_equal (ts.Length, 1);
+%! assert_equal (ts.IsTimeFirst, false);
+%!test
+%! ts = getsamples (Ab, 2);
+%! assert_equal (ts.Time, 1);
+%! assert_equal (ts.TimeInfo.StartDate, '01-Jan-2024 00:00:00');
+%! assert_equal (ts.TimeInfo.Units, 'days');
+%!test
+%! ts = getsamples (D, [2, 3]);
+%! assert_equal (ts.Data, [2; 3]);
+%! assert_equal (ts.Time, [1; 1]);
+%!error <timeseries.getsamples: invalid number of input arguments.> getsamples (A)
+%!error <timeseries.getsamples: IND must be positive integers not exceeding the number of samples.> ...
+%! getsamples (A, 6)
+%!error <timeseries.getsamples: IND must be positive integers not exceeding the number of samples.> ...
+%! getsamples (A, 2.5)
+%!error <timeseries.getsamples: IND must be positive integers not exceeding the number of samples.> ...
+%! getsamples (A, ':')
+%!error <timeseries.getsamples: TS must be a single series.> getsamples ([A, A], 1)
+
+%!test
+%! ts = getsampleusingtime (A, 2);
+%! assert_equal (ts.Data, 30);
+%! assert_equal (ts.Quality, 3);
+%! assert_equal (ts.Name, 'a');
+%!test
+%! ts = getsampleusingtime (A, 1, 3);
+%! assert_equal (ts.Data, [20; 30; 40]);
+%! assert_equal (ts.Time, [1; 2; 3]);
+%!test
+%! ts = getsampleusingtime (A, 1.5, 3.5);
+%! assert_equal (ts.Data, [30; 40]);
+%!test
+%! ts = getsampleusingtime (A, 2, 2);
+%! assert_equal (ts.Data, 30);
+%!test
+%! ts = getsampleusingtime (A, -Inf, Inf);
+%! assert_equal (ts.Length, 5);
+%!test
+%! ts = getsampleusingtime (T3, 1, 2);
+%! assert_equal (ts.Data, reshape (7:18, 2, 3, 2));
+## Test a time or range no sample falls in gives no samples
+%!test
+%! ts = getsampleusingtime (A, 2.5);
+%! assert_equal (ts.Length, 0);
+%! assert_equal (ts.Name, 'a');
+%! assert_equal (ts.DataInfo.Units, 'volts');
+%!test
+%! assert_equal (getsampleusingtime (A, 3, 1).Length, 0);
+%! assert_equal (getsampleusingtime (A, 5, 9).Length, 0);
+%! assert_equal (getsampleusingtime (A, NaN).Length, 0);
+%! assert_equal (getsampleusingtime (timeseries (), 1).Length, 0);
+## Test repeated times need 'AllowDuplicateTimes' in the single-time form
+%!test
+%! ts = getsampleusingtime (D, 1, 'AllowDuplicateTimes', true);
+%! assert_equal (ts.Data, [2; 3]);
+%!test
+%! ts = getsampleusingtime (D, 1, 'allowduplicatetimes', 1);
+%! assert_equal (ts.Data, [2; 3]);
+%!test
+%! ts = getsampleusingtime (D, 2, 'AllowDuplicateTimes', false);
+%! assert_equal (ts.Data, 4);
+%!test
+%! ts = getsampleusingtime (D, 1, 1);
+%! assert_equal (ts.Data, [2; 3]);
+%!test
+%! ts = getsampleusingtime (D, 0, 2);
+%! assert_equal (ts.Data, [1; 2; 3; 4]);
+## Test dates on a series with a start date: text, datenum, datetime
+%!test
+%! ts = getsampleusingtime (Ab, '02-Jan-2024');
+%! assert_equal (ts.Data, 2);
+%! assert_equal (ts.Time, 1);
+%!test
+%! ts = getsampleusingtime (Ab, string ('02-Jan-2024'));
+%! assert_equal (ts.Data, 2);
+%!test
+%! ts = getsampleusingtime (Ab, '01-Jan-2024', '02-Jan-2024');
+%! assert_equal (ts.Data, [1; 2]);
+%!test
+%! ts = getsampleusingtime (Ab, '01-Jan-2024 12:00:00', '03-Jan-2024');
+%! assert_equal (ts.Data, [2; 3]);
+%!test
+%! ts = getsampleusingtime (Ab, datenum (2024, 1, 2));
+%! assert_equal (ts.Data, 2);
+%!test
+%! ts = getsampleusingtime (Ab, datenum (2024, 1, 1), datenum (2024, 1, 2));
+%! assert_equal (ts.Data, [1; 2]);
+%!test
+%! ts = getsampleusingtime (Ab, datetime (2024, 1, 2));
+%! assert_equal (ts.Data, 2);
+%!test
+%! assert_equal (getsampleusingtime (Ab, 1).Length, 0);
+%!error <timeseries.getsampleusingtime: several samples share time T; set 'AllowDuplicateTimes' to true to return them all.> ...
+%! getsampleusingtime (D, 1)
+%!error <timeseries.getsampleusingtime: several samples share time T; set 'AllowDuplicateTimes' to true to return them all.> ...
+%! getsampleusingtime (D, 1, 'AllowDuplicateTimes', false)
+%!error <timeseries.getsampleusingtime: invalid number of input arguments.> ...
+%! getsampleusingtime (A)
+%!error <timeseries.getsampleusingtime: invalid number of input arguments.> ...
+%! getsampleusingtime (A, 1, 3, 4, 5)
+%!error <timeseries.getsampleusingtime: invalid optional paired argument.> ...
+%! getsampleusingtime (A, 1, 3, 4)
+%!error <timeseries.getsampleusingtime: invalid optional paired argument.> ...
+%! getsampleusingtime (D, 1, 'Bogus', true)
+%!error <timeseries.getsampleusingtime: 'AllowDuplicateTimes' must be a logical scalar.> ...
+%! getsampleusingtime (D, 1, 'AllowDuplicateTimes', 'yes')
+%!error <timeseries.getsampleusingtime: T must be numeric for a series without a start date.> ...
+%! getsampleusingtime (A, '02-Jan-2024')
+%!error <timeseries.getsampleusingtime: T must be a single time.> ...
+%! getsampleusingtime (A, [1, 3])
+%!error <timeseries.getsampleusingtime: T2 must be numeric for a series without a start date.> ...
+%! getsampleusingtime (A, 1, 'x')
+%!error <timeseries.getsampleusingtime: T must be dates, as text, datenum or datetime values.> ...
+%! getsampleusingtime (Ab, 'bogus')
+%!error <timeseries.getsampleusingtime: TS must be a single series.> ...
+%! getsampleusingtime ([A, A], 1)
+
+%!test
+%! ts = addsample (A, 'Data', 99, 'Time', 2.5);
+%! assert_equal (ts.Data, [10; 20; 30; 99; 40; 50]);
+%! assert_equal (ts.Time, [0; 1; 2; 2.5; 3; 4]);
+%! assert_equal (ts.Name, 'a');
+%! assert_equal (ts.DataInfo.Units, 'volts');
+## Test a new sample without a code takes the nearest sample's code,
+## the later on a tie
+%!test
+%! ts = addsample (A, 'Data', 99, 'Time', 2.5);
+%! assert_equal (ts.Quality, [1; 2; 3; 4; 4; 5]);
+%!test
+%! ts = addsample (timeseries ([1; 2; 3], [0; 1; 2], [7; 8; 9]), ...
+%!                 'Data', 5, 'Time', 0.4);
+%! assert_equal (ts.Quality, [7; 7; 8; 9]);
+%!test
+%! ts = addsample (timeseries ([1; 2; 3], [0; 3; 6], [7; 8; 9]), ...
+%!                 'Data', [5; 6], 'Time', [1; 2]);
+%! assert_equal (ts.Quality, [7; 7; 8; 8; 9]);
+%!test
+%! ts = addsample (A, 'Data', 99, 'Time', 10);
+%! assert_equal (ts.Quality(end), 5);
+%!test
+%! ts = addsample (A, 'Data', 99, 'Time', -1);
+%! assert_equal (ts.Time, [-1; 0; 1; 2; 3; 4]);
+%! assert_equal (ts.Quality(1), 1);
+%! assert_equal (ts.TimeInfo.Increment, 1);
+## Test a sample at a time already present goes after the samples there
+%!test
+%! ts = addsample (A, 'Data', 99, 'Time', 2);
+%! assert_equal (ts.Data, [10; 20; 30; 99; 40; 50]);
+%! assert_equal (ts.Quality, [1; 2; 3; 3; 4; 5]);
+%!test
+%! ts = addsample (A, 'Data', [99; 98], 'Time', [2.5; 5]);
+%! assert_equal (ts.Data, [10; 20; 30; 99; 40; 50; 98]);
+%!test
+%! ts = addsample (A, 'Data', [1; 2], 'Time', [3.5, 2.5]);
+%! assert_equal (ts.Data, [10; 20; 30; 2; 40; 1; 50]);
+%!test
+%! ts = addsample (A, 'Data', 99, 'Time', 2.5, 'Quality', 9);
+%! assert_equal (ts.Quality, [1; 2; 3; 9; 4; 5]);
+%!test
+%! ts = addsample (A, 'Time', 2.5, 'Data', 99);
+%! assert_equal (ts.Data(4), 99);
+%!test
+%! ts = addsample (A, 'data', 99, 'time', 2.5);
+%! assert_equal (ts.Data(4), 99);
+%!test
+%! ts = addsample (A, 'Data', 99, 'Time', 2.5, 'Data', 98);
+%! assert_equal (ts.Data(4), 98);
+%!test
+%! ts = addsample (A, struct ('Data', 99, 'Time', 2.5));
+%! assert_equal (ts.Data(4), 99);
+## Test 'OverwriteFlag' replaces the samples at a time already present
+%!test
+%! ts = addsample (A, 'Data', 99, 'Time', 2, 'OverwriteFlag', true);
+%! assert_equal (ts.Data, [10; 20; 99; 40; 50]);
+%! assert_equal (ts.Quality, [1; 2; 3; 4; 5]);
+%!test
+%! ts = addsample (A, 'Data', 99, 'Time', 2, 'OverwriteFlag', true, ...
+%!                 'Quality', 9);
+%! assert_equal (ts.Quality, [1; 2; 9; 4; 5]);
+%!test
+%! ts = addsample (A, 'Data', [99; 98], 'Time', [2; 2.5], ...
+%!                 'OverwriteFlag', true);
+%! assert_equal (ts.Data, [10; 20; 99; 98; 40; 50]);
+%!test
+%! ts = addsample (D, 'Data', 99, 'Time', 1, 'OverwriteFlag', true);
+%! assert_equal (ts.Data, [1; 99; 99; 4]);
+%!test
+%! ts = addsample (A, 'Data', 99, 'Time', 2, 'OverwriteFlag', false);
+%! assert_equal (ts.Length, 6);
+%!test
+%! ts = addsample (A, 'Data', 99, 'Time', 2, 'OverwriteFlag', 1);
+%! assert_equal (ts.Length, 5);
+## Test the samples of matrices and arrays
+%!test
+%! ts = addsample (M, 'Data', [9, 9], 'Time', 1.5);
+%! assert_equal (ts.Data, [1, 2; 3, 4; 9, 9; 5, 6; 7, 8]);
+%!test
+%! ts = addsample (M, 'Data', [9, 9; 8, 8], 'Time', [1.5; 2.5]);
+%! assert_equal (ts.Data, [1, 2; 3, 4; 9, 9; 5, 6; 8, 8; 7, 8]);
+%!test
+%! ts = addsample (T3, 'Data', ones (2, 3), 'Time', 1.5);
+%! assert_equal (size (ts.Data), [2, 3, 5]);
+%! assert_equal (ts.Data(:,:,3), ones (2, 3));
+%!test
+%! ts = addsample (T3, 'Data', ones (2, 3, 2), 'Time', [1.5, 2.5]);
+%! assert_equal (ts.Time, [0; 1; 1.5; 2; 2.5; 3]);
+%!test
+%! ts = addsample (Q3, 'Data', ones (2, 3), 'Time', 1.5, ...
+%!                 'Quality', zeros (2, 3));
+%! assert_equal (ts.Quality(:,:,3), zeros (2, 3));
+%!test
+%! ts = addsample (Q3, 'Data', ones (2, 3), 'Time', 1.5);
+%! assert_equal (ts.Quality(:,:,3), mod ([13, 15, 17; 14, 16, 18], 3));
+%!test
+%! ts = addsample (timeseries ([1, 2, 3]), 'Data', 9, 'Time', 3);
+%! assert_equal (size (ts.Data), [1, 1, 4]);
+%! assert_equal (ts.Data(:), [1; 2; 3; 9]);
+%!test
+%! ts = addsample (timeseries (ones (1, 3), 1), 'Data', [2, 2, 2], 'Time', 2);
+%! assert_equal (ts.Data, [1, 1, 1; 2, 2, 2]);
+%!test
+%! ts = addsample (getsamples (T3, 2), 'Data', ones (2, 3), 'Time', 9);
+%! assert_equal (size (ts.Data), [2, 3, 2]);
+%! assert_equal (ts.Time, [1; 9]);
+## Test an empty series takes any samples and is named 'unnamed'
+%!test
+%! ts = addsample (timeseries (), 'Data', 5, 'Time', 1);
+%! assert_equal (ts.Data, 5);
+%! assert_equal (ts.Name, 'unnamed');
+%!test
+%! ts = addsample (timeseries (), 'Data', [1, 2, 3], 'Time', 1);
+%! assert_equal (ts.Data, [1, 2, 3]);
+%! assert_equal (ts.Length, 1);
+%!test
+%! ts = addsample (timeseries ('n'), 'Data', 5, 'Time', 1);
+%! assert_equal (ts.Name, 'n');
+## Test the class of the data follows concatenation
+%!test
+%! ts = addsample (A, 'Data', int8 (9), 'Time', 2.5);
+%! assert_equal (class (ts.Data), 'int8');
+%!test
+%! ts = addsample (timeseries (int8 ([1; 2])), 'Data', 3.7, 'Time', 5);
+%! assert_equal (ts.Data, int8 ([1; 2; 4]));
+%!test
+%! ts = addsample (A, 'Data', true, 'Time', 2.5);
+%! assert_equal (ts.Data(4), 1);
+## Test times on a series with a start date
+%!test
+%! ts = addsample (Ab, 'Data', 9, 'Time', '04-Jan-2024');
+%! assert_equal (ts.Time, [0; 1; 2; 3]);
+%!test
+%! ts = addsample (Ab, 'Data', 9, 'Time', 3.5);
+%! assert_equal (ts.Time, [0; 1; 2; 3.5]);
+%!error <timeseries.addsample: 'Time' must not be empty.> ...
+%! addsample (A, 'Data', 99)
+%!error <timeseries.addsample: 'Data' must not be empty.> ...
+%! addsample (A, 'Time', 2.5)
+%!error <timeseries.addsample: 'Data' must not be empty.> ...
+%! addsample (A, 'Data', [], 'Time', [])
+%!error <timeseries.addsample: 'Data' must be a numeric or logical array.> ...
+%! addsample (A, 'Data', {99}, 'Time', 2.5)
+%!error <timeseries.addsample: 'Data' must hold samples of size 1x1.> ...
+%! addsample (A, 'Data', [99, 98], 'Time', 2.5)
+%!error <timeseries.addsample: 'Data' must hold samples of size 1x2.> ...
+%! addsample (M, 'Data', [9; 9], 'Time', 1.5)
+%!error <timeseries.addsample: 'Data' must have one sample per time.> ...
+%! addsample (A, 'Data', 99, 'Time', [2.5, 3.5])
+%!error <timeseries.addsample: 'Time' must be numeric for a series without a start date.> ...
+%! addsample (A, 'Data', 9, 'Time', '04-Jan-2024')
+%!error <timeseries.addsample: invalid optional paired argument.> ...
+%! addsample (A, 'Data', 99, 'Time', 2.5, 'Bogus', 1)
+%!error <timeseries.addsample: name-value arguments must be in pairs.> ...
+%! addsample (A, 'Data', 99, 'Time')
+%!error <timeseries.addsample: 'OverwriteFlag' must be a logical scalar.> ...
+%! addsample (A, 'Data', 99, 'Time', 2.5, 'OverwriteFlag', 'yes')
+%!error <timeseries.addsample: 'Quality' must hold integers from -128 to 127.> ...
+%! addsample (A, 'Data', 99, 'Time', 2.5, 'Quality', 1.5)
+%!error <timeseries.addsample: 'Quality' must hold integers from -128 to 127.> ...
+%! addsample (A, 'Data', 99, 'Time', 2.5, 'Quality', 200)
+%!error <timeseries.addsample: 'Quality' must have one code per new sample or one per new data element.> ...
+%! addsample (A, 'Data', 99, 'Time', 2.5, 'Quality', [9, 8])
+%!error <timeseries.addsample: 'Quality' cannot be added to a series without quality codes.> ...
+%! addsample (timeseries ([1; 2; 3]), 'Data', 9, 'Time', 1.5, 'Quality', 3)
+%!error <timeseries.addsample: TS must be a single series.> ...
+%! addsample ([A, A], 'Data', 9, 'Time', 1.5)
+
+%!test
+%! ts = delsample (A, 'Index', 2);
+%! assert_equal (ts.Data, [10; 30; 40; 50]);
+%! assert_equal (ts.Quality, [1; 3; 4; 5]);
+%! assert_equal (ts.Name, 'a');
+%!test
+%! ts = delsample (A, 'Index', [1, 3]);
+%! assert_equal (ts.Time, [1; 3; 4]);
+%!test
+%! ts = delsample (A, 'index', [2, 2]);
+%! assert_equal (ts.Data, [10; 30; 40; 50]);
+%!test
+%! ts = delsample (A, 'Index', []);
+%! assert_equal (ts.Length, 5);
+%!test
+%! ts = delsample (A, 'Index', 1:5);
+%! assert_equal (ts.Length, 0);
+%! assert_equal (size (ts.Data), [0, 1]);
+%! assert_equal (ts.DataInfo.Units, 'volts');
+%!test
+%! ts = delsample (A, 'Value', 2);
+%! assert_equal (ts.Data, [10; 20; 40; 50]);
+%!test
+%! ts = delsample (A, 'Value', [1, 3]);
+%! assert_equal (ts.Time, [0; 2; 4]);
+%! assert_equal (ts.TimeInfo.Increment, 2);
+%!test
+%! ts = delsample (A, 'Value', 2.5);
+%! assert_equal (ts.Length, 5);
+%!test
+%! ts = delsample (A, 'Value', NaN);
+%! assert_equal (ts.Length, 5);
+## Test 'Value' removes every sample at a repeated time
+%!test
+%! ts = delsample (D, 'Value', 1);
+%! assert_equal (ts.Data, [1; 4]);
+%!test
+%! ts = delsample (T3, 'Index', 2);
+%! assert_equal (ts.Data, reshape ([1:6, 13:24], 2, 3, 3));
+## Test codes per data element lose the removed slice, where MATLAB
+## flattens them
+%!test
+%! ts = delsample (Q3, 'Index', 2);
+%! assert_equal (ts.Quality, reshape (mod ([1:6, 13:24], 3), 2, 3, 3));
+%!test
+%! ts = delsample (M, 'Index', 1);
+%! assert_equal (ts.Data, [3, 4; 5, 6; 7, 8]);
+%!test
+%! ts = delsample (Ab, 'Value', '02-Jan-2024');
+%! assert_equal (ts.Data, [1; 3]);
+%!test
+%! ts = delsample (Ab, 'Value', 1);
+%! assert_equal (ts.Data, [1; 3]);
+%!error <timeseries.delsample: invalid number of input arguments.> delsample (A)
+%!error <timeseries.delsample: invalid number of input arguments.> ...
+%! delsample (A, 'Index')
+%!error <timeseries.delsample: invalid number of input arguments.> ...
+%! delsample (A, 'Index', 2, 'Value', 3)
+%!error <timeseries.delsample: the option must be 'Index' or 'Value'.> ...
+%! delsample (A, 'Bogus', 2)
+%!error <timeseries.delsample: 'Index' must be positive integers not exceeding the number of samples.> ...
+%! delsample (A, 'Index', 6)
+%!error <timeseries.delsample: 'Index' must be positive integers not exceeding the number of samples.> ...
+%! delsample (A, 'Index', 0)
+%!error <timeseries.delsample: 'Index' must be positive integers not exceeding the number of samples.> ...
+%! delsample (A, 'Index', 1.5)
+%!error <timeseries.delsample: 'Index' must be positive integers not exceeding the number of samples.> ...
+%! delsample (A, 'Index', logical ([1, 0, 0, 0, 0]))
+%!error <timeseries.delsample: 'Index' must be positive integers not exceeding the number of samples.> ...
+%! delsample (timeseries (), 'Index', 1)
+%!error <timeseries.delsample: 'Value' must be numeric for a series without a start date.> ...
+%! delsample (A, 'Value', '02-Jan-2024')
+%!error <timeseries.delsample: TS must be a single series.> ...
+%! delsample ([A, A], 'Index', 1)
+
+%!test
+%! ts = append (timeseries ([1; 2], [0; 1]), timeseries ([3; 4], [2; 3]));
+%! assert_equal (ts.Data, [1; 2; 3; 4]);
+%! assert_equal (ts.Time, [0; 1; 2; 3]);
+%! assert_equal (ts.TimeInfo.Increment, 1);
+## Test series may meet at an equal time, and a gap is kept
+%!test
+%! ts = append (timeseries ([1; 2], [0; 1]), timeseries ([3; 4], [1; 2]));
+%! assert_equal (ts.Time, [0; 1; 1; 2]);
+%!test
+%! ts = append (timeseries ([1; 2], [0; 1]), timeseries ([3; 4], [10; 20]));
+%! assert_equal (ts.Time, [0; 1; 10; 20]);
+%!test
+%! ts = append (timeseries ([1; 2], [0; 1]), timeseries ([3; 4], [2; 3]), ...
+%!              timeseries (5, 4));
+%! assert_equal (ts.Data, [1; 2; 3; 4; 5]);
+%!test
+%! ts = append ([timeseries([1; 2], [0; 1]), timeseries([3; 4], [2; 3])]);
+%! assert_equal (ts.Data, [1; 2; 3; 4]);
+## Test series with no samples are skipped, and one alone is returned as it is
+%!test
+%! ts = append (A, timeseries ());
+%! assert_equal (ts.Name, 'a');
+%! assert_equal (ts.Quality, [1; 2; 3; 4; 5]);
+%!test
+%! ts = append (timeseries (), A);
+%! assert_equal (ts.Data, [10; 20; 30; 40; 50]);
+%!test
+%! ts = append (A);
+%! assert_equal (ts.Name, 'a');
+%!test
+%! ts = append (M, timeseries ([9, 9], 4));
+%! assert_equal (ts.Data, [1, 2; 3, 4; 5, 6; 7, 8; 9, 9]);
+%!test
+%! ts = append (T3, timeseries (ones (2, 3, 2), [4, 5]));
+%! assert_equal (size (ts.Data), [2, 3, 6]);
+%! assert_equal (ts.Time, [0; 1; 2; 3; 4; 5]);
+%!test
+%! ts = append (getsamples (T3, 2), getsamples (T3, 3));
+%! assert_equal (ts.Data, reshape (7:18, 2, 3, 2));
+%! assert_equal (ts.IsTimeFirst, false);
+## Test times are converted to the coarsest units
+%!test
+%! a = timeseries ([60; 70], [0; 1]);
+%! a.TimeInfo.Units = 'minutes';
+%! ts = append (a, timeseries ([80; 90], [120; 180]));
+%! assert_equal (ts.Time, [0; 1; 2; 3]);
+%! assert_equal (ts.TimeInfo.Units, 'minutes');
+%!test
+%! b = timeseries ([60; 70], [5; 6]);
+%! b.TimeInfo.Units = 'minutes';
+%! ts = append (timeseries ([1; 2], [0; 60]), b);
+%! assert_equal (ts.Time, [0; 1; 5; 6]);
+%!test
+%! ts = append (Ab, timeseries ([4; 5], {'04-Jan-2024', '05-Jan-2024'}));
+%! assert_equal (ts.Time, [0; 1; 2; 3; 4]);
+%! assert_equal (ts.TimeInfo.StartDate, '01-Jan-2024 00:00:00');
+## Test quality codes are joined when every series has them
+%!test
+%! ts = append (timeseries ([1; 2], [0; 1], [1; 1]), ...
+%!              timeseries ([3; 4], [2; 3], [2; 2]));
+%! assert_equal (ts.Quality, [1; 1; 2; 2]);
+## Test the name, units and quality descriptions are kept where they agree
+%!test
+%! ts = append (timeseries ([1; 2], [0; 1], 'Name', 'x'), ...
+%!              timeseries ([3; 4], [2; 3], 'Name', 'x'));
+%! assert_equal (ts.Name, 'x');
+%!test
+%! ts = append (timeseries ([1; 2], [0; 1], 'Name', 'x'), ...
+%!              timeseries ([3; 4], [2; 3]));
+%! assert_equal (ts.Name, 'unnamed');
+%!test
+%! a = timeseries ([1; 2], [0; 1]);
+%! a.DataInfo.Units = 'volts';
+%! a.QualityInfo.Code = [0, 1];
+%! b = timeseries ([3; 4], [2; 3]);
+%! b.DataInfo.Units = 'volts';
+%! b.QualityInfo.Code = [0, 1];
+%! ts = append (a, b);
+%! assert_equal (ts.DataInfo.Units, 'volts');
+%! assert_equal (ts.QualityInfo.Code, [0, 1]);
+%!test
+%! a = timeseries ([1; 2], [0; 1]);
+%! a.DataInfo.Units = 'volts';
+%! a.QualityInfo.Code = [0, 1];
+%! b = timeseries ([3; 4], [2; 3]);
+%! b.DataInfo.Units = 'amps';
+%! ts = append (a, b);
+%! assert_equal (ts.DataInfo.Units, '');
+%! assert_equal (ts.QualityInfo.Code, []);
+## Test events are gathered and the rest comes from the first series
+%!test
+%! a = timeseries ([1; 2], [0; 1]);
+%! a.Events = tsdata.event ('ea', 0);
+%! a.UserData = 9;
+%! a.TreatNaNasMissing = false;
+%! b = timeseries ([3; 4], [2; 3]);
+%! b.Events = tsdata.event ('eb', 2);
+%! b.UserData = 5;
+%! ts = append (a, b);
+%! assert_equal ({ts.Events.Name}, {'ea', 'eb'});
+%! assert_equal (ts.UserData, 9);
+%! assert_equal (ts.TreatNaNasMissing, false);
+## Test the class of the data follows concatenation
+%!test
+%! ts = append (A, timeseries (int8 ([60; 70]), [5; 6], [1; 1]));
+%! assert_equal (class (ts.Data), 'int8');
+%!test
+%! ts = append (timeseries (int8 ([1; 2]), [0; 1]), ...
+%!              timeseries ([3.5; 4], [2; 3]));
+%! assert_equal (ts.Data, int8 ([1; 2; 4; 4]));
+%!error <timeseries.append: each series must start at or after the end of the one before.> ...
+%! append (A, timeseries ([60; 70], [3; 5], [1; 1]))
+%!error <timeseries.append: each series must start at or after the end of the one before.> ...
+%! append (timeseries ([60; 70], [5; 6]), timeseries ([1; 2], [0; 1]))
+%!error <timeseries.append: each series must start at or after the end of the one before.> ...
+%! append (A, A)
+%!error <timeseries.append: every series must have samples of the same size.> ...
+%! append (timeseries ([1; 2], [0; 1]), timeseries ([1, 2; 3, 4], [5; 6]))
+%!error <timeseries.append: every argument must be a timeseries.> append (A, 5)
+%!error <timeseries.append: series with and without a start date cannot be appended.> ...
+%! append (Ab, timeseries ([4; 5], [3; 4]))
+%!error <timeseries.append: either every series or none must have quality codes.> ...
+%! append (A, timeseries ([60; 70], [5; 6]))
+%!error <timeseries.append: either every series or none must have quality codes.> ...
+%! append (timeseries ([1; 2], [0; 1]), timeseries ([3; 4], [2; 3], [1; 2]))
+
+%!assert_equal (hasduplicatetimes (A), false)
+%!assert_equal (hasduplicatetimes (D), true)
+%!assert_equal (hasduplicatetimes (timeseries ()), false)
+%!assert_equal (hasduplicatetimes (timeseries (5)), false)
+%!assert_equal (hasduplicatetimes (timeseries (ones (2, 2, 3), ...
+%!                                             [0, 0, 1])), true)
+%!assert_equal (hasduplicatetimes ([A, D]), [false, true])
+
+################################################################################
 ##                        ** 'timeseries' properties **                       ##
 ################################################################################
 
@@ -558,6 +1198,17 @@
 %! ts.Data = 5;
 %! assert_equal (ts.Data, 5);
 %! assert_equal (ts.Length, 0);
+## Test a series whose time runs last keeps it through 'Data' and 'Time'
+%!test
+%! ts = getsamples (timeseries (reshape (1:24, 2, 3, 4)), 2);
+%! ts.Data = ones (2, 3);
+%! assert_equal (ts.IsTimeFirst, false);
+%! assert_equal (ts.Length, 1);
+%!test
+%! ts = getsamples (timeseries (reshape (1:24, 2, 3, 4)), 2);
+%! ts.Time = 7;
+%! assert_equal (ts.IsTimeFirst, false);
+%! assert_equal (size (ts.Data), [2, 3]);
 %!error <timeseries: 'Data' must have one sample per time.> ...
 %! setfield (timeseries ([1; 2; 3; 4]), 'Data', [1; 2; 3])
 %!error <timeseries: 'Data' must have one sample per time.> ...
@@ -721,12 +1372,14 @@
 %! ts = timeseries (ones (2, 3, 4));
 %! ts.IsTimeFirst = false;
 %! assert_equal (ts.IsTimeFirst, false);
-%!error <timeseries: 'IsTimeFirst' cannot be true: the time vector runs along the last dimension of data of 3 dimensions.> ...
+%!error <timeseries: 'IsTimeFirst' cannot be true: the time vector runs along the last dimension of the data.> ...
 %! setfield (timeseries (ones (2, 3, 4)), 'IsTimeFirst', true)
-%!error <timeseries: 'IsTimeFirst' cannot be true: the time vector runs along the last dimension of data of 3 dimensions.> ...
+%!error <timeseries: 'IsTimeFirst' cannot be true: the time vector runs along the last dimension of the data.> ...
 %! setfield (timeseries (ones (3, 3, 3)), 'IsTimeFirst', true)
-%!error <timeseries: 'IsTimeFirst' cannot be false: the time vector runs along the first dimension of data of 2 dimensions.> ...
+%!error <timeseries: 'IsTimeFirst' cannot be false: the time vector runs along the first dimension of the data.> ...
 %! setfield (timeseries ([1; 2; 3; 4]), 'IsTimeFirst', false)
+%!error <timeseries: 'IsTimeFirst' cannot be true: the time vector runs along the last dimension of the data.> ...
+%! setfield (timeseries (ones (2, 3), 5), 'IsTimeFirst', true)
 %!error <timeseries: 'IsTimeFirst' must be a logical scalar.> ...
 %! setfield (timeseries ([1; 2; 3; 4]), 'IsTimeFirst', 'yes')
 
