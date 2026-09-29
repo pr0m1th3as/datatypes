@@ -1476,6 +1476,384 @@ classdef timeseries
 
   endmethods
 
+################################################################################
+##                              ** Events **                                  ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'addevent'         'delevent'         'gettsbeforeevent'                   ##
+## 'gettsbeforeatevent'                  'gettsatevent'                       ##
+## 'gettsafteratevent'                   'gettsafterevent'                    ##
+## 'gettsbetweenevents'                                                       ##
+##                                                                            ##
+################################################################################
+
+  methods (Access = public)
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timeseries} {@var{ts} =} addevent (@var{ts}, @var{event})
+    ## @deftypefnx {timeseries} {@var{ts} =} addevent (@var{ts}, @var{name}, @var{time})
+    ##
+    ## Add events to a series.
+    ##
+    ## @code{@var{ts} = addevent (@var{ts}, @var{event})} appends the
+    ## @code{tsdata.event} object or array @var{event} to the @qcode{Events} of
+    ## the series @var{ts}, in the order given.
+    ##
+    ## @code{@var{ts} = addevent (@var{ts}, @var{name}, @var{time})} appends an
+    ## event named @var{name} at @var{time}.  @var{name} is a character vector
+    ## or a string scalar, and @var{time} a real number in the series' units,
+    ## counted from its @qcode{TimeInfo.StartDate} when it has one; for a
+    ## series with a start date @var{time} may also be a date, as text or a
+    ## @code{datetime}.  For several events, @var{name} is a cell array of
+    ## character vectors or a string array, and @var{time} a cell array, a
+    ## numeric vector or a string array of as many times.
+    ##
+    ## Events are kept in the order they are added, not sorted; an event
+    ## whose name and time match one already held is not added again, while
+    ## the same name at another time is.
+    ##
+    ## A date on a series with no start date is refused, since the series has
+    ## no calendar to place it on; MATLAB accepts it and reads the event as
+    ## time 0.  A @code{NaN} time is refused too.
+    ##
+    ## @seealso{timeseries.delevent, tsdata.event, timeseries.gettsatevent}
+    ## @end deftypefn
+    function this = addevent (this, varargin)
+      mustBeScalar (this, 'addevent');
+      scope = 'timeseries.addevent';
+      if (numel (varargin) == 1)
+        events = varargin{1};
+        if (! isa (events, 'tsdata.event'))
+          error ("%s: EVENT must be a tsdata.event object.", scope);
+        endif
+        events = events(:)';
+      elseif (numel (varargin) == 2)
+        [names, times] = varargin{:};
+        if (isText (names))
+          names = {char(names)};
+          times = {times};
+        elseif (iscellstr (names) || isa (names, 'string'))
+          names = cellstr (names);
+          if (isnumeric (times) || isa (times, 'string'))
+            times = num2cell (times);
+            if (isa (varargin{2}, 'string'))
+              times = cellfun (@char, times, 'UniformOutput', false);
+            endif
+          elseif (! iscell (times))
+            times = {times};
+          endif
+          if (numel (times) != numel (names))
+            error ("%s: NAME and TIME must hold as many events.", scope);
+          endif
+        else
+          error (strcat ("%s: NAME must be a character vector, a string or", ...
+                         " a cell array of character vectors."), scope);
+        endif
+        evs = cell (1, numel (names));
+        startDate = this.timeInfo_.StartDate;
+        for i = 1:numel (names)
+          t = times{i};
+          isDate = ischar (t) || isa (t, 'string') || isa (t, 'datetime');
+          if (isDate)
+            if (isempty (startDate))
+              error (strcat ("%s: TS has no start date to place a dated", ...
+                             " event on; set 'TimeInfo.StartDate' or use", ...
+                             " setabstime first."), scope);
+            endif
+            try
+              e = tsdata.event (names{i}, t);
+            catch err
+              error ("%s: TIME is not a date.", scope);
+            end_try_catch
+          else
+            if (! (isnumeric (t) && isreal (t) && isscalar (t) && ! isnan (t)))
+              error ("%s: TIME must be a real number or a date.", scope);
+            endif
+            e = tsdata.event (names{i}, double (t));
+            e.Units = this.timeInfo_.Units;
+            e.StartDate = startDate;
+          endif
+          evs{i} = e;
+        endfor
+        events = [evs{:}];
+      else
+        error ("%s: invalid number of input arguments.", scope);
+      endif
+      ## 'arrayfun' would call its function once with the whole array
+      if (isempty (this.timeInfo_.StartDate))
+        for i = 1:numel (events)
+          if (! isempty (events(i).StartDate))
+            error (strcat ("%s: TS has no start date to place a dated", ...
+                           " event on; set 'TimeInfo.StartDate' or use", ...
+                           " setabstime first."), scope);
+          endif
+        endfor
+      endif
+      held = this.events_;
+      for i = 1:numel (events)
+        isHeld = false;
+        for j = 1:numel (held)
+          isHeld = isHeld || sameEvent (held(j), events(i));
+        endfor
+        if (isHeld)
+          continue;
+        endif
+        if (isempty (held))
+          held = events(i);
+        else
+          held = [held, events(i)];
+        endif
+      endfor
+      this.events_ = held;
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timeseries} {@var{ts} =} delevent (@var{ts}, @var{name})
+    ## @deftypefnx {timeseries} {@var{ts} =} delevent (@var{ts}, @var{name}, @var{n})
+    ##
+    ## Remove events from a series.
+    ##
+    ## @code{@var{ts} = delevent (@var{ts}, @var{name})} removes the first event
+    ## named @var{name}, a character vector or a string scalar matched in case,
+    ## from the @qcode{Events} of the series @var{ts}; for a cell array of
+    ## names, the first event of each.
+    ##
+    ## @code{@var{ts} = delevent (@var{ts}, @var{name}, @var{n})} removes the
+    ## @var{n}th event of each name instead, counting only the events of that
+    ## name in the order they are held.
+    ##
+    ## A name no event has, or an @var{n} beyond the events of that name, is
+    ## refused; MATLAB then removes nothing, silently.
+    ##
+    ## @seealso{timeseries.addevent}
+    ## @end deftypefn
+    function this = delevent (this, varargin)
+      mustBeScalar (this, 'delevent');
+      scope = 'timeseries.delevent';
+      if (numel (varargin) < 1 || numel (varargin) > 2)
+        error ("%s: invalid number of input arguments.", scope);
+      endif
+      names = varargin{1};
+      if (isText (names))
+        names = {char(names)};
+      elseif (! (iscellstr (names) || isa (names, 'string')))
+        error (strcat ("%s: NAME must be a character vector, a string or a", ...
+                       " cell array of character vectors."), scope);
+      endif
+      names = cellstr (names);
+      n = 1;
+      if (numel (varargin) == 2)
+        n = varargin{2};
+      endif
+      drop = zeros (1, numel (names));
+      for i = 1:numel (names)
+        [drop(i), errmsg] = findEvent (this.events_, names{i}, n);
+        if (! isempty (errmsg))
+          error ("%s: %s", scope, errmsg);
+        endif
+      endfor
+      keep = true (1, numel (this.events_));
+      keep(drop) = false;
+      if (any (keep))
+        this.events_ = this.events_(keep);
+      else
+        this.events_ = [];
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timeseries} {@var{ts2} =} gettsbeforeevent (@var{ts}, @var{event})
+    ## @deftypefnx {timeseries} {@var{ts2} =} gettsbeforeevent (@var{ts}, @var{event}, @var{n})
+    ##
+    ## Return a series of the samples before the event.
+    ##
+    ## @code{@var{ts2} = gettsbeforeevent (@var{ts}, @var{event})} returns the
+    ## series @var{ts} holding only the samples whose time is strictly before
+    ## the time of @var{event}, compared exactly.  @var{event} is the name of an
+    ## event of @var{ts}, a character vector or a string scalar matched in case,
+    ## which selects the first event of that name; or a @code{tsdata.event}
+    ## object, which need not belong to @var{ts}.
+    ##
+    ## @code{@var{ts2} = gettsbeforeevent (@var{ts}, @var{event}, @var{n})} uses
+    ## the @var{n}th event named @var{event}, counting only the events of that
+    ## name in the order they are held.  For a @code{tsdata.event} object
+    ## @var{n} can only be 1.  A name no event has, or an @var{n} beyond the
+    ## events of that name, is refused; MATLAB then returns an empty series.  So
+    ## is a dated event on a series with no start date, which MATLAB reads as
+    ## time 0.
+    ##
+    ## @seealso{timeseries.gettsbeforeatevent, timeseries.gettsatevent,
+    ## timeseries.gettsafteratevent, timeseries.gettsafterevent,
+    ## timeseries.gettsbetweenevents, timeseries.addevent}
+    ## @end deftypefn
+    function this = gettsbeforeevent (this, varargin)
+      mustBeScalar (this, 'gettsbeforeevent');
+      t = eventQueryTime (this, 'gettsbeforeevent', varargin{:});
+      this = subset (this, find (this.time_ < t));
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timeseries} {@var{ts2} =} gettsbeforeatevent (@var{ts}, @var{event})
+    ## @deftypefnx {timeseries} {@var{ts2} =} gettsbeforeatevent (@var{ts}, @var{event}, @var{n})
+    ##
+    ## Return a series of the samples before and at the event.
+    ##
+    ## @code{@var{ts2} = gettsbeforeatevent (@var{ts}, @var{event})} returns the
+    ## series @var{ts} holding only the samples whose time is before or at the
+    ## time of @var{event}, compared exactly.  @var{event} is the name of an
+    ## event of @var{ts}, a character vector or a string scalar matched in case,
+    ## which selects the first event of that name; or a @code{tsdata.event}
+    ## object, which need not belong to @var{ts}.
+    ##
+    ## @code{@var{ts2} = gettsbeforeatevent (@var{ts}, @var{event}, @var{n})}
+    ## uses the @var{n}th event named @var{event}, counting only the events of
+    ## that name in the order they are held.  For a @code{tsdata.event} object
+    ## @var{n} can only be 1.  A name no event has, or an @var{n} beyond the
+    ## events of that name, is refused; MATLAB then returns an empty series.  So
+    ## is a dated event on a series with no start date, which MATLAB reads as
+    ## time 0.
+    ##
+    ## @seealso{timeseries.gettsbeforeevent, timeseries.gettsatevent,
+    ## timeseries.gettsafteratevent, timeseries.gettsafterevent,
+    ## timeseries.gettsbetweenevents, timeseries.addevent}
+    ## @end deftypefn
+    function this = gettsbeforeatevent (this, varargin)
+      mustBeScalar (this, 'gettsbeforeatevent');
+      t = eventQueryTime (this, 'gettsbeforeatevent', varargin{:});
+      this = subset (this, find (this.time_ <= t));
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timeseries} {@var{ts2} =} gettsatevent (@var{ts}, @var{event})
+    ## @deftypefnx {timeseries} {@var{ts2} =} gettsatevent (@var{ts}, @var{event}, @var{n})
+    ##
+    ## Return a series of the samples at the event.
+    ##
+    ## @code{@var{ts2} = gettsatevent (@var{ts}, @var{event})} returns the
+    ## series @var{ts} holding only the samples whose time is at the time of
+    ## @var{event}, compared exactly.  @var{event} is the name of an event of
+    ## @var{ts}, a character vector or a string scalar matched in case, which
+    ## selects the first event of that name; or a @code{tsdata.event} object,
+    ## which need not belong to @var{ts}.
+    ##
+    ## @code{@var{ts2} = gettsatevent (@var{ts}, @var{event}, @var{n})} uses the
+    ## @var{n}th event named @var{event}, counting only the events of that name
+    ## in the order they are held.  For a @code{tsdata.event} object @var{n} can
+    ## only be 1.  A name no event has, or an @var{n} beyond the events of that
+    ## name, is refused; MATLAB then returns an empty series.  So is a dated
+    ## event on a series with no start date, which MATLAB reads as time 0.
+    ##
+    ## @seealso{timeseries.gettsbeforeevent, timeseries.gettsbeforeatevent,
+    ## timeseries.gettsafteratevent, timeseries.gettsafterevent,
+    ## timeseries.gettsbetweenevents, timeseries.addevent}
+    ## @end deftypefn
+    function this = gettsatevent (this, varargin)
+      mustBeScalar (this, 'gettsatevent');
+      t = eventQueryTime (this, 'gettsatevent', varargin{:});
+      this = subset (this, find (this.time_ == t));
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timeseries} {@var{ts2} =} gettsafteratevent (@var{ts}, @var{event})
+    ## @deftypefnx {timeseries} {@var{ts2} =} gettsafteratevent (@var{ts}, @var{event}, @var{n})
+    ##
+    ## Return a series of the samples at and after the event.
+    ##
+    ## @code{@var{ts2} = gettsafteratevent (@var{ts}, @var{event})} returns the
+    ## series @var{ts} holding only the samples whose time is at or after the
+    ## time of @var{event}, compared exactly.  @var{event} is the name of an
+    ## event of @var{ts}, a character vector or a string scalar matched in case,
+    ## which selects the first event of that name; or a @code{tsdata.event}
+    ## object, which need not belong to @var{ts}.
+    ##
+    ## @code{@var{ts2} = gettsafteratevent (@var{ts}, @var{event}, @var{n})}
+    ## uses the @var{n}th event named @var{event}, counting only the events of
+    ## that name in the order they are held.  For a @code{tsdata.event} object
+    ## @var{n} can only be 1.  A name no event has, or an @var{n} beyond the
+    ## events of that name, is refused; MATLAB then returns an empty series.  So
+    ## is a dated event on a series with no start date, which MATLAB reads as
+    ## time 0.
+    ##
+    ## @seealso{timeseries.gettsbeforeevent, timeseries.gettsbeforeatevent,
+    ## timeseries.gettsatevent, timeseries.gettsafterevent,
+    ## timeseries.gettsbetweenevents, timeseries.addevent}
+    ## @end deftypefn
+    function this = gettsafteratevent (this, varargin)
+      mustBeScalar (this, 'gettsafteratevent');
+      t = eventQueryTime (this, 'gettsafteratevent', varargin{:});
+      this = subset (this, find (this.time_ >= t));
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timeseries} {@var{ts2} =} gettsafterevent (@var{ts}, @var{event})
+    ## @deftypefnx {timeseries} {@var{ts2} =} gettsafterevent (@var{ts}, @var{event}, @var{n})
+    ##
+    ## Return a series of the samples after the event.
+    ##
+    ## @code{@var{ts2} = gettsafterevent (@var{ts}, @var{event})} returns the
+    ## series @var{ts} holding only the samples whose time is strictly after the
+    ## time of @var{event}, compared exactly.  @var{event} is the name of an
+    ## event of @var{ts}, a character vector or a string scalar matched in case,
+    ## which selects the first event of that name; or a @code{tsdata.event}
+    ## object, which need not belong to @var{ts}.
+    ##
+    ## @code{@var{ts2} = gettsafterevent (@var{ts}, @var{event}, @var{n})} uses
+    ## the @var{n}th event named @var{event}, counting only the events of that
+    ## name in the order they are held.  For a @code{tsdata.event} object
+    ## @var{n} can only be 1.  A name no event has, or an @var{n} beyond the
+    ## events of that name, is refused; MATLAB then returns an empty series.  So
+    ## is a dated event on a series with no start date, which MATLAB reads as
+    ## time 0.
+    ##
+    ## @seealso{timeseries.gettsbeforeevent, timeseries.gettsbeforeatevent,
+    ## timeseries.gettsatevent, timeseries.gettsafteratevent,
+    ## timeseries.gettsbetweenevents, timeseries.addevent}
+    ## @end deftypefn
+    function this = gettsafterevent (this, varargin)
+      mustBeScalar (this, 'gettsafterevent');
+      t = eventQueryTime (this, 'gettsafterevent', varargin{:});
+      this = subset (this, find (this.time_ > t));
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timeseries} {@var{ts2} =} gettsbetweenevents (@var{ts}, @var{event1}, @var{event2})
+    ## @deftypefnx {timeseries} {@var{ts2} =} gettsbetweenevents (@var{ts}, @var{event1}, @var{event2}, @var{n1}, @var{n2})
+    ##
+    ## Return a series of the samples between two events.
+    ##
+    ## @code{@var{ts2} = gettsbetweenevents (@var{ts}, @var{event1},
+    ## @var{event2})} returns the series @var{ts} holding only the samples from
+    ## the time of @var{event1} to the time of @var{event2}, both included; none
+    ## when @var{event2} comes before @var{event1}.  Each event is a name or a
+    ## @code{tsdata.event} object, as for @code{gettsafterevent}.
+    ##
+    ## @code{@var{ts2} = gettsbetweenevents (@var{ts}, @var{event1},
+    ## @var{event2}, @var{n1}, @var{n2})} uses the @var{n1}th event named
+    ## @var{event1} and the @var{n2}th named @var{event2}; for an event given
+    ## as a @code{tsdata.event} object its number can only be 1.  Names and
+    ## numbers no event has are refused, as for @code{gettsafterevent}.
+    ##
+    ## @seealso{timeseries.gettsafterevent, timeseries.gettsbeforeevent,
+    ## timeseries.addevent}
+    ## @end deftypefn
+    function this = gettsbetweenevents (this, varargin)
+      mustBeScalar (this, 'gettsbetweenevents');
+      scope = 'gettsbetweenevents';
+      if (numel (varargin) == 2)
+        t1 = eventQueryTime (this, scope, varargin{1});
+        t2 = eventQueryTime (this, scope, varargin{2});
+      elseif (numel (varargin) == 4)
+        t1 = eventQueryTime (this, scope, varargin{1}, varargin{3});
+        t2 = eventQueryTime (this, scope, varargin{2}, varargin{4});
+      else
+        error ("timeseries.%s: invalid number of input arguments.", scope);
+      endif
+      this = subset (this, find (this.time_ >= t1 & this.time_ <= t2));
+    endfunction
+
+  endmethods
+
   methods (Access = private)
 
     ## The series holding only the samples IDX, in that order, with every
@@ -1490,6 +1868,57 @@ classdef timeseries
         this.quality_ = takeSamples (this.quality_, idx, this.timeDim_);
       endif
       this.timeInfo_.TimeVector = this.time_;
+    endfunction
+
+    ## The time, in this series' units, of the event a query names: EVENT is
+    ## a name, with the occurrence N among the events of that name, or a
+    ## tsdata.event object.  Errors are raised under 'timeseries.METHOD'.
+    function t = eventQueryTime (this, method, varargin)
+      scope = ['timeseries.', method];
+      if (numel (varargin) < 1 || numel (varargin) > 2)
+        error ("%s: invalid number of input arguments.", scope);
+      endif
+      event = varargin{1};
+      if (isa (event, 'tsdata.event') && isscalar (event))
+        ## An object is one event, so its only occurrence is the first
+        if (numel (varargin) == 2 && ! isequal (varargin{2}, 1))
+          error ("%s: N must be 1 for a tsdata.event object.", scope);
+        endif
+        e = event;
+      elseif (isText (event))
+        n = 1;
+        if (numel (varargin) == 2)
+          n = varargin{2};
+        endif
+        [k, errmsg] = findEvent (this.events_, char (event), n);
+        if (! isempty (errmsg))
+          error ("%s: %s", scope, errmsg);
+        endif
+        e = this.events_(k);
+      else
+        error (strcat ("%s: EVENT must be an event name or a tsdata.event", ...
+                       " object."), scope);
+      endif
+      startDate = this.timeInfo_.StartDate;
+      eUnits = e.Units;
+      if (isempty (eUnits))
+        eUnits = this.timeInfo_.Units;
+      endif
+      ns = e.Time * nsPerUnit (eUnits);
+      if (! isempty (e.StartDate))
+        if (isempty (startDate))
+          error (strcat ("%s: TS has no start date to place the dated", ...
+                         " event '%s' on."), scope, e.Name);
+        endif
+        [off, ~] = dateOffsets ([datevec(startDate); datevec(e.StartDate)]);
+        ## 'dateOffsets' counts from the earlier of the two
+        if (off(1) == 0)
+          ns += off(2);
+        else
+          ns -= off(1);
+        endif
+      endif
+      t = ns / nsPerUnit (this.timeInfo_.Units);
     endfunction
 
     ## Convert user times X to times of this series.  Numbers are relative
@@ -1751,6 +2180,36 @@ endfunction
 function tf = isText (x)
   tf = (ischar (x) && (isrow (x) || isempty (x))) ...
        || (isa (x, 'string') && isscalar (x));
+endfunction
+
+## Find the Nth event named NAME in EVENTS, counting only those of that name.
+## Returns its index and an empty ERRMSG, or the body of the message the
+## caller raises.
+function [k, errmsg] = findEvent (events, name, n)
+  k = 0;
+  errmsg = '';
+  if (isempty (events))
+    errmsg = "TS has no events.";
+    return;
+  endif
+  if (! (isnumeric (n) && isreal (n) && isscalar (n) && n == fix (n) && n >= 1))
+    errmsg = "N must be a positive integer.";
+    return;
+  endif
+  idx = find (strcmp ({events.Name}, name));
+  if (isempty (idx))
+    errmsg = sprintf ("TS has no event named '%s'.", name);
+  elseif (n > numel (idx))
+    errmsg = sprintf ("TS has no event number %d named '%s'.", n, name);
+  else
+    k = idx(n);
+  endif
+endfunction
+
+## True when events A and B have the same name and the same time.
+function tf = sameEvent (a, b)
+  tf = strcmp (a.Name, b.Name) && a.Time == b.Time ...
+       && strcmp (a.Units, b.Units) && strcmp (a.StartDate, b.StartDate);
 endfunction
 
 ## Raise unless OBJ is a single series.

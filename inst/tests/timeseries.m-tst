@@ -1443,6 +1443,302 @@
 %! setuniformtime ([I, I], 'Interval', 2)
 
 ################################################################################
+##                              ** Events **                                  ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'addevent'         'delevent'         'gettsbeforeevent'                   ##
+## 'gettsbeforeatevent'                  'gettsatevent'                       ##
+## 'gettsafteratevent'                   'gettsafterevent'                    ##
+## 'gettsbetweenevents'                                                       ##
+##                                                                            ##
+################################################################################
+
+%!shared T, EA, AbE
+%! T = timeseries ((10:10:50)', (0:4)', (1:5)', 'Name', 't');
+%! T.DataInfo.Units = 'volts';
+%! EA = addevent (addevent (addevent (T, 'a', 1), 'b', 2), 'a', 3);
+%! AbE = timeseries ([1; 2; 3; 4], {'01-Jan-2024', '02-Jan-2024', ...
+%!                                  '03-Jan-2024', '04-Jan-2024'});
+
+%!test
+%! ts = addevent (T, 'x', 2);
+%! assert_equal (ts.Events.Name, 'x');
+%! assert_equal (ts.Events.Time, 2);
+%! assert_equal (ts.Events.Units, 'seconds');
+%! assert_equal (ts.Events.StartDate, '');
+%! assert_equal (ts.Data, T.Data);
+%!test
+%! ts = addevent (T, tsdata.event ('obj', 2));
+%! assert_equal (ts.Events.Name, 'obj');
+%!test
+%! ts = addevent (T, [tsdata.event('p', 3), tsdata.event('q', 1)]);
+%! assert_equal ({ts.Events.Name}, {'p', 'q'});
+%!test
+%! ts = addevent (T, {'p', 'q'}, {3, 1});
+%! assert_equal ({ts.Events.Name}, {'p', 'q'});
+%! assert_equal ([ts.Events.Time], [3, 1]);
+%!test
+%! ts = addevent (T, {'p'; 'q'}, {3; 1});
+%! assert_equal ([ts.Events.Time], [3, 1]);
+%!test
+%! ts = addevent (T, {'p', 'q'}, [3, 1]);
+%! assert_equal ([ts.Events.Time], [3, 1]);
+%!test
+%! ts = addevent (T, string ({'p', 'q'}), {3, 1});
+%! assert_equal ({ts.Events.Name}, {'p', 'q'});
+%!test
+%! ts = addevent (T, string ('x'), 2);
+%! assert_equal (ts.Events.Name, 'x');
+%!test
+%! ts = addevent (T, '', 2);
+%! assert_equal (ts.Events.Name, '');
+%!test
+%! ts = addevent (T, 'x', int8 (2));
+%! assert_equal (ts.Events.Time, 2);
+## Test events are appended in the order given, never sorted
+%!test
+%! ts = addevent (EA, 'a', 0.5);
+%! assert_equal ([ts.Events.Time], [1, 2, 3, 0.5]);
+## Test an event matching one held is not added again
+%!test
+%! ts = addevent (addevent (T, 'dup', 1), 'dup', 1);
+%! assert_equal (numel (ts.Events), 1);
+%!test
+%! ts = addevent (addevent (T, 'dup', 1), 'dup', 2);
+%! assert_equal ([ts.Events.Time], [1, 2]);
+%!test
+%! ts = addevent (T, 'x', 10);
+%! assert_equal (ts.Events.Time, 10);
+## Test a number is in the series' units and from its start date
+%!test
+%! ts = T;
+%! ts.TimeInfo.Units = 'minutes';
+%! ts = addevent (ts, 'x', 2);
+%! assert_equal (ts.Events.Units, 'minutes');
+%!test
+%! ts = addevent (AbE, 'x', 1);
+%! assert_equal (ts.Events.Time, 1);
+%! assert_equal (ts.Events.Units, 'days');
+%! assert_equal (ts.Events.StartDate, '01-Jan-2024 00:00:00');
+## Test a date on a series with a start date
+%!test
+%! ts = addevent (AbE, 'x', '02-Jan-2024');
+%! assert_equal (ts.Events.Time, 0);
+%! assert_equal (ts.Events.Units, 'days');
+%! assert_equal (ts.Events.StartDate, '02-Jan-2024 00:00:00');
+%!test
+%! ts = addevent (AbE, 'x', datetime (2024, 1, 2, 12, 0, 0));
+%! assert_equal (ts.Events.StartDate, '02-Jan-2024 12:00:00');
+%!test
+%! ts = addevent (AbE, {'p', 'q'}, string ({'02-Jan-2024', '03-Jan-2024'}));
+%! assert_equal ({ts.Events.StartDate}, {'02-Jan-2024 00:00:00', ...
+%!                                       '03-Jan-2024 00:00:00'});
+%!test
+%! e = tsdata.event ('m', 1);
+%! e.Units = 'minutes';
+%! ts = addevent (T, e);
+%! assert_equal (ts.Events.Units, 'minutes');
+%!error <timeseries.addevent: invalid number of input arguments.> addevent (T)
+%!error <timeseries.addevent: invalid number of input arguments.> ...
+%! addevent (T, 'x', 1, 2)
+%!error <timeseries.addevent: EVENT must be a tsdata.event object.> ...
+%! addevent (T, 'x')
+%!error <timeseries.addevent: EVENT must be a tsdata.event object.> ...
+%! addevent (T, 5)
+%!error <timeseries.addevent: NAME must be a character vector, a string or a cell array of character vectors.> ...
+%! addevent (T, 5, 1)
+%!error <timeseries.addevent: NAME must be a character vector, a string or a cell array of character vectors.> ...
+%! addevent (T, tsdata.event ('x', 2), 5)
+%!error <timeseries.addevent: NAME and TIME must hold as many events.> ...
+%! addevent (T, {'p', 'q'}, {3})
+%!error <timeseries.addevent: TIME must be a real number or a date.> ...
+%! addevent (T, 'x', [1, 2])
+%!error <timeseries.addevent: TIME must be a real number or a date.> ...
+%! addevent (T, 'x', true)
+%!error <timeseries.addevent: TIME must be a real number or a date.> ...
+%! addevent (T, 'x', NaN)
+%!error <timeseries.addevent: TIME is not a date.> ...
+%! addevent (AbE, 'x', 'bogus')
+## Test a date on a series without a start date, which MATLAB reads as time 0
+%!error <timeseries.addevent: TS has no start date to place a dated event on; set 'TimeInfo.StartDate' or use setabstime first.> ...
+%! addevent (T, 'x', '02-Jan-2024')
+%!error <timeseries.addevent: TS has no start date to place a dated event on; set 'TimeInfo.StartDate' or use setabstime first.> ...
+%! addevent (T, tsdata.event ('x', '02-Jan-2024'))
+%!error <timeseries.addevent: TS must be a single series.> addevent ([T, T], 'x', 1)
+
+%!test
+%! ts = delevent (addevent (addevent (T, 'dup', 1), 'dup', 3), 'dup');
+%! assert_equal (ts.Events.Time, 3);
+%!test
+%! ts = delevent (addevent (addevent (T, 'dup', 1), 'dup', 3), 'dup', 2);
+%! assert_equal (ts.Events.Time, 1);
+%!test
+%! ts = delevent (EA, 'a', 2);
+%! assert_equal ([ts.Events.Time], [1, 2]);
+%!test
+%! ts = delevent (EA, {'a', 'b'});
+%! assert_equal (ts.Events.Time, 3);
+%!test
+%! ts = delevent (EA, string ('b'));
+%! assert_equal ({ts.Events.Name}, {'a', 'a'});
+%!test
+%! ts = delevent (addevent (T, 'k', 1), 'k');
+%! assert_equal (ts.Events, []);
+%!test
+%! ts = delevent (EA, 'a');
+%! assert_equal (ts.Data, T.Data);
+%! assert_equal (ts.Name, 't');
+%!error <timeseries.delevent: invalid number of input arguments.> delevent (EA)
+%!error <timeseries.delevent: invalid number of input arguments.> ...
+%! delevent (EA, 'a', 1, 2)
+%!error <timeseries.delevent: TS has no events.> delevent (T, 'a')
+## Test names and occurrences no event has, which MATLAB ignores
+%!error <timeseries.delevent: TS has no event named 'zz'.> delevent (EA, 'zz')
+%!error <timeseries.delevent: TS has no event named 'A'.> delevent (EA, 'A')
+%!error <timeseries.delevent: TS has no event number 3 named 'a'.> ...
+%! delevent (EA, 'a', 3)
+%!error <timeseries.delevent: TS has no event number 2 named 'b'.> ...
+%! delevent (EA, {'a', 'b'}, 2)
+%!error <timeseries.delevent: N must be a positive integer.> ...
+%! delevent (EA, 'a', 0)
+%!error <timeseries.delevent: N must be a positive integer.> ...
+%! delevent (EA, 'a', 1.5)
+%!error <timeseries.delevent: N must be a positive integer.> ...
+%! delevent (EA, 'a', [1, 2])
+%!error <timeseries.delevent: NAME must be a character vector, a string or a cell array of character vectors.> ...
+%! delevent (EA, 5)
+%!error <timeseries.delevent: NAME must be a character vector, a string or a cell array of character vectors.> ...
+%! delevent (EA, tsdata.event ('a', 1))
+%!error <timeseries.delevent: TS must be a single series.> delevent ([EA, EA], 'a')
+
+%!assert_equal (gettsbeforeevent (EA, 'a').Time, 0)
+%!assert_equal (gettsbeforeevent (EA, 'a', 2).Time, [0; 1; 2])
+%!test
+%! ts = gettsbeforeevent (EA, 'a');
+%! assert_equal (ts.Data, 10);
+%! assert_equal (ts.Quality, 1);
+%! assert_equal (ts.Name, 't');
+%! assert_equal (ts.DataInfo.Units, 'volts');
+%! assert_equal (numel (ts.Events), 3);
+%!assert_equal (gettsbeforeevent (addevent (T, 'far', 10), 'far').Time, ...
+%!              (0:4)')
+%!error <timeseries.gettsbeforeevent: TS has no event named 'zz'.> ...
+%! gettsbeforeevent (EA, 'zz')
+%!error <timeseries.gettsbeforeevent: TS must be a single series.> ...
+%! gettsbeforeevent ([EA, EA], 'a')
+
+%!assert_equal (gettsbeforeatevent (EA, 'a').Time, [0; 1])
+%!assert_equal (gettsbeforeatevent (EA, 'a', 2).Time, [0; 1; 2; 3])
+%!error <timeseries.gettsbeforeatevent: TS has no event named 'zz'.> ...
+%! gettsbeforeatevent (EA, 'zz')
+%!error <timeseries.gettsbeforeatevent: TS must be a single series.> ...
+%! gettsbeforeatevent ([EA, EA], 'a')
+
+%!assert_equal (gettsatevent (EA, 'a').Time, 1)
+%!assert_equal (gettsatevent (EA, 'a', 2).Time, 3)
+%!assert_equal (gettsatevent (EA, string ('b')).Time, 2)
+## Test an event between samples meets none, and repeated times all meet it
+%!test
+%! ts = gettsatevent (addevent (T, 'h', 2.5), 'h');
+%! assert_equal (ts.Length, 0);
+%! assert_equal (ts.Name, 't');
+%! assert_equal (ts.Events.Name, 'h');
+%!assert_equal (gettsatevent (addevent (timeseries ([1; 2; 3], [0; 1; 1]), ...
+%!                                     'd', 1), 'd').Data, [2; 3])
+%!assert_equal (gettsatevent (addevent (AbE, 'x', '02-Jan-2024'), 'x').Data, 2)
+%!assert_equal (gettsatevent (addevent (AbE, 'x', 1), 'x').Data, 2)
+%!assert_equal (gettsatevent (addevent (AbE, 'x', ...
+%!                                     '02-Jan-2024 12:00:00'), 'x').Length, 0)
+%!error <timeseries.gettsatevent: TS has no event named 'zz'.> ...
+%! gettsatevent (EA, 'zz')
+%!error <timeseries.gettsatevent: TS must be a single series.> ...
+%! gettsatevent ([EA, EA], 'a')
+
+%!assert_equal (gettsafteratevent (EA, 'a').Time, [1; 2; 3; 4])
+%!assert_equal (gettsafteratevent (EA, 'a', 2).Time, [3; 4])
+%!error <timeseries.gettsafteratevent: TS has no event named 'zz'.> ...
+%! gettsafteratevent (EA, 'zz')
+%!error <timeseries.gettsafteratevent: TS must be a single series.> ...
+%! gettsafteratevent ([EA, EA], 'a')
+
+%!assert_equal (gettsafterevent (EA, 'a').Time, [2; 3; 4])
+%!assert_equal (gettsafterevent (EA, 'a', 2).Time, 4)
+%!assert_equal (gettsafterevent (addevent (T, 'h', 2.5), 'h').Time, [3; 4])
+%!assert_equal (gettsafterevent (addevent (T, 'far', 10), 'far').Length, 0)
+## Test an event object, which need not belong to the series
+%!assert_equal (gettsafterevent (EA, tsdata.event ('obj', 2)).Time, [3; 4])
+%!assert_equal (gettsafterevent (T, tsdata.event ('obj', 2)).Time, [3; 4])
+%!assert_equal (gettsafterevent (T, tsdata.event ('obj', 2), 1).Time, [3; 4])
+## Test the event's time is converted to the series' units and start date
+%!test
+%! e = tsdata.event ('m', 1);
+%! e.Units = 'minutes';
+%! assert_equal (gettsafterevent (T, e).Length, 0);
+%! assert_equal (gettsafterevent (addevent (T, e), 'm').Length, 0);
+%!test
+%! h = timeseries ([1; 2; 3], [0; 1; 2]);
+%! h.TimeInfo.Units = 'hours';
+%! assert_equal (gettsafterevent (h, tsdata.event ('s', 3600)).Time, 2);
+%! assert_equal (gettsafterevent (addevent (h, 'n', 1), 'n').Time, 2);
+%!assert_equal (gettsafterevent (AbE, tsdata.event ('y', 1)).Time, [1; 2; 3])
+%!test
+%! ts = addevent (AbE, 'x', '02-Jan-2024 12:00:00');
+%! assert_equal (gettsafterevent (ts, 'x').Data, [3; 4]);
+%!error <timeseries.gettsafterevent: TS has no events.> gettsafterevent (T, 'a')
+## Test names and occurrences no event has, where MATLAB returns an empty series
+%!error <timeseries.gettsafterevent: TS has no event named 'zz'.> ...
+%! gettsafterevent (EA, 'zz')
+%!error <timeseries.gettsafterevent: TS has no event named 'A'.> ...
+%! gettsafterevent (EA, 'A')
+%!error <timeseries.gettsafterevent: TS has no event number 2 named 'b'.> ...
+%! gettsafterevent (EA, 'b', 2)
+%!error <timeseries.gettsafterevent: TS has no event number 3 named 'a'.> ...
+%! gettsafterevent (EA, 'a', 3)
+%!error <timeseries.gettsafterevent: N must be a positive integer.> ...
+%! gettsafterevent (EA, 'a', 0)
+%!error <timeseries.gettsafterevent: N must be a positive integer.> ...
+%! gettsafterevent (EA, 'a', 1.5)
+%!error <timeseries.gettsafterevent: N must be 1 for a tsdata.event object.> ...
+%! gettsafterevent (EA, tsdata.event ('obj', 2), 2)
+%!error <timeseries.gettsafterevent: EVENT must be an event name or a tsdata.event object.> ...
+%! gettsafterevent (EA, 2)
+%!error <timeseries.gettsafterevent: EVENT must be an event name or a tsdata.event object.> ...
+%! gettsafterevent (EA, {'a'})
+%!error <timeseries.gettsafterevent: invalid number of input arguments.> ...
+%! gettsafterevent (EA)
+%!error <timeseries.gettsafterevent: invalid number of input arguments.> ...
+%! gettsafterevent (EA, 'a', 1, 2)
+## Test a dated event on a series without a start date, which MATLAB reads as 0
+%!error <timeseries.gettsafterevent: TS has no start date to place the dated event 'x' on.> ...
+%! gettsafterevent (T, tsdata.event ('x', '02-Jan-2024'))
+%!error <timeseries.gettsafterevent: TS must be a single series.> ...
+%! gettsafterevent ([EA, EA], 'a')
+
+%!assert_equal (gettsbetweenevents (EA, 'a', 'b').Time, [1; 2])
+%!assert_equal (gettsbetweenevents (EA, 'a', 'a').Time, 1)
+%!assert_equal (gettsbetweenevents (EA, 'a', 'a', 1, 2).Time, [1; 2; 3])
+%!assert_equal (gettsbetweenevents (EA, 'b', 'a', 1, 2).Time, [2; 3])
+%!assert_equal (gettsbetweenevents (EA, tsdata.event ('o', 2), 'a', ...
+%!                                 1, 2).Time, [2; 3])
+## Test the second event before the first gives no samples
+%!test
+%! ts = gettsbetweenevents (EA, 'b', 'a');
+%! assert_equal (ts.Length, 0);
+%! assert_equal (ts.Name, 't');
+%!assert_equal (gettsbetweenevents (EA, 'a', 'b', 2, 1).Length, 0)
+%!error <timeseries.gettsbetweenevents: invalid number of input arguments.> ...
+%! gettsbetweenevents (EA, 'a')
+%!error <timeseries.gettsbetweenevents: invalid number of input arguments.> ...
+%! gettsbetweenevents (EA, 'a', 'b', 2)
+%!error <timeseries.gettsbetweenevents: invalid number of input arguments.> ...
+%! gettsbetweenevents (EA, 'a', 'b', 1, 1, 1)
+%!error <timeseries.gettsbetweenevents: TS has no event named 'zz'.> ...
+%! gettsbetweenevents (EA, 'a', 'zz')
+%!error <timeseries.gettsbetweenevents: TS must be a single series.> ...
+%! gettsbetweenevents ([EA, EA], 'a', 'b')
+
+################################################################################
 ##                        ** 'timeseries' properties **                       ##
 ################################################################################
 
