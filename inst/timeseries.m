@@ -2688,6 +2688,221 @@ classdef timeseries
 
   endmethods
 
+################################################################################
+##                       ** Filtering and detrending **                       ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'detrend'          'filter'           'idealfilter'                        ##
+##                                                                            ##
+################################################################################
+
+  methods (Access = public)
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timeseries} {@var{ts} =} detrend (@var{ts}, @var{type})
+    ## @deftypefnx {timeseries} {@var{ts} =} detrend (@var{ts}, @var{type}, @var{ind})
+    ##
+    ## Remove a polynomial trend from a series.
+    ##
+    ## @code{@var{ts} = detrend (@var{ts}, @var{type})} subtracts from each
+    ## column of the data the polynomial fitted to it by least squares against
+    ## @qcode{Time}: its mean for @qcode{'constant'} or 0, a straight line for
+    ## @qcode{'linear'} or 1, and a polynomial of that degree for any larger
+    ## integer.  @code{NaN} values are left out of the fit and stay @code{NaN}.
+    ## Every other property is kept.
+    ##
+    ## @code{@var{ts} = detrend (@var{ts}, @var{type}, @var{ind})} detrends
+    ## only the columns @var{ind} of the data, or its rows where
+    ## @qcode{IsTimeFirst} is @code{false}.
+    ##
+    ## The data must be @code{double} or @code{single}, of two dimensions.
+    ## MATLAB fits against the positions of the samples, closing up the gaps
+    ## left by @code{NaN}, so its line is wrong where the time is not uniform
+    ## or a value is missing; it also returns a series of fewer than three
+    ## samples unchanged, where here @qcode{'constant'} of @code{[1 3]} is
+    ## @code{[-1 1]}.
+    ##
+    ## @seealso{timeseries.filter, timeseries.idealfilter}
+    ## @end deftypefn
+    function this = detrend (this, type, ind)
+      mustBeScalar (this, 'detrend');
+      if (nargin < 2)
+        error ("timeseries.detrend: invalid number of input arguments.");
+      endif
+      if (isText (type) && any (strcmpi (type, {'constant', 'linear'})))
+        p = double (strcmpi (type, 'linear'));
+      elseif (isnumeric (type) && isreal (type) && isscalar (type)
+              && type >= 0 && type == fix (type))
+        p = double (type);
+      else
+        error (strcat ("timeseries.detrend: TYPE must be 'constant',", ...
+                       " 'linear' or a polynomial degree."));
+      endif
+      if (nargin < 3)
+        [X, cols] = signalData (this, 'detrend', true);
+      else
+        [X, cols] = signalData (this, 'detrend', true, ind);
+      endif
+      t = this.time_;
+      for j = cols(:)'
+        ok = ! isnan (X(:,j));
+        if (! any (ok))
+          continue;
+        endif
+        x = X(ok,j) - mean (X(ok,j));
+        if (p > 0)
+          mu = mean (t(ok));
+          sc = max (abs (t(ok) - mu));
+          if (sc == 0)
+            sc = 1;
+          endif
+          V = ((t(ok) - mu) / sc) .^ (0:p);
+          x -= V * (V \ x);
+        endif
+        X(ok,j) = x;
+      endfor
+      this.data_ = signalBack (this, X);
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timeseries} {@var{ts} =} filter (@var{ts}, @var{b}, @var{a})
+    ## @deftypefnx {timeseries} {@var{ts} =} filter (@var{ts}, @var{b}, @var{a}, @var{ind})
+    ##
+    ## Filter a series.
+    ##
+    ## @code{@var{ts} = filter (@var{ts}, @var{b}, @var{a})} runs each column
+    ## of the data through the filter of numerator coefficients @var{b} and
+    ## denominator coefficients @var{a}, as @code{filter (@var{b}, @var{a},
+    ## @var{x})} does, along time from a zero initial state.  @code{NaN}
+    ## values are first filled by the interpolation method of the series, so
+    ## the data must not begin or end with one.  Every other property is
+    ## kept.
+    ##
+    ## @code{@var{ts} = filter (@var{ts}, @var{b}, @var{a}, @var{ind})}
+    ## filters only the columns @var{ind} of the data, or its rows where
+    ## @qcode{IsTimeFirst} is @code{false}.
+    ##
+    ## The data must be @code{double} or @code{single}, and the times
+    ## uniformly spaced.  MATLAB filters data of three dimensions across its
+    ## rows when @var{ind} is not given, and filters a series with irregular
+    ## times as if they were uniform, though its documentation requires them
+    ## to be.
+    ##
+    ## @seealso{timeseries.idealfilter, timeseries.detrend}
+    ## @end deftypefn
+    function this = filter (this, b, a, ind)
+      mustBeScalar (this, 'filter');
+      if (nargin < 3)
+        error ("timeseries.filter: invalid number of input arguments.");
+      endif
+      if (! (isnumeric (b) && isvector (b) && isnumeric (a) && isvector (a)))
+        error ("timeseries.filter: B and A must be numeric vectors.");
+      endif
+      if (nargin < 4)
+        [X, cols] = signalData (this, 'filter', false);
+      else
+        [X, cols] = signalData (this, 'filter', false, ind);
+      endif
+      if (! isUniform (this.time_))
+        error ("timeseries.filter: the times of TS must be uniformly spaced.");
+      endif
+      [X, errmsg] = fillGaps (this, X, cols);
+      if (! isempty (errmsg))
+        error ("timeseries.filter: %s", errmsg);
+      endif
+      if (! isempty (X) && ! isempty (cols))
+        X(:,cols) = filter (b, a, X(:,cols), [], 1);
+      endif
+      this.data_ = signalBack (this, X);
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {timeseries} {@var{ts} =} idealfilter (@var{ts}, @var{intervals}, @var{type})
+    ## @deftypefnx {timeseries} {@var{ts} =} idealfilter (@var{ts}, @var{intervals}, @var{type}, @var{ind})
+    ##
+    ## Filter a series with an ideal filter.
+    ##
+    ## @code{@var{ts} = idealfilter (@var{ts}, @var{intervals}, @var{type})}
+    ## removes the mean of each column of the data, then keeps the frequencies
+    ## in @var{intervals} (@var{type} @qcode{'pass'}) or removes them
+    ## (@qcode{'notch'}) through the discrete Fourier transform.  The mean is
+    ## not added back.  @var{intervals} holds one frequency interval per row,
+    ## @code{[@var{lo}, @var{hi}]}, in cycles per unit of
+    ## @qcode{TimeInfo.Units}; a frequency @var{f} is in it when
+    ## @code{@var{lo} < @var{f} <= @var{hi}}.  @code{NaN} values are first
+    ## filled by the interpolation method of the series, so the data must not
+    ## begin or end with one.  A series with irregular times is resampled
+    ## first, by its interpolation method, onto as many uniformly spaced times
+    ## from its first time to its last, which it keeps.  Every other property
+    ## is kept.
+    ##
+    ## @code{@var{ts} = idealfilter (@var{ts}, @var{intervals}, @var{type},
+    ## @var{ind})} filters only the columns @var{ind} of the data, or its rows
+    ## where @qcode{IsTimeFirst} is @code{false}.
+    ##
+    ## The data must be @code{double} or @code{single}, of two dimensions.
+    ## MATLAB returns complex @code{NaN} throughout for data that begins or
+    ## ends with @code{NaN}, keeps the mean of a series of fewer than three
+    ## samples, and reads only the first and last columns of
+    ## @var{intervals}.
+    ##
+    ## @seealso{timeseries.filter, timeseries.detrend}
+    ## @end deftypefn
+    function this = idealfilter (this, intervals, type, ind)
+      mustBeScalar (this, 'idealfilter');
+      if (nargin < 3)
+        error ("timeseries.idealfilter: invalid number of input arguments.");
+      endif
+      if (! (isnumeric (intervals) && isreal (intervals)
+             && ismatrix (intervals) && columns (intervals) == 2
+             && rows (intervals) >= 1 && ! any (isnan (intervals(:)))))
+        error (strcat ("timeseries.idealfilter: INTERVALS must be a", ...
+                       " numeric matrix of two columns, one interval", ...
+                       " per row."));
+      endif
+      if (! (isText (type) && any (strcmp (type, {'pass', 'notch'}))))
+        error ("timeseries.idealfilter: TYPE must be 'pass' or 'notch'.");
+      endif
+      if (nargin < 4)
+        [X, cols] = signalData (this, 'idealfilter', true);
+      else
+        [X, cols] = signalData (this, 'idealfilter', true, ind);
+      endif
+      [X, errmsg] = fillGaps (this, X, cols);
+      if (! isempty (errmsg))
+        error ("timeseries.idealfilter: %s", errmsg);
+      endif
+      n = numel (this.time_);
+      if (n == 0 || isempty (cols))
+        return;
+      endif
+      if (! isUniform (this.time_))
+        this.data_ = signalBack (this, X);
+        t = linspace (this.time_(1), this.time_(end), n)';
+        this = resampleAt (this, t, [], []);
+        X = signalData (this, 'idealfilter', true);
+      endif
+      t = this.time_;
+      dt = 1;
+      if (n > 1)
+        dt = (t(end) - t(1)) / (n - 1);
+      endif
+      k = (0:n-1)';
+      f = min (k, n - k) / (n * dt);
+      lo = double (min (intervals, [], 2))';
+      hi = double (max (intervals, [], 2))';
+      keep = any (lo < f & f <= hi, 2);
+      if (strcmp (type, 'notch'))
+        keep = ! keep;
+      endif
+      Y = X(:,cols) - mean (X(:,cols), 1);
+      X(:,cols) = real (ifft (fft (Y, [], 1) .* keep, [], 1));
+      this.data_ = signalBack (this, X);
+    endfunction
+
+  endmethods
+
   methods (Access = private)
 
     ## The series holding only the samples IDX, in that order, with every
@@ -3062,6 +3277,94 @@ classdef timeseries
         error ("%s: %s", scope, errmsg);
       endif
       ts.data_ = data;
+    endfunction
+
+    ## The data of the series as a double matrix, time first and one column
+    ## per data element, and the columns the optional IND selects, all when
+    ## it is not given.  Errors are raised under 'timeseries.METHOD'; with
+    ## TWODIMS, data of more than two dimensions is refused.
+    function [X, cols] = signalData (this, method, twoDims, varargin)
+      scope = ['timeseries.', method];
+      data = this.data_;
+      if (! isfloat (data) || iscomplex (data))
+        error ("%s: the data must be real, of class double or single.", ...
+               scope);
+      endif
+      if (twoDims && ndims (data) > 2)
+        error ("%s: the data must have two dimensions.", scope);
+      endif
+      n = numel (this.time_);
+      td = this.timeDim_;
+      ss = sampleSize (data, td);
+      if (td > 1)
+        data = permute (data, [td, 1:td-1]);
+      endif
+      X = double (reshape (data, n, []));
+      if (td == 1)
+        nc = size (this.data_, 2);
+        what = 'columns';
+      else
+        nc = ss(1);
+        what = 'rows';
+      endif
+      if (isempty (varargin))
+        cols = 1:columns (X);
+        return;
+      endif
+      ind = varargin{1};
+      if (! (isnumeric (ind) && isreal (ind)
+             && (isvector (ind) || isempty (ind))
+             && all (ind == fix (ind) & ind >= 1 & ind <= nc)))
+        error (strcat ("%s: IND must be positive integers not exceeding", ...
+                       " the number of %s of the data."), scope, what);
+      endif
+      if (td == 1)
+        cols = unique (double (ind(:)))';
+      else
+        mask = false ([ss, 1]);
+        mask(ind,:) = true;
+        cols = find (mask(:))';
+      endif
+    endfunction
+
+    ## The data of the series from X, a matrix laid out as 'signalData'
+    ## returns it, in the class and layout of the data.
+    function data = signalBack (this, X)
+      td = this.timeDim_;
+      n = numel (this.time_);
+      if (td == 1)
+        data = X;
+      else
+        ss = sampleSize (this.data_, td);
+        data = permute (reshape (X, [n, ss]), [2:td, 1]);
+      endif
+      data = cast (data, class (this.data_));
+    endfunction
+
+    ## The columns COLS of X, laid out as 'signalData' returns it, with each
+    ## NaN filled by the interpolation method of the series.  A column that
+    ## begins or ends with NaN gives the rest of an error message in ERRMSG.
+    function [X, errmsg] = fillGaps (this, X, cols)
+      errmsg = '';
+      if (isempty (X))
+        return;
+      endif
+      ip = this.dataInfo_.Interpolation;
+      if (isempty (ip.Fhandle))
+        ip = tsdata.interpolation ('linear');
+      endif
+      t = this.time_;
+      for j = cols(:)'
+        gap = isnan (X(:,j));
+        if (! any (gap))
+          continue;
+        endif
+        if (gap(1) || gap(end))
+          errmsg = "the data must not begin or end with NaN.";
+          return;
+        endif
+        X(gap,j) = ip.Fhandle (t(gap), t(! gap), X(! gap,j));
+      endfor
     endfunction
 
     ## Convert user times X to times of this series.  Numbers are relative
@@ -3574,6 +3877,13 @@ function tf = sameSeries (a, b, equalNans)
 endfunction
 
 ## Raise unless OBJ is a single series.
+## True when the times T are uniformly spaced: a single step, positive, up to
+## rounding.  No time or one time counts as uniform.
+function tf = isUniform (t)
+  d = diff (t(:));
+  tf = isempty (d) || (all (d > 0) && max (d) - min (d) <= 1e-10 * max (d));
+endfunction
+
 function mustBeScalar (obj, method)
   if (! isscalar (obj))
     error ("timeseries.%s: TS must be a single series.", method);

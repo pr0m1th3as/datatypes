@@ -2413,6 +2413,293 @@
 %!assert_equal (isequalwithequalnans (XA, XB), false)
 
 ################################################################################
+##                       ** Filtering and detrending **                       ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'detrend'          'filter'           'idealfilter'                        ##
+##                                                                            ##
+################################################################################
+
+%!shared t, x1, FA, FN, FZ, FB3, FU, FD
+%! t = (0:15)';
+%! x1 = 5 + sin (2 * pi * t / 8) + 0.5 * cos (2 * pi * t / 4) + 0.25 * t;
+%! FA = timeseries ([x1, 2 * x1 + 3], t, 'Name', 'sig');
+%! FA.DataInfo.Units = 'volts';
+%! FA.Quality = mod (t, 3);
+%! FA = addevent (FA, 'ev', 3);
+%! FA = setinterpmethod (FA, 'zoh');
+%! FA.UserData = 42;
+%! FN = timeseries ([1; 2; NaN; 4; 5; 6], (0:5)');
+%! FZ = setinterpmethod (FN, 'zoh');
+%! FB3 = timeseries (reshape ([x1(1:8), -x1(1:8)]', 2, 1, 8), (0:7)');
+%! FU = timeseries ([1; 3; 10; 15; 17; 25], [0; 1; 3; 7; 8; 12], (1:6)');
+%! FU = addevent (FU, 'ev', 3);
+%! FD = timeseries ([1; 5; 3; 4], [0; 1; 1; 2]);
+
+%!test
+%! ts = detrend (FA, 'linear');
+%! assert_equal (ts.Data(:,1), x1 - polyval (polyfit (t, x1, 1), t), 1e-13);
+%! assert_equal (ts.Data(:,2), 2 * ts.Data(:,1), 1e-13);
+%! assert_equal (ts.Name, 'sig');
+%! assert_equal (ts.DataInfo.Units, 'volts');
+%! assert_equal (ts.Quality, mod (t, 3));
+%! assert_equal (ts.Events.Name, 'ev');
+%! assert_equal (getinterpmethod (ts), 'zoh');
+%! assert_equal (ts.UserData, 42);
+%!assert_equal (detrend (FA, 'constant').Data, [x1, 2 * x1 + 3] - ...
+%!              mean ([x1, 2 * x1 + 3]), 1e-14)
+%!assert_equal (detrend (FA, 0).Data, detrend (FA, 'constant').Data)
+%!assert_equal (detrend (FA, 1).Data, detrend (FA, 'linear').Data)
+%!assert_equal (detrend (FA, 'Linear').Data, detrend (FA, 'linear').Data)
+%!assert_equal (detrend (FA, "linear").Data, detrend (FA, 'linear').Data)
+%!assert_equal (detrend (FA, string ('linear')).Data, ...
+%!              detrend (FA, 'linear').Data)
+%!assert_equal (detrend (FA, 2).Data(1:3,1)', ...
+%!              [0.079561016560287356, 0.31770392936398473, ...
+%!               0.14699522254633202], 1e-13)
+%!test
+%! ts = detrend (FA, 'linear', 2);
+%! assert_equal (ts.Data(:,1), x1);
+%! assert_equal (ts.Data(:,2), detrend (FA, 'linear').Data(:,2));
+%!assert_equal (detrend (FA, 'linear', [2, 1]).Data, ...
+%!              detrend (FA, 'linear').Data)
+%!assert_equal (detrend (FA, 'linear', []).Data, FA.Data)
+%!assert_equal (detrend (FN, 'constant').Data, ...
+%!              [-2.6; -1.6; NaN; 0.4; 1.4; 2.4], 1e-14)
+%!assert_equal (detrend (timeseries ([1; 3; 2], (0:2)'), 'linear').Data, ...
+%!              [-0.5; 1; -0.5], 1e-14)
+%!assert_equal (class (detrend (timeseries (single (x1), t), ...
+%!                             'linear').Data), 'single')
+%!assert_equal (detrend (timeseries (), 'linear').Data, [])
+%!assert_equal (detrend (timeseries ([NaN; NaN], [0; 1]), 'linear').Data, ...
+%!              [NaN; NaN])
+## Test the fit against 'Time', where MATLAB fits over sample positions
+%!assert_equal (detrend (timeseries (2 * [0; 1; 3; 7; 8; 12] + 1, ...
+%!                                  [0; 1; 3; 7; 8; 12]), 'linear').Data, ...
+%!              zeros (6, 1), 1e-13)
+%!assert_equal (detrend (FN, 'linear').Data, [0; 0; NaN; 0; 0; 0], 1e-14)
+%!assert_equal (detrend (FZ, 'linear').Data, [0; 0; NaN; 0; 0; 0], 1e-14)
+%!assert_equal (detrend (FD, 'linear').Data, [-3; 7; -1; -3] / 4, 1e-14)
+## Test short series are detrended, where MATLAB returns them unchanged
+%!assert_equal (detrend (timeseries (3, 0), 'constant').Data, 0)
+%!assert_equal (detrend (timeseries ([1; 3], [0; 1]), 'constant').Data, [-1; 1])
+%!assert_equal (detrend (timeseries ([1; 3], [0; 1]), 'linear').Data, ...
+%!              [0; 0], 1e-15)
+%!assert_equal (detrend (timeseries ([1; NaN; 3], (0:2)'), 'linear').Data, ...
+%!              [0; NaN; 0], 1e-15)
+%!error <timeseries.detrend: invalid number of input arguments.> detrend (FA)
+%!error <timeseries.detrend: TYPE must be 'constant', 'linear' or a polynomial degree.> ...
+%! detrend (FA, 'quadratic')
+%!error <timeseries.detrend: TYPE must be 'constant', 'linear' or a polynomial degree.> ...
+%! detrend (FA, -1)
+%!error <timeseries.detrend: TYPE must be 'constant', 'linear' or a polynomial degree.> ...
+%! detrend (FA, 1.5)
+%!error <timeseries.detrend: TYPE must be 'constant', 'linear' or a polynomial degree.> ...
+%! detrend (FA, {1})
+%!error <timeseries.detrend: IND must be positive integers not exceeding the number of columns of the data.> ...
+%! detrend (FA, 'linear', 3)
+%!error <timeseries.detrend: IND must be positive integers not exceeding the number of columns of the data.> ...
+%! detrend (FA, 'linear', 0)
+%!error <timeseries.detrend: IND must be positive integers not exceeding the number of columns of the data.> ...
+%! detrend (FA, 'linear', 1.5)
+%!error <timeseries.detrend: IND must be positive integers not exceeding the number of columns of the data.> ...
+%! detrend (FA, 'linear', true)
+%!error <timeseries.detrend: IND must be positive integers not exceeding the number of columns of the data.> ...
+%! detrend (FA, 'linear', {1})
+%!error <timeseries.detrend: IND must be positive integers not exceeding the number of columns of the data.> ...
+%! detrend (FA, 'constant', 'x')
+%!error <timeseries.detrend: the data must have two dimensions.> ...
+%! detrend (FB3, 'linear')
+%!error <timeseries.detrend: the data must be real, of class double or single.> ...
+%! detrend (timeseries (int16 ([1; 2; 3]), (0:2)'), 'linear')
+%!error <timeseries.detrend: the data must be real, of class double or single.> ...
+%! detrend (timeseries (logical ([1; 0; 1]), (0:2)'), 'constant')
+%!error <timeseries.detrend: TS must be a single series.> ...
+%! detrend ([FA, FA], 'linear')
+
+%!test
+%! ts = filter (FA, [1, 1] / 2, 1);
+%! assert_equal (ts.Data, filter ([1, 1] / 2, 1, [x1, 2 * x1 + 3]), 1e-14);
+%! assert_equal (ts.Data(1:3,1)', ...
+%!               [2.75, 5.728553390593274, 5.978553390593274], 1e-14);
+%! assert_equal (ts.Name, 'sig');
+%! assert_equal (ts.DataInfo.Units, 'volts');
+%! assert_equal (ts.Quality, mod (t, 3));
+%! assert_equal (ts.Events.Name, 'ev');
+%! assert_equal (getinterpmethod (ts), 'zoh');
+%! assert_equal (ts.UserData, 42);
+%!assert_equal (filter (FA, [2, 2], [2, -1]).Data(1:3,1)', ...
+%!              [5.5, 14.207106781186548, 19.060660171779823], 1e-13)
+%!assert_equal (filter (FA, [1; 1] / 2, 1).Data, ...
+%!              filter (FA, [1, 1] / 2, 1).Data)
+%!test
+%! ts = filter (FA, [1, 1] / 2, 1, 2);
+%! assert_equal (ts.Data(:,1), x1);
+%! assert_equal (ts.Data(:,2), filter ([1, 1] / 2, 1, 2 * x1 + 3), 1e-14);
+%!assert_equal (filter (FA, [1, 1] / 2, 1, [2, 1]).Data, ...
+%!              filter (FA, [1, 1] / 2, 1).Data)
+%!assert_equal (filter (FN, 1, 1).Data, [1; 2; 3; 4; 5; 6])
+%!assert_equal (filter (FZ, 1, 1).Data, [1; 2; 2; 4; 5; 6])
+%!assert_equal (filter (FZ, [1, 1] / 2, 1).Data, [0.5; 1.5; 2; 3; 4.5; 5.5])
+%!assert_equal (filter (timeseries (3, 0), [1, 1] / 2, [1, -0.5]).Data, 1.5)
+%!assert_equal (filter (timeseries (), [1, 1] / 2, 1).Data, [])
+%!assert_equal (class (filter (timeseries (single (x1), t), [1, 1] / 2, ...
+%!                            1).Data), 'single')
+## Test 3-D data is filtered along time, where MATLAB filters across rows
+%!test
+%! ts = filter (FB3, [1, 1] / 2, 1);
+%! assert_equal (size (ts.Data), [2, 1, 8]);
+%! assert_equal (squeeze (ts.Data(1,1,:)), filter ([1, 1] / 2, 1, x1(1:8)), ...
+%!               1e-14);
+%! assert_equal (ts.Data(2,1,:), -ts.Data(1,1,:));
+%!test
+%! ts = filter (FB3, [1, 1] / 2, 1, 1);
+%! assert_equal (squeeze (ts.Data(1,1,:))', [2.75, 5.728553390593274, ...
+%!               5.978553390593274, 6.228553390593274, 6.478553390593274, ...
+%!               6.021446609406726, 5.271446609406726, 5.521446609406726], ...
+%!               1e-14);
+%! assert_equal (squeeze (ts.Data(2,1,:)), -x1(1:8));
+%!error <timeseries.filter: invalid number of input arguments.> ...
+%! filter (FA, [1, 1] / 2)
+%!error <timeseries.filter: B and A must be numeric vectors.> ...
+%! filter (FA, {[1, 1] / 2}, {1})
+%!error <timeseries.filter: B and A must be numeric vectors.> filter (FA, 'ab', 1)
+%!error <timeseries.filter: B and A must be numeric vectors.> filter (FA, [], 1)
+%!error <timeseries.filter: B and A must be numeric vectors.> ...
+%! filter (FA, [1, 1] / 2, ones (2))
+## Test irregular times are refused, where MATLAB filters them as uniform
+%!error <timeseries.filter: the times of TS must be uniformly spaced.> ...
+%! filter (FU, [1, 1] / 2, 1)
+%!error <timeseries.filter: the times of TS must be uniformly spaced.> ...
+%! filter (FD, [1, 1] / 2, 1)
+%!error <timeseries.filter: the data must not begin or end with NaN.> ...
+%! filter (timeseries ([1; 2; 3; 4; 5; NaN], (0:5)'), 1, 1)
+%!error <timeseries.filter: the data must not begin or end with NaN.> ...
+%! filter (timeseries ([NaN; 2; 3; 4; 5; 7], (0:5)'), 1, 1)
+%!error <timeseries.filter: the data must be real, of class double or single.> ...
+%! filter (timeseries (int16 ([1; 2; 3]), (0:2)'), [1, 1] / 2, 1)
+%!error <timeseries.filter: the data must be real, of class double or single.> ...
+%! filter (timeseries (logical ([1; 0; 1]), (0:2)'), [1, 1] / 2, 1)
+%!error <timeseries.filter: IND must be positive integers not exceeding the number of columns of the data.> ...
+%! filter (FA, [1, 1] / 2, 1, 3)
+%!error <timeseries.filter: IND must be positive integers not exceeding the number of columns of the data.> ...
+%! filter (FA, [1, 1] / 2, 1, true)
+%!error <timeseries.filter: IND must be positive integers not exceeding the number of rows of the data.> ...
+%! filter (FB3, [1, 1] / 2, 1, 3)
+%!error <timeseries.filter: TS must be a single series.> ...
+%! filter ([FA, FA], [1, 1] / 2, 1)
+
+%!test
+%! ts = idealfilter (FA, [0.2, 0.3], 'pass');
+%! p = repmat ([0.25; -0.25; -0.25; 0.25], 4, 1);
+%! assert_equal (ts.Data, [p, 2 * p], 1e-14);
+%! assert_equal (ts.Time, t);
+%! assert_equal (ts.Name, 'sig');
+%! assert_equal (ts.DataInfo.Units, 'volts');
+%! assert_equal (ts.Quality, mod (t, 3));
+%! assert_equal (ts.Events.Name, 'ev');
+%! assert_equal (getinterpmethod (ts), 'zoh');
+%! assert_equal (ts.UserData, 42);
+%!test
+%! ps = idealfilter (FA, [0.2, 0.3], 'pass');
+%! nt = idealfilter (FA, [0.2, 0.3], 'notch');
+%! assert_equal (ps.Data + nt.Data, detrend (FA, 'constant').Data, 1e-13);
+%!assert_equal (idealfilter (FA, [0.3, 0.2], 'pass').Data, ...
+%!              idealfilter (FA, [0.2, 0.3], 'pass').Data)
+%!assert_equal (idealfilter (FA, [0.25, 0.25], 'pass').Data, zeros (16, 2))
+%!assert_equal (idealfilter (FA, [0.2, 0.6], 'pass').Data(1:2,1)', ...
+%!              [-0.62499999999999956, 0.13183487303146241], 1e-13)
+%!assert_equal (idealfilter (FA, [0, 0.1], 'pass').Data(1:3,1)', ...
+%!              [-0.25, -0.71193976625564326, -1.065493156848917], 1e-13)
+%!assert_equal (idealfilter (FA, [0.1, 0.15; 0.2, 0.3], ...
+%!                          'pass').Data(1:4,1)', ...
+%!              [0, -0.14644660940672583, 0.14644660940672649, ...
+%!               0.70710678118654746], 1e-13)
+%!test
+%! ts = idealfilter (FA, [0.2, 0.3], 'pass', 2);
+%! assert_equal (ts.Data(:,1), x1);
+%! assert_equal (ts.Data(:,2), repmat ([0.5; -0.5; -0.5; 0.5], 4, 1), 1e-14);
+%!test
+%! th = (0:0.5:7.5)';
+%! H = timeseries (cos (2 * pi * 0.25 * th) + 1, th);
+%! assert_equal (idealfilter (H, [0.2, 0.3], 'pass').Data, ...
+%!               cos (2 * pi * 0.25 * th), 1e-14);
+%! assert_equal (idealfilter (H, [0.2, 0.3], 'notch').Data, zeros (16, 1), ...
+%!               1e-14);
+%! H.TimeInfo.Units = 'minutes';
+%! assert_equal (idealfilter (H, [0.2, 0.3], 'pass').Data, ...
+%!               cos (2 * pi * 0.25 * th), 1e-14);
+%!assert_equal (idealfilter (FN, [0, 0.6], 'pass').Data, ...
+%!              [-2.5; -1.5; -0.5; 0.5; 1.5; 2.5], 1e-14)
+%!assert_equal (idealfilter (FZ, [0, 0.6], 'pass').Data, ...
+%!              [-7; -4; -4; 2; 5; 8] / 3, 1e-14)
+%!test
+%! ts = idealfilter (timeseries (2 * [0; 1; 3; 7; 8; 12] + 1, ...
+%!                               [0; 1; 3; 7; 8; 12]), [0.2, 0.3], 'pass');
+%! assert_equal (ts.Data, 2.4 * [-1; 1; -1; 1; -1; 1], 1e-14);
+%! assert_equal (ts.Time, [0; 2.4; 4.8; 7.2; 9.6; 12], 1e-14);
+%!test
+%! ts = idealfilter (FU, [0, 0.6], 'pass');
+%! assert_equal (ts.Data, [-12.625; -5.725; -1.375; 1.775; 6.575; 11.375], ...
+%!               1e-13);
+%! assert_equal (ts.Time, [0; 2.4; 4.8; 7.2; 9.6; 12], 1e-14);
+%! assert_equal (ts.Quality, [1; 3; 3; 4; 5; 6]);
+%! assert_equal (ts.Events.Name, 'ev');
+## Test a held value keeps the code it is held from, where MATLAB gives
+## [1 3 3 4 5 6]
+%!test
+%! ts = idealfilter (setinterpmethod (FU, 'zoh'), [0, 0.6], 'pass');
+%! assert_equal (ts.Data, [-65; -53; -11; 19; 31; 79] / 6, 1e-13);
+%! assert_equal (ts.Quality, [1; 2; 3; 4; 5; 6]);
+%!test
+%! ts = idealfilter (FD, [0, 0.6], 'pass');
+%! assert_equal (ts.Data, [-7; -1; 7; 1] / 6, 1e-14);
+%! assert_equal (ts.Time, [0; 2; 4; 6] / 3, 1e-15);
+%!assert_equal (class (idealfilter (timeseries (single (x1), t), [0.2, 0.3], ...
+%!                                 'pass').Data), 'single')
+%!assert_equal (idealfilter (timeseries (), [0.2, 0.3], 'pass').Data, [])
+## Test short series lose their mean, where MATLAB keeps it
+%!assert_equal (idealfilter (timeseries (3, 0), [0, 0.6], 'notch').Data, 0)
+%!assert_equal (idealfilter (timeseries ([1; 3], [0; 1]), [0.1, 0.2], ...
+%!                          'notch').Data, [-1; 1])
+%!error <timeseries.idealfilter: invalid number of input arguments.> ...
+%! idealfilter (FA, [0.2, 0.3])
+%!error <timeseries.idealfilter: INTERVALS must be a numeric matrix of two columns, one interval per row.> ...
+%! idealfilter (FA, 0.25, 'pass')
+%!error <timeseries.idealfilter: INTERVALS must be a numeric matrix of two columns, one interval per row.> ...
+%! idealfilter (FA, [0.2; 0.3], 'pass')
+%!error <timeseries.idealfilter: INTERVALS must be a numeric matrix of two columns, one interval per row.> ...
+%! idealfilter (FA, [0.2, 0.3, 0.4], 'pass')
+%!error <timeseries.idealfilter: INTERVALS must be a numeric matrix of two columns, one interval per row.> ...
+%! idealfilter (FA, 'ab', 'pass')
+%!error <timeseries.idealfilter: INTERVALS must be a numeric matrix of two columns, one interval per row.> ...
+%! idealfilter (FA, [NaN, 0.3], 'pass')
+%!error <timeseries.idealfilter: INTERVALS must be a numeric matrix of two columns, one interval per row.> ...
+%! idealfilter (FA, zeros (0, 2), 'pass')
+%!error <timeseries.idealfilter: TYPE must be 'pass' or 'notch'.> ...
+%! idealfilter (FA, [0.2, 0.3], 'Pass')
+%!error <timeseries.idealfilter: TYPE must be 'pass' or 'notch'.> ...
+%! idealfilter (FA, [0.2, 0.3], 'bandpass')
+%!error <timeseries.idealfilter: TYPE must be 'pass' or 'notch'.> ...
+%! idealfilter (FA, [0.2, 0.3], 1)
+%!error <timeseries.idealfilter: the data must have two dimensions.> ...
+%! idealfilter (FB3, [0.2, 0.3], 'pass')
+%!error <timeseries.idealfilter: the data must be real, of class double or single.> ...
+%! idealfilter (timeseries (int16 ([1; 2; 3]), (0:2)'), [0.2, 0.3], 'pass')
+%!error <timeseries.idealfilter: the data must be real, of class double or single.> ...
+%! idealfilter (timeseries (logical ([1; 0; 1]), (0:2)'), [0.2, 0.3], 'pass')
+## Test a leading or trailing NaN is refused, where MATLAB returns complex NaN
+%!error <timeseries.idealfilter: the data must not begin or end with NaN.> ...
+%! idealfilter (timeseries ([1; 2; 3; 4; 5; NaN], (0:5)'), [0, 0.6], 'pass')
+%!error <timeseries.idealfilter: the data must not begin or end with NaN.> ...
+%! idealfilter (timeseries ([NaN; 2; 3; 4; 5; 7], (0:5)'), [0, 0.6], 'pass')
+%!error <timeseries.idealfilter: IND must be positive integers not exceeding the number of columns of the data.> ...
+%! idealfilter (FA, [0.2, 0.3], 'pass', 3)
+%!error <timeseries.idealfilter: TS must be a single series.> ...
+%! idealfilter ([FA, FA], [0.2, 0.3], 'pass')
+
+################################################################################
 ##                        ** 'timeseries' properties **                       ##
 ################################################################################
 
