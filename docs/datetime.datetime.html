@@ -814,7 +814,7 @@
   <a href="duration.html">duration</a>
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/datetime.m#L741">datetime</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/cde9efc/inst/datetime.m#L741">datetime</a>
 </p>
 </div>
         <div class="card rounded my-4">
@@ -894,7 +894,7 @@
           </div>
           <div class="collapse show" id="datetime_datetime-example3">
             <div class="card-body">
-                <p>A single numeric row is read as a date vector <code>[Y M D h m s]</code>, and a range of datetimes is built with the colon operator and a step — here one calendar day with <code>caldays</code>.</p>
+                <p>A single numeric row is read as a date vector <code>[Y M D h m s]</code>, and a range of datetimes is built with the colon operator and a step, here one calendar day with <code>caldays</code>.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> datetime ([2024, 3, 9, 14, 30, 15])</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
   datetime
@@ -956,7 +956,7 @@
           </div>
           <div class="collapse show" id="datetime_datetime-example5">
             <div class="card-body">
-                <p>The <code>'Format'</code> property controls display only, never the stored value. Here the SAME instant is shown several ways by setting different Unicode (LDML) field patterns — <code>y</code> year, <code>M</code> month, <code>d</code> day, <code>H</code> hour, <code>e</code> weekday.</p>
+                <p>The <code>'Format'</code> property controls display only, never the stored value. Here the SAME instant is shown several ways by setting different Unicode (LDML) field patterns: <code>y</code> year, <code>M</code> month, <code>d</code> day, <code>H</code> hour, <code>e</code> weekday.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> datetime (2024, 3, 9, 14, 30, 15, 'Format', 'yyyy-MM-dd HH:mm:ss')</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
   datetime
@@ -992,7 +992,7 @@
           </div>
           <div class="collapse show" id="datetime_datetime-example6">
             <div class="card-body">
-                <p>By default the display omits sub-seconds even though they are stored — ask for them explicitly with fractional-second (<code>S</code>) codes.</p>
+                <p>By default the display omits sub-seconds even though they are stored; ask for them explicitly with fractional-second (<code>S</code>) codes.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> datetime (2024, 3, 9, 14, 30, 15.5)</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
   datetime

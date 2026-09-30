@@ -245,7 +245,6 @@
 					<li><a href="timetable.size.html" class="text-decoration-none font-monospace"><small>size</small></a></li>
 					<li><a href="timetable.numel.html" class="text-decoration-none font-monospace"><small>numel</small></a></li>
 					<li><a href="timetable.ndims.html" class="text-decoration-none font-monospace"><small>ndims</small></a></li>
-					<li><a href="timetable.length.html" class="text-decoration-none font-monospace"><small>length</small></a></li>
 					<li><a href="timetable.isempty.html" class="text-decoration-none font-monospace"><small>isempty</small></a></li>
 					<li><a href="timetable.repelem.html" class="text-decoration-none font-monospace"><small>repelem</small></a></li>
 					<li><a href="timetable.repmat.html" class="text-decoration-none font-monospace"><small>repmat</small></a></li>
@@ -387,6 +386,9 @@
 					<li><a href="timetable.syncevents.html" class="text-decoration-none font-monospace"><small>syncevents</small></a></li>
 					<li><a href="timetable.addprop.html" class="text-decoration-none font-monospace"><small>addprop</small></a></li>
 					<li><a href="timetable.rmprop.html" class="text-decoration-none font-monospace"><small>rmprop</small></a></li>
+					<li><a href="timetable.table2array.html" class="text-decoration-none font-monospace"><small>table2array</small></a></li>
+					<li><a href="timetable.table2cell.html" class="text-decoration-none font-monospace"><small>table2cell</small></a></li>
+					<li><a href="timetable.table2struct.html" class="text-decoration-none font-monospace"><small>table2struct</small></a></li>
 					<li><a href="timetable.timetable2table.html" class="text-decoration-none font-monospace"><small>timetable2table</small></a></li>
 				</ul>
 				</div>
@@ -455,6 +457,11 @@
  on one side, taking <code>'extrap'</code>, another method name, or a
  constant.
 </p>
+<p> A variable with nothing <code>ismissing</code> counts as missing, such as a
+ cell array that is not a cell array of character vectors, a structure
+ or a nested table, is left as it is.  MATLAB refuses the whole call
+ when such a variable is among the data variables.
+</p>
 <p> <code>[<var>ttB</var>, <var>TF</var>] = fillmissing (&hellip;)</code> also returns a
  logical array marking what was filled.  The row times themselves are
  never filled and the time step is unchanged.
@@ -466,7 +473,7 @@
   <a href="timetable.html">timetable</a>
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/timetable.m#L2372">timetable</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/cde9efc/inst/timetable.m#L2368">timetable</a>
 </p>
 </div>
         <div class="card rounded my-4">

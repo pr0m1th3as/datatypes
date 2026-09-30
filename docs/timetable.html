@@ -277,6 +277,7 @@
 				<div class="list">
 				<ul style="list-style-type: none; padding-left: 20px;">
 					<li><a href="string.html" class="text-decoration-none font-monospace"><small>string</small></a></li>
+					<li><a href="strings.html" class="text-decoration-none font-monospace"><small>strings</small></a></li>
 					<li><a href="convertCharsToStrings.html" class="text-decoration-none font-monospace"><small>convertCharsToStrings</small></a></li>
 					<li><a href="convertStringsToChars.html" class="text-decoration-none font-monospace"><small>convertStringsToChars</small></a></li>
 				</ul>
@@ -326,6 +327,27 @@
 			<div class="row">
 				<input id="togList8" type="checkbox">
 				<label for="togList8">
+					<span><h6>timeseries objects</h6></span>
+					<span><h6>timeseries objects</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="timeseries.html" class="text-decoration-none font-monospace"><small>timeseries</small></a></li>
+					<li><a href="istimeseries.html" class="text-decoration-none font-monospace"><small>istimeseries</small></a></li>
+					<li><a href="tscollection.html" class="text-decoration-none font-monospace"><small>tscollection</small></a></li>
+					<li><a href="istscollection.html" class="text-decoration-none font-monospace"><small>istscollection</small></a></li>
+					<li><a href="timeseries2timetable.html" class="text-decoration-none font-monospace"><small>timeseries2timetable</small></a></li>
+					<li><a href="tsdata.timemetadata.html" class="text-decoration-none font-monospace"><small>tsdata.timemetadata</small></a></li>
+					<li><a href="tsdata.datametadata.html" class="text-decoration-none font-monospace"><small>tsdata.datametadata</small></a></li>
+					<li><a href="tsdata.qualmetadata.html" class="text-decoration-none font-monospace"><small>tsdata.qualmetadata</small></a></li>
+					<li><a href="tsdata.interpolation.html" class="text-decoration-none font-monospace"><small>tsdata.interpolation</small></a></li>
+					<li><a href="tsdata.event.html" class="text-decoration-none font-monospace"><small>tsdata.event</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList9" type="checkbox">
+				<label for="togList9">
 					<span><h6>supplementary classes</h6></span>
 					<span><h6>supplementary classes</h6></span>
 				</label>
@@ -344,8 +366,8 @@
 				</div>
 			</div>
 			<div class="row">
-				<input id="togList9" type="checkbox">
-				<label for="togList9">
+				<input id="togList10" type="checkbox">
+				<label for="togList10">
 					<span><h6>supplementary functions</h6></span>
 					<span><h6>supplementary functions</h6></span>
 				</label>
@@ -367,8 +389,8 @@
 				</div>
 			</div>
 			<div class="row">
-				<input id="togList10" type="checkbox">
-				<label for="togList10">
+				<input id="togList11" type="checkbox">
+				<label for="togList11">
 					<span><h6>compiled functions</h6></span>
 					<span><h6>compiled functions</h6></span>
 				</label>
@@ -432,13 +454,13 @@
  with the rows they label.  The row times themselves cannot be deleted.
 </p>
 <p> Assigning to a subscripted timetable with parentheses or curly
- brackets writes values and creates variables and rows as it does for a
- <code>table</code>; a row added this way has a missing row time, or the next
- one along a step given when the timetable was created.  A timetable
- assigned with parentheses must carry the row times of the rows it is
- assigned to, and is refused otherwise, where MATLAB pastes its rows by
- position and ignores their times; <code>synchronize</code> aligns two
- timetables first.
+ brackets, or to its variable dimension name, writes values and
+ creates variables and rows as it does for a <code>table</code>; a row added
+ this way has a missing row time, or the next one along a step given
+ when the timetable was created.  A timetable assigned with parentheses
+ must carry the row times of the rows it is assigned to, and is refused
+ otherwise, where MATLAB pastes its rows by position and ignores their
+ times; <code>synchronize</code> aligns two timetables first.
 </p>
 <p> Besides the <code>timetable</code> constructor, you can also use
  <code>table2timetable</code> and <code>array2timetable</code> to create timetables
@@ -458,7 +480,7 @@
   <a href="duration.html">duration</a>
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/timetable.m">timetable</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/cde9efc/inst/timetable.m">timetable</a>
 </p>
 </div>
         <p class="lead my-3">The <code>timetable</code> class contains the following properties:</p>
@@ -728,7 +750,10 @@ Dimension names
  <code>'Row', 'Variables'</code>.  You can access table data per rows or per
  columns by using either one of the two dimension names, respectively.
  However, if the table contains row names, then the first element of the
- <code>DimensionNames</code> corresponds to the row names.
+ <code>DimensionNames</code> corresponds to the row names.  The second name
+ returns the variables joined into one array, as <code>table2array</code> joins
+ them, and assigning to it writes them all, as curly brackets over the
+ whole table do.
 </p>
 
 
@@ -1067,10 +1092,6 @@ Customized metadata of table and its variables
                       <tr>
                         <td><b><code><a href="timetable.ndims.html">ndims</a></code></b></td>
                         <td>Number of dimensions in timetable.</td>
-                      </tr>
-                      <tr>
-                        <td><b><code><a href="timetable.length.html">length</a></code></b></td>
-                        <td>Length is not defined for a timetable.</td>
                       </tr>
                       <tr>
                         <td><b><code><a href="timetable.isempty.html">isempty</a></code></b></td>
@@ -1461,6 +1482,18 @@ Customized metadata of table and its variables
                       <tr>
                         <td><b><code><a href="timetable.rmprop.html">rmprop</a></code></b></td>
                         <td>Remove custom properties from a timetable.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timetable.table2array.html">table2array</a></code></b></td>
+                        <td>Converts a timetable to an array.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timetable.table2cell.html">table2cell</a></code></b></td>
+                        <td>Converts a timetable to a cell array.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timetable.table2struct.html">table2struct</a></code></b></td>
+                        <td>Converts a timetable to a scalar structure or structure array.</td>
                       </tr>
                       <tr>
                         <td><b><code><a href="timetable.timetable2table.html">timetable2table</a></code></b></td>

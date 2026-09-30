@@ -354,7 +354,6 @@
 					<li><a href="table.isscalar.html" class="text-decoration-none font-monospace"><small>isscalar</small></a></li>
 					<li><a href="table.istable.html" class="text-decoration-none font-monospace"><small>istable</small></a></li>
 					<li><a href="table.isvector.html" class="text-decoration-none font-monospace"><small>isvector</small></a></li>
-					<li><a href="table.length.html" class="text-decoration-none font-monospace"><small>length</small></a></li>
 					<li><a href="table.ndims.html" class="text-decoration-none font-monospace"><small>ndims</small></a></li>
 					<li><a href="table.numel.html" class="text-decoration-none font-monospace"><small>numel</small></a></li>
 					<li><a href="table.repelem.html" class="text-decoration-none font-monospace"><small>repelem</small></a></li>
@@ -398,6 +397,9 @@
  not necessarily in the same order; <var>tbl</var> keeps the variable order of
  <var>tblA</var>.  Rows are compared by their variable values only (row names
  are ignored), and by default <var>tbl</var> is sorted by those values.
+ A row holding a missing value (<code>NaN</code>, <code>NaT</code>,
+ <code>&lt;undefined&gt;</code> or <code>&lt;missing&gt;</code>) equals no other row, itself
+ included, and missing values sort last.
 </p>
 <p> <code><var>tbl</var> = setdiff (<var>tblA</var>, <var>tblB</var>, <var>setOrder</var>)</code>
  controls the ordering of <var>tbl</var>, either <code>'sorted'</code> (default) or
@@ -408,7 +410,7 @@
  <code><var>tblA</var>(<var>ixA</var>,:)</code>.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/table.m#L2825">table</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/cde9efc/inst/table.m#L2901">table</a>
 </p>
 </div>
         <div class="card rounded my-4">

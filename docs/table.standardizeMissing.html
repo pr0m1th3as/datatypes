@@ -354,7 +354,6 @@
 					<li><a href="table.isscalar.html" class="text-decoration-none font-monospace"><small>isscalar</small></a></li>
 					<li><a href="table.istable.html" class="text-decoration-none font-monospace"><small>istable</small></a></li>
 					<li><a href="table.isvector.html" class="text-decoration-none font-monospace"><small>isvector</small></a></li>
-					<li><a href="table.length.html" class="text-decoration-none font-monospace"><small>length</small></a></li>
 					<li><a href="table.ndims.html" class="text-decoration-none font-monospace"><small>ndims</small></a></li>
 					<li><a href="table.numel.html" class="text-decoration-none font-monospace"><small>numel</small></a></li>
 					<li><a href="table.repelem.html" class="text-decoration-none font-monospace"><small>repelem</small></a></li>
@@ -394,17 +393,24 @@
 <p> <code><var>tblB</var> = standardizeMissing (<var>tblA</var>, <var>indicator</var>)</code>
  replaces every entry of <var>tblA</var> that matches a value in
  <var>indicator</var> with the standard missing value of that variable&rsquo;s data
- type (<code>NaN</code> for <code>double</code>/<code>single</code>, <code>''</code> for cell
- arrays of character vectors, <code>&lt;missing&gt;</code> for <code>string</code>, and
- <code>&lt;undefined&gt;</code> for <code>categorical</code>).
+ type (<code>NaN</code> for <code>double</code>/<code>single</code> and <code>duration</code>,
+ <code>''</code> for cell arrays of character vectors, <code>&lt;missing&gt;</code> for
+ <code>string</code>, <code>&lt;undefined&gt;</code> for <code>categorical</code>, and
+ <code>NaT</code> for <code>datetime</code>).
 </p>
 <p> <var>indicator</var> may be a numeric scalar or vector, a character vector, a
- <code>string</code> array, a cell array of character vectors, or a cell array
- mixing numeric and text indicators.  Each indicator is applied only to
- the variables whose type is compatible with it: numeric indicators match
- <code>double</code> and <code>single</code> variables, while text indicators (char,
- <code>string</code>, or cellstr) match cell-array-of-character-vector,
- <code>string</code>, and <code>categorical</code> variables.
+ <code>string</code> array, a cell array of character vectors, a
+ <code>duration</code> or <code>datetime</code> array, or a cell array mixing any of
+ these.  Each indicator is applied only to the variables whose type is
+ compatible with it: numeric indicators match <code>double</code> and
+ <code>single</code> variables, text indicators (char, <code>string</code>, or
+ cellstr) match cell-array-of-character-vector, <code>string</code>, and
+ <code>categorical</code> variables, <code>duration</code> indicators match
+ <code>duration</code> variables, and <code>datetime</code> indicators match
+ <code>datetime</code> variables.  A <code>datetime</code> indicator matches the same
+ instant in any time zone, but indicators with and without a time zone
+ cannot be mixed, nor compared with a variable that differs from them in
+ having one.
 </p>
 <p> The <code>'DataVariables'</code> <var>Name</var>/<var>Value</var> pair restricts the
  operation to a subset of variables, using the same variable referencing
@@ -412,11 +418,10 @@
  unchanged.
 </p>
 <p> Logical and integer variables (which have no standard missing value) and
- <code>duration</code>, <code>datetime</code>, and <code>calendarDuration</code> variables
- pass through unchanged.
+ <code>calendarDuration</code> variables pass through unchanged.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/table.m#L3166">table</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/cde9efc/inst/table.m#L3258">table</a>
 </p>
 </div>
         <div class="card rounded my-4">

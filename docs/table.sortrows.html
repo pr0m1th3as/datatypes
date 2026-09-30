@@ -354,7 +354,6 @@
 					<li><a href="table.isscalar.html" class="text-decoration-none font-monospace"><small>isscalar</small></a></li>
 					<li><a href="table.istable.html" class="text-decoration-none font-monospace"><small>istable</small></a></li>
 					<li><a href="table.isvector.html" class="text-decoration-none font-monospace"><small>isvector</small></a></li>
-					<li><a href="table.length.html" class="text-decoration-none font-monospace"><small>length</small></a></li>
 					<li><a href="table.ndims.html" class="text-decoration-none font-monospace"><small>ndims</small></a></li>
 					<li><a href="table.numel.html" class="text-decoration-none font-monospace"><small>numel</small></a></li>
 					<li><a href="table.repelem.html" class="text-decoration-none font-monospace"><small>repelem</small></a></li>
@@ -472,7 +471,7 @@
  index vector such that <code><var>tblB</var> = <var>tblA</var>(<var>index</var>,:)</code>.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/table.m#L1557">table</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/cde9efc/inst/table.m#L1588">table</a>
 </p>
 </div>
         <div class="card rounded my-4">
@@ -490,7 +489,7 @@
           </div>
           <div class="collapse show" id="table_sortrows-example1">
             <div class="card-body">
-                <p><code>sortrows</code> orders the rows by one or more variables of any comparable type. Name the variables to sort by; a trailing direction (or one per key) flips ascending to descending.  Here an <em>ordinal</em> categorical <code>Grade</code> sets the primary order, with a <code>datetime</code> breaking ties.</p>
+                <p><code>sortrows</code> orders the rows by one or more variables of any comparable type.  Name the variables to sort by; a trailing direction (or one per key) flips ascending to descending.  Here an <em>ordinal</em> categorical <code>Grade</code> sets the primary order, with a <code>datetime</code> breaking ties.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> Name = string ({'Li'; 'Diaz'; 'Brown'; 'Lee'});
  Visit = datetime (2024, [3; 1; 2; 1], [7; 5; 6; 2]);
  Grade = categorical ({'B'; 'A'; 'A'; 'B'}, {'A', 'B', 'C'}, 'Ordinal', true);

@@ -354,7 +354,6 @@
 					<li><a href="table.isscalar.html" class="text-decoration-none font-monospace"><small>isscalar</small></a></li>
 					<li><a href="table.istable.html" class="text-decoration-none font-monospace"><small>istable</small></a></li>
 					<li><a href="table.isvector.html" class="text-decoration-none font-monospace"><small>isvector</small></a></li>
-					<li><a href="table.length.html" class="text-decoration-none font-monospace"><small>length</small></a></li>
 					<li><a href="table.ndims.html" class="text-decoration-none font-monospace"><small>ndims</small></a></li>
 					<li><a href="table.numel.html" class="text-decoration-none font-monospace"><small>numel</small></a></li>
 					<li><a href="table.repelem.html" class="text-decoration-none font-monospace"><small>repelem</small></a></li>
@@ -397,6 +396,8 @@
  also appears as a row of <var>tblB</var>.  Both tables must have the same
  variable names, although not necessarily in the same order, and rows are
  compared by their variable values only (row names are ignored).
+ A row holding a missing value (<code>NaN</code>, <code>NaT</code>,
+ <code>&lt;undefined&gt;</code> or <code>&lt;missing&gt;</code>) is a member of nothing.
 </p>
 <p> <code>[<var>TF</var>, <var>ixB</var>] = ismember (<var>tblA</var>, <var>tblB</var>)</code> also
  returns a column vector <var>ixB</var> containing, for each row of <var>tblA</var>,
@@ -404,7 +405,7 @@
  is no match.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/table.m#L2789">table</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/cde9efc/inst/table.m#L2862">table</a>
 </p>
 </div>
         <div class="card rounded my-4">
@@ -422,7 +423,7 @@
           </div>
           <div class="collapse show" id="table_ismember-example1">
             <div class="card-body">
-                <p><code>ismember</code> tests, row by row, whether each row of the first table also occurs in the second — returning a logical column, not a new table.  A row counts as a member only when all of its variables match a row of <code>B</code>.</p>
+                <p><code>ismember</code> tests, row by row, whether each row of the first table also occurs in the second, returning a logical column, not a new table.  A row counts as a member only when all of its variables match a row of <code>B</code>.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> A = table ({'Li'; 'Diaz'; 'Brown'}, [38; 40; 49], ...
             categorical ({'NY'; 'CA'; 'MA'}), ...
             'VariableNames', {'Name', 'Age', 'State'})</pre>

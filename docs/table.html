@@ -277,6 +277,7 @@
 				<div class="list">
 				<ul style="list-style-type: none; padding-left: 20px;">
 					<li><a href="string.html" class="text-decoration-none font-monospace"><small>string</small></a></li>
+					<li><a href="strings.html" class="text-decoration-none font-monospace"><small>strings</small></a></li>
 					<li><a href="convertCharsToStrings.html" class="text-decoration-none font-monospace"><small>convertCharsToStrings</small></a></li>
 					<li><a href="convertStringsToChars.html" class="text-decoration-none font-monospace"><small>convertStringsToChars</small></a></li>
 				</ul>
@@ -326,6 +327,27 @@
 			<div class="row">
 				<input id="togList8" type="checkbox">
 				<label for="togList8">
+					<span><h6>timeseries objects</h6></span>
+					<span><h6>timeseries objects</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="timeseries.html" class="text-decoration-none font-monospace"><small>timeseries</small></a></li>
+					<li><a href="istimeseries.html" class="text-decoration-none font-monospace"><small>istimeseries</small></a></li>
+					<li><a href="tscollection.html" class="text-decoration-none font-monospace"><small>tscollection</small></a></li>
+					<li><a href="istscollection.html" class="text-decoration-none font-monospace"><small>istscollection</small></a></li>
+					<li><a href="timeseries2timetable.html" class="text-decoration-none font-monospace"><small>timeseries2timetable</small></a></li>
+					<li><a href="tsdata.timemetadata.html" class="text-decoration-none font-monospace"><small>tsdata.timemetadata</small></a></li>
+					<li><a href="tsdata.datametadata.html" class="text-decoration-none font-monospace"><small>tsdata.datametadata</small></a></li>
+					<li><a href="tsdata.qualmetadata.html" class="text-decoration-none font-monospace"><small>tsdata.qualmetadata</small></a></li>
+					<li><a href="tsdata.interpolation.html" class="text-decoration-none font-monospace"><small>tsdata.interpolation</small></a></li>
+					<li><a href="tsdata.event.html" class="text-decoration-none font-monospace"><small>tsdata.event</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList9" type="checkbox">
+				<label for="togList9">
 					<span><h6>supplementary classes</h6></span>
 					<span><h6>supplementary classes</h6></span>
 				</label>
@@ -344,8 +366,8 @@
 				</div>
 			</div>
 			<div class="row">
-				<input id="togList9" type="checkbox">
-				<label for="togList9">
+				<input id="togList10" type="checkbox">
+				<label for="togList10">
 					<span><h6>supplementary functions</h6></span>
 					<span><h6>supplementary functions</h6></span>
 				</label>
@@ -367,8 +389,8 @@
 				</div>
 			</div>
 			<div class="row">
-				<input id="togList10" type="checkbox">
-				<label for="togList10">
+				<input id="togList11" type="checkbox">
+				<label for="togList11">
 					<span><h6>compiled functions</h6></span>
 					<span><h6>compiled functions</h6></span>
 				</label>
@@ -442,11 +464,18 @@
 </p>
 <p> Assigning with curly brackets writes the contents of the variables, as
  reading with them returns them: an array whose columns are those of the
- variables assigned, side by side, or a scalar that fills them all.  Each
- variable converts what it is given as its own type does, so a cell
- variable takes a cell array.  Variables and rows are created as with
- parentheses, and assigning an empty matrix is refused, since curly
- brackets never delete.
+ variables assigned, side by side, and whose rows are the rows assigned,
+ or a scalar that fills them all.  A single new variable also takes one
+ row as every one of its rows.  Each variable converts what it is given
+ as its own type does, so a cell variable takes a cell array and a
+ <code>double</code> variable reads text as numbers.  Variables and rows are
+ created as with parentheses, a table with neither rows nor variables
+ takes one variable for each column, and assigning an empty matrix is
+ refused, since curly brackets never delete.
+</p>
+<p> Assigning to <code><var>tbl</var>.Variables</code>, the second dimension name,
+ writes every variable as curly brackets over the whole table do, but
+ takes only a value with one row for each row of the table.
 </p>
 <p> Besides the <code>table</code> constructor, you can also use <code>array2table</code>,
  <code>cell2table</code>, and <code>struct2table</code> to create tables from the
@@ -458,6 +487,14 @@
  <code>duration</code>, <code>datetime</code>, <code>string</code>, and <code>struct</code>
  arrays, as well as <code>table</code> itself.
 </p>
+<p> A variable cannot be a function handle; only a cell variable can hold
+ one.  Every way of creating or replacing a variable refuses it, and the
+ conversions <code>cell2table</code> and <code>struct2table</code>, as well as
+ assignment of a cell array with parentheses, give a cell variable
+ instead.  MATLAB refuses it only in the constructor and <code>addvars</code>,
+ and lets <code><var>tbl</var>.<var>varname</var></code> assignment, <code>struct2table</code>
+ and <code>convertvars</code> create one.
+</p>
 <p> <strong>See also: </strong>
   <a href="vartype.html">vartype</a>, 
   <a href="array2table.html">array2table</a>, 
@@ -465,7 +502,7 @@
   <a href="struct2table.html">struct2table</a>
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/table.m">table</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/cde9efc/inst/table.m">table</a>
 </p>
 </div>
         <p class="lead my-3">The <code>table</code> class contains the following properties:</p>
@@ -767,7 +804,10 @@ Dimension names
  <code>'Row', 'Variables'</code>.  You can access table data per rows or per
  columns by using either one of the two dimension names, respectively.
  However, if the table contains row names, then the first element of the
- <code>DimensionNames</code> corresponds to the row names.
+ <code>DimensionNames</code> corresponds to the row names.  The second name
+ returns the variables joined into one array, as <code>table2array</code> joins
+ them, and assigning to it writes them all, as curly brackets over the
+ whole table do.
 </p>
 
         <div class="card rounded my-4">
@@ -1209,7 +1249,7 @@ Customized metadata of table and its variables
                       </tr>
                       <tr>
                         <td><b><code><a href="table.table2array.html">table2array</a></code></b></td>
-                        <td>Converts a table to a homogeneous array.</td>
+                        <td>Converts a table to an array.</td>
                       </tr>
                       <tr>
                         <td><b><code><a href="table.table2cell.html">table2cell</a></code></b></td>
@@ -1608,10 +1648,6 @@ Customized metadata of table and its variables
                       <tr>
                         <td><b><code><a href="table.isvector.html">isvector</a></code></b></td>
                         <td>Test input table for being a vector.</td>
-                      </tr>
-                      <tr>
-                        <td><b><code><a href="table.length.html">length</a></code></b></td>
-                        <td>Length along longest dimension.</td>
                       </tr>
                       <tr>
                         <td><b><code><a href="table.ndims.html">ndims</a></code></b></td>

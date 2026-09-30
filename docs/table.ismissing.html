@@ -354,7 +354,6 @@
 					<li><a href="table.isscalar.html" class="text-decoration-none font-monospace"><small>isscalar</small></a></li>
 					<li><a href="table.istable.html" class="text-decoration-none font-monospace"><small>istable</small></a></li>
 					<li><a href="table.isvector.html" class="text-decoration-none font-monospace"><small>isvector</small></a></li>
-					<li><a href="table.length.html" class="text-decoration-none font-monospace"><small>length</small></a></li>
 					<li><a href="table.ndims.html" class="text-decoration-none font-monospace"><small>ndims</small></a></li>
 					<li><a href="table.numel.html" class="text-decoration-none font-monospace"><small>numel</small></a></li>
 					<li><a href="table.repelem.html" class="text-decoration-none font-monospace"><small>repelem</small></a></li>
@@ -418,8 +417,10 @@
 <p> <var>indicator</var> can be either a vector of specific data type, in which
  case all other data types in table <var>tbl</var> are ignored, or a cell array
  containing mixed types of data types, in which case they match the data
- types of the variables in table <var>tbl</var>.  Missing values specified by
- <var>indicator</var> also apply to nested tables.
+ types of the variables in table <var>tbl</var>.
+</p>
+<p> A nested table variable is never missing, whatever it holds, with or
+ without <var>indicator</var>, as in MATLAB.
 </p>
 <p> Besides the explicit data type match between <var>indicator</var> and
  <var>tbl</var>, the following additional data types matches apply.
@@ -442,7 +443,7 @@
  <var>outFmt</var> as <code>'tabular'</code> returns a table.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/table.m#L2988">table</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/cde9efc/inst/table.m#L3069">table</a>
 </p>
 </div>
         <div class="card rounded my-4">
@@ -460,7 +461,7 @@
           </div>
           <div class="collapse show" id="table_ismissing-example1">
             <div class="card-body">
-                <p>Where <code>anymissing</code> gives a single yes/no, <code>ismissing</code> locates <em>every</em> gap, returning a logical array the size of the table — one flag per element.  It recognises the missing value proper to each type at once.</p>
+                <p>Where <code>anymissing</code> gives a single yes/no, <code>ismissing</code> locates <em>every</em> gap, returning a logical array the size of the table with one flag per element. It recognises the missing value proper to each type at once.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> Name = string ({'Li'; 'Diaz'; 'Brown'});
  Age = [38; NaN; 40];
  Grade = categorical ({'A'; 'B'; ''});

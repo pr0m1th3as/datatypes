@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Data Types for GNU Octave: timeseries.synchronize</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj" crossorigin="anonymous"></script>
+    <script type="text/javascript" async
+      src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS_CHTML">
+    </script>
+    <script type="text/javascript">
+      window.addEventListener("load", () => {
+        for (let i of document.querySelectorAll(".collapse ul")) {
+          let tog = document.createElement("div");
+          tog.innerHTML = i.previousSibling.textContent;
+          tog.className = "toggle";
+          tog.onclick = () => tog.classList.toggle("show");
+          i.parentElement.removeChild(i.previousSibling);
+          i.parentElement.insertBefore(tog, i);
+        }
+      });
+      // Open the collapsible demo an "#example" link points to, then scroll to
+      // it.  getElementById (not querySelector) matches ids that contain a dot,
+      // e.g. "Class.method-example1".
+      function openHashTarget () {
+        if (! window.location.hash) { return; }
+        let el = document.getElementById (
+          decodeURIComponent (window.location.hash.slice (1)));
+        if (! el) { return; }
+        if (el.classList.contains ("collapse") &&
+            ! el.classList.contains ("show")) {
+          bootstrap.Collapse.getOrCreateInstance (el).show ();
+        }
+        el.scrollIntoView ();
+      }
+      window.addEventListener ("DOMContentLoaded", openHashTarget);
+      window.addEventListener ("hashchange", openHashTarget);
+      // When the collapsible named by the current URL fragment is collapsed,
+      // drop the fragment (replaceState: no scroll, no history entry).  Otherwise
+      // the fragment would still equal this id, so clicking the same #example
+      // link again fires no "hashchange" and the example would not re-expand.
+      document.addEventListener ("hide.bs.collapse", (e) => {
+        if (e.target.id && window.location.hash === "#" + e.target.id) {
+          history.replaceState (null, "",
+            window.location.pathname + window.location.search);
+        }
+      });
+      // Let the browser's find-in-page reach the text inside a collapsed
+      // panel.  The attribute "hidden=until-found" is what makes content
+      // searchable and revealable; the style block below clears the
+      // "display: none" that would otherwise stop the attribute meaning
+      // anything, a box that is not generated having nothing to reveal.  Set
+      // it only where it is understood, which "content-visibility" is no test
+      // for, Firefox having shipped the two apart.  Where it is not, the panel
+      // keeps the user agent's plain [hidden] and the page behaves as before.
+      window.addEventListener ("DOMContentLoaded", () => {
+        if (! ("onbeforematch" in document.body)) { return; }
+        document.documentElement.classList.add ("until-found");
+        let panels = document.querySelectorAll (
+          ".collapse:not(.show):not(.navbar-collapse)");
+        for (let el of panels) {
+          el.setAttribute ("hidden", "until-found");
+          // Fired on a find-in-page hit, before the browser drops the
+          // attribute and scrolls to it.  Bootstrap keeps a panel's state in
+          // its class list, so adding the class here opens the panel in the
+          // same frame and leaves the button shutting it correctly afterwards.
+          // Bootstrap's own show () would animate against that scroll, and the
+          // attribute once dropped, "display: none" would take the panel back
+          // part way through.
+          el.addEventListener ("beforematch", () => {
+            el.classList.add ("show");
+            for (let b of document.querySelectorAll ("[data-bs-target]")) {
+              if (b.getAttribute ("data-bs-target") === "#" + el.id) {
+                b.setAttribute ("aria-expanded", "true");
+              }
+            }
+          });
+        }
+        // Drop the attribute before Bootstrap measures the panel it is opening,
+        // which it does after firing this; a revealable one measures nothing.
+        document.addEventListener ("show.bs.collapse", (e) => {
+          e.target.removeAttribute ("hidden");
+        });
+        // Restore it once the panel is shut, rather than while it is shutting.
+        document.addEventListener ("hidden.bs.collapse", (e) => {
+          if (! e.target.classList.contains ("navbar-collapse")) {
+            e.target.setAttribute ("hidden", "until-found");
+          }
+        });
+      });
+    </script>
+    <style>
+    .fs {
+    margin-top: -0.15em;
+    margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
+    }
+    h6:hover {
+      color: gray;
+    }
+    code {
+    font-family: Consolas, "Courier New", monospace;
+    border-radius: 0.3em;
+    white-space: nowrap;
+    color: gray;
+    }
+    code.description {
+    font-family: Consolas, "Courier New", monospace;
+    border-radius: 0.3em;
+    white-space: normal;
+    font-size:1.2em;
+    color: gray;
+    }
+    var {
+    font-family: Consolas, "Courier New", monospace;
+    border-radius: 0.3em;
+    font-style: normal;
+    font-weight: bold;
+    color: gray;
+    }
+    td {
+      vertical-align: top;
+    }
+    [id^="togList"],                        /* HIDE CHECKBOX */
+    [id^="togList"] ~ .list,                /* HIDE LIST */
+    [id^="togList"] + label  span + span,   /* HIDE "Collapse" */
+    [id^="togList"]:checked + label span{   /* HIDE "Expand" (IF CHECKED) */
+      display:none;
+    }
+    [id^="togList"]:checked + label span + span{
+      display:inline-block;                 /* SHOW "Collapse" (IF CHECKED) */
+    }
+    [id^="togList"]:checked ~ .list{
+      display:block;                        /* SHOW LIST (IF CHECKED) */
+    }
+    /* Bootstrap hides a collapsed panel with "display: none", which generates
+       no box, so the "content-visibility: hidden" the user agent gives
+       "hidden=until-found" could never apply and the text would stay beyond
+       find-in-page.  Clear that one declaration, and only where the script
+       above has found the attribute to be understood: an attribute selector
+       matches a value the browser does not understand, so an ungated rule
+       would leave every panel of an older browser standing open.  The
+       "!important" is required rather than decoration: the reboot carries
+       "[hidden] {display: none !important}", which the attribute itself brings
+       into play, and only another "!important" can outrank it. */
+    html.until-found .collapse[hidden="until-found"]:not(.show) {
+      display: block !important;
+    }
+    </style>
+  </head>
+  <body>
+    <div class="bg-dark">
+      <div class="container-xl">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+          <div class="container-fluid">
+            <a class="navbar-brand" href=index.html>
+              <img src="assets/datatypes.png" alt="datatypes" class="d-inline-block align-top" width="25" height="25">
+              Data Types for GNU Octave
+            </a>
+            <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+              <ul class="navbar-nav">
+                <li class="nav-item">
+                  <a class="nav-link" href="index.html#timeseries objects">
+                    <i class="fas fa-list-alt"></i>
+                    timeseries objects
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="https://gnu-octave.github.io/packages/">
+                  <img src="assets/octave-logo.svg" alt="GNU Octave logo" class="d-inline-block align-top" width="25" height="25">
+                    Octave Packages
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="https://www.octave.org">
+                    <i class="fas fa-home"></i>
+                    GNU Octave website
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </div>
+    <div class="container-xl my-4">
+      <div class="row flex-nowrap" style="min-height:0">
+        <div class="col-md-2 bg-light" style="overflow-y: scroll; width: 250px;">
+          <div class="p-2" style="text-align: center;">
+            <h3><a href="timeseries.html" class="text-decoration-none">timeseries</a></h3>
+            <h4 style="color: blue">Methods</h4>
+          </div>
+			<div class="row">
+				<a href="timeseries.html" class="text-decoration-none"><h6>&#8962;&nbsp;timeseries</h6></a>
+			</div>
+			<div class="row">
+				<input id="togList1" type="checkbox">
+				<label for="togList1">
+					<span><h6>Create and describe 'timeseries'</h6></span>
+					<span><h6>Create and describe 'timeseries'</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="timeseries.timeseries.html" class="text-decoration-none font-monospace"><small>timeseries</small></a></li>
+					<li><a href="timeseries.get.html" class="text-decoration-none font-monospace"><small>get</small></a></li>
+					<li><a href="timeseries.set.html" class="text-decoration-none font-monospace"><small>set</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList2" type="checkbox">
+				<label for="togList2">
+					<span><h6>Data and sample operations</h6></span>
+					<span><h6>Data and sample operations</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="timeseries.getdatasamples.html" class="text-decoration-none font-monospace"><small>getdatasamples</small></a></li>
+					<li><a href="timeseries.getdatasamplesize.html" class="text-decoration-none font-monospace"><small>getdatasamplesize</small></a></li>
+					<li><a href="timeseries.getsamples.html" class="text-decoration-none font-monospace"><small>getsamples</small></a></li>
+					<li><a href="timeseries.getsampleusingtime.html" class="text-decoration-none font-monospace"><small>getsampleusingtime</small></a></li>
+					<li><a href="timeseries.addsample.html" class="text-decoration-none font-monospace"><small>addsample</small></a></li>
+					<li><a href="timeseries.delsample.html" class="text-decoration-none font-monospace"><small>delsample</small></a></li>
+					<li><a href="timeseries.append.html" class="text-decoration-none font-monospace"><small>append</small></a></li>
+					<li><a href="timeseries.hasduplicatetimes.html" class="text-decoration-none font-monospace"><small>hasduplicatetimes</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList3" type="checkbox">
+				<label for="togList3">
+					<span><h6>Time representation</h6></span>
+					<span><h6>Time representation</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="timeseries.getabstime.html" class="text-decoration-none font-monospace"><small>getabstime</small></a></li>
+					<li><a href="timeseries.setabstime.html" class="text-decoration-none font-monospace"><small>setabstime</small></a></li>
+					<li><a href="timeseries.setuniformtime.html" class="text-decoration-none font-monospace"><small>setuniformtime</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList4" type="checkbox">
+				<label for="togList4">
+					<span><h6>Events</h6></span>
+					<span><h6>Events</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="timeseries.addevent.html" class="text-decoration-none font-monospace"><small>addevent</small></a></li>
+					<li><a href="timeseries.delevent.html" class="text-decoration-none font-monospace"><small>delevent</small></a></li>
+					<li><a href="timeseries.gettsbeforeevent.html" class="text-decoration-none font-monospace"><small>gettsbeforeevent</small></a></li>
+					<li><a href="timeseries.gettsbeforeatevent.html" class="text-decoration-none font-monospace"><small>gettsbeforeatevent</small></a></li>
+					<li><a href="timeseries.gettsatevent.html" class="text-decoration-none font-monospace"><small>gettsatevent</small></a></li>
+					<li><a href="timeseries.gettsafteratevent.html" class="text-decoration-none font-monospace"><small>gettsafteratevent</small></a></li>
+					<li><a href="timeseries.gettsafterevent.html" class="text-decoration-none font-monospace"><small>gettsafterevent</small></a></li>
+					<li><a href="timeseries.gettsbetweenevents.html" class="text-decoration-none font-monospace"><small>gettsbetweenevents</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList5" type="checkbox" checked>
+				<label for="togList5">
+					<span><h6>Interpolation, resampling, synchronising</h6></span>
+					<span><h6>Interpolation, resampling, synchronising</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="timeseries.getinterpmethod.html" class="text-decoration-none font-monospace"><small>getinterpmethod</small></a></li>
+					<li><a href="timeseries.setinterpmethod.html" class="text-decoration-none font-monospace"><small>setinterpmethod</small></a></li>
+					<li><a href="timeseries.resample.html" class="text-decoration-none font-monospace"><small>resample</small></a></li>
+					<li><a href="timeseries.synchronize.html" class="text-decoration-none font-monospace fw-bolder"><small>synchronize</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList6" type="checkbox">
+				<label for="togList6">
+					<span><h6>Statistics</h6></span>
+					<span><h6>Statistics</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="timeseries.mean.html" class="text-decoration-none font-monospace"><small>mean</small></a></li>
+					<li><a href="timeseries.median.html" class="text-decoration-none font-monospace"><small>median</small></a></li>
+					<li><a href="timeseries.mode.html" class="text-decoration-none font-monospace"><small>mode</small></a></li>
+					<li><a href="timeseries.std.html" class="text-decoration-none font-monospace"><small>std</small></a></li>
+					<li><a href="timeseries.var.html" class="text-decoration-none font-monospace"><small>var</small></a></li>
+					<li><a href="timeseries.sum.html" class="text-decoration-none font-monospace"><small>sum</small></a></li>
+					<li><a href="timeseries.min.html" class="text-decoration-none font-monospace"><small>min</small></a></li>
+					<li><a href="timeseries.max.html" class="text-decoration-none font-monospace"><small>max</small></a></li>
+					<li><a href="timeseries.iqr.html" class="text-decoration-none font-monospace"><small>iqr</small></a></li>
+					<li><a href="timeseries.getqualitydesc.html" class="text-decoration-none font-monospace"><small>getqualitydesc</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList7" type="checkbox">
+				<label for="togList7">
+					<span><h6>Arithmetic and comparison</h6></span>
+					<span><h6>Arithmetic and comparison</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="timeseries.plus.html" class="text-decoration-none font-monospace"><small>plus</small></a></li>
+					<li><a href="timeseries.minus.html" class="text-decoration-none font-monospace"><small>minus</small></a></li>
+					<li><a href="timeseries.times.html" class="text-decoration-none font-monospace"><small>times</small></a></li>
+					<li><a href="timeseries.mtimes.html" class="text-decoration-none font-monospace"><small>mtimes</small></a></li>
+					<li><a href="timeseries.rdivide.html" class="text-decoration-none font-monospace"><small>rdivide</small></a></li>
+					<li><a href="timeseries.ldivide.html" class="text-decoration-none font-monospace"><small>ldivide</small></a></li>
+					<li><a href="timeseries.mrdivide.html" class="text-decoration-none font-monospace"><small>mrdivide</small></a></li>
+					<li><a href="timeseries.mldivide.html" class="text-decoration-none font-monospace"><small>mldivide</small></a></li>
+					<li><a href="timeseries.eq.html" class="text-decoration-none font-monospace"><small>eq</small></a></li>
+					<li><a href="timeseries.isequal.html" class="text-decoration-none font-monospace"><small>isequal</small></a></li>
+					<li><a href="timeseries.isequalwithequalnans.html" class="text-decoration-none font-monospace"><small>isequalwithequalnans</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList8" type="checkbox">
+				<label for="togList8">
+					<span><h6>Filtering and detrending</h6></span>
+					<span><h6>Filtering and detrending</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="timeseries.detrend.html" class="text-decoration-none font-monospace"><small>detrend</small></a></li>
+					<li><a href="timeseries.filter.html" class="text-decoration-none font-monospace"><small>filter</small></a></li>
+					<li><a href="timeseries.idealfilter.html" class="text-decoration-none font-monospace"><small>idealfilter</small></a></li>
+					<li><a href="timeseries.get.html" class="text-decoration-none font-monospace"><small>get</small></a></li>
+					<li><a href="timeseries.set.html" class="text-decoration-none font-monospace"><small>set</small></a></li>
+					<li><a href="timeseries.get.html" class="text-decoration-none font-monospace"><small>get</small></a></li>
+					<li><a href="timeseries.set.html" class="text-decoration-none font-monospace"><small>set</small></a></li>
+					<li><a href="timeseries.get.html" class="text-decoration-none font-monospace"><small>get</small></a></li>
+					<li><a href="timeseries.set.html" class="text-decoration-none font-monospace"><small>set</small></a></li>
+					<li><a href="timeseries.get.html" class="text-decoration-none font-monospace"><small>get</small></a></li>
+					<li><a href="timeseries.set.html" class="text-decoration-none font-monospace"><small>set</small></a></li>
+					<li><a href="timeseries.get.html" class="text-decoration-none font-monospace"><small>get</small></a></li>
+					<li><a href="timeseries.set.html" class="text-decoration-none font-monospace"><small>set</small></a></li>
+					<li><a href="timeseries.get.html" class="text-decoration-none font-monospace"><small>get</small></a></li>
+					<li><a href="timeseries.set.html" class="text-decoration-none font-monospace"><small>set</small></a></li>
+					<li><a href="timeseries.get.html" class="text-decoration-none font-monospace"><small>get</small></a></li>
+					<li><a href="timeseries.set.html" class="text-decoration-none font-monospace"><small>set</small></a></li>
+					<li><a href="timeseries.get.html" class="text-decoration-none font-monospace"><small>get</small></a></li>
+					<li><a href="timeseries.set.html" class="text-decoration-none font-monospace"><small>set</small></a></li>
+					<li><a href="timeseries.get.html" class="text-decoration-none font-monospace"><small>get</small></a></li>
+					<li><a href="timeseries.set.html" class="text-decoration-none font-monospace"><small>set</small></a></li>
+					<li><a href="timeseries.get.html" class="text-decoration-none font-monospace"><small>get</small></a></li>
+					<li><a href="timeseries.set.html" class="text-decoration-none font-monospace"><small>set</small></a></li>
+					<li><a href="timeseries.get.html" class="text-decoration-none font-monospace"><small>get</small></a></li>
+					<li><a href="timeseries.set.html" class="text-decoration-none font-monospace"><small>set</small></a></li>
+					<li><a href="timeseries.get.html" class="text-decoration-none font-monospace"><small>get</small></a></li>
+					<li><a href="timeseries.set.html" class="text-decoration-none font-monospace"><small>set</small></a></li>
+				</ul>
+				</div>
+			</div>
+
+			  </div>
+			  <div class="col-md-10">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <h3 class="d-inline-block mr-2">
+                Method&nbsp;Reference: <b><code>timeseries.synchronize</code></b>
+                </h3>
+              </div>
+            </div>
+            <div class="card-body">
+              <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                  <li class="breadcrumb-item"><a href="index.html">datatypes</a></li>
+                  <li class="breadcrumb-item"><a href="timeseries.html">timeseries</a></li>
+                  <li class="breadcrumb-item active" aria-current="page">synchronize</li>
+                </ol>
+              </nav>
+
+<p class="h5 fs"><code>timeseries: [<var>ts1</var>, <var>ts2</var>] = <b>synchronize</b> (<var>ts1</var>, <var>ts2</var>, <var>method</var>)</code></p>
+<p class="h5 fs fs-last"><code>timeseries: [<var>ts1</var>, <var>ts2</var>] = <b>synchronize</b> (&hellip;, <var>name</var>, <var>value</var>)</code></p>
+<p> Resample two series onto common times.
+</p>
+<div class="ms-5">
+<p> <code>[<var>ts1</var>, <var>ts2</var>] = synchronize (<var>ts1</var>, <var>ts2</var>,
+ <var>method</var>)</code> resamples both series onto one set of times within the
+ span both cover, chosen by <var>method</var>, matched in any case:
+</p>
+<dl compact="compact">
+<dt> <code>'union'</code></dt>
+<dd> every time of either series in that span;</dd>
+<dt> <code>'intersection'</code></dt>
+<dd> the times both series hold, within the tolerance;</dd>
+<dt> <code>'uniform'</code></dt>
+<dd> times from the start of the span, a step of <code>'Interval'</code> apart.</dd>
+</dl>
+
+<p> Series that do not overlap become series with no samples.  Each keeps its
+ own units, the times converted exactly; MATLAB converts them with errors
+ near the tenth digit.  Dated series are placed by their start dates, and
+ both results count from the earlier of the two unless
+ <code>'KeepOriginalTimes'</code> is <code>true</code>.  A dated series with an
+ undated one is refused, since the undated one has no calendar; MATLAB
+ then reads both as undated.
+</p>
+<p> The options, matched in any case:
+</p>
+<dl compact="compact">
+<dt> <code>'Interval'</code></dt>
+<dd> the step of <code>'uniform'</code>, a positive number in the first series&rsquo;
+ units, 1 by default; MATLAB accepts zero and negative steps and gives one
+ sample or none.</dd>
+<dt> <code>'InterpMethod'</code></dt>
+<dd> <code>'linear'</code> or <code>'zoh'</code>, for both series; by default each uses
+ its own.</dd>
+<dt> <code>'QualityCode'</code></dt>
+<dd> a quality code given to the times each series did not already hold, as
+ for <code>resample</code>.</dd>
+<dt> <code>'KeepOriginalTimes'</code></dt>
+<dd> <code>true</code> to keep each dated series on its own start date.</dd>
+<dt> <code>'tolerance'</code></dt>
+<dd> how close two times must be to count as one, in the first series&rsquo;
+ units, <code>1e-10</code> by default; the second series&rsquo; time is kept.  This
+ is the documented meaning; MATLAB ignores any tolerance above about
+ <code>1e-10</code>, so there <code>0.1</code> matches no times <code>0.05</code> apart,
+ while here it matches them.</dd>
+</dl>
+
+<p> Quality codes follow the rules of <code>resample</code>.
+</p>
+<p> <strong>See also: </strong>
+  <a href="timeseries.resample.html">timeseries.resample</a>, 
+  <a href="timeseries.append.html">timeseries.append</a>
+</p>
+<p><strong>Source Code: </strong>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/cde9efc/inst/timeseries.m#L1997">timeseries</a>
+</p>
+</div>
+        <div class="card rounded my-4">
+          <div class="card-header card-header-mod">
+            <div class="row d-flex flex-wrap align-items-center">
+              <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                <button class="btn btn-link fs-4 fw-normal d-inline-block mr-2 p-0 text-reset text-decoration-none"
+                  type="button" data-bs-toggle="collapse"
+                  data-bs-target="#timeseries_synchronize-example1" aria-expanded="true"
+                  aria-controls="timeseries_synchronize-example1">
+                Example: 1
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="collapse show" id="timeseries_synchronize-example1">
+            <div class="card-body">
+                <p><code>synchronize</code> resamples two series onto common times within the span both cover: the union of their times, their intersection, or a uniform grid.</p>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> a = timeseries ([1; 2; 3], [0; 2; 4]);
+ b = timeseries ([10; 20; 30], [1; 2; 3]);
+ [a2, b2] = synchronize (a, b, 'union');
+ [a2.Time, a2.Data, b2.Data]</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
+
+    1.0000    1.5000   10.0000
+    2.0000    2.0000   20.0000
+    3.0000    2.5000   30.0000</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> [a2, b2] = synchronize (a, b, 'uniform', 'Interval', 0.5);
+ [a2.Time, a2.Data, b2.Data]</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
+
+    1.0000    1.5000   10.0000
+    1.5000    1.7500   15.0000
+    2.0000    2.0000   20.0000
+    2.5000    2.2500   25.0000
+    3.0000    2.5000   30.0000</pre>
+
+            </div>
+          </div>
+        </div>
+
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </body>
+</html>

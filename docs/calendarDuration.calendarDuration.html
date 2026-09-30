@@ -454,7 +454,7 @@
   <a href="duration.html">duration</a>
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/calendarDuration.m#L221">calendarDuration</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/cde9efc/inst/calendarDuration.m#L221">calendarDuration</a>
 </p>
 </div>
         <div class="card rounded my-4">
@@ -472,7 +472,7 @@
           </div>
           <div class="collapse show" id="calendarDuration_calendarDuration-example1">
             <div class="card-body">
-                <p><code>calendarDuration</code> represents a span in <em>calendar</em> units — years, months, days, and a time-of-day.  A calendar month or year is a real calendar step, not a fixed number of days, which is what sets it apart from <code>duration</code>. Give years, months and days:</p>
+                <p><code>calendarDuration</code> represents a span in <em>calendar</em> units: years, months, days, and a time-of-day.  A calendar month or year is a real calendar step, not a fixed number of days, which is what sets it apart from <code>duration</code>.  Give years, months and days:</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> calendarDuration (1, 3, 10)</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
   calendarDuration
@@ -498,7 +498,7 @@
           </div>
           <div class="collapse show" id="calendarDuration_calendarDuration-example2">
             <div class="card-body">
-                <p>Overflowing whole units normalise: 14 months rolls up into 1 year 2 months. Days are kept separate (a month has no fixed number of days), so 40 stays 40.</p>
+                <p>Overflowing whole units normalise: 14 months rolls up into 1 year 2 months.  Days are kept separate (a month has no fixed number of days), so 40 stays 40.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> calendarDuration (1, 14, 40)</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
   calendarDuration
@@ -550,7 +550,7 @@
           </div>
           <div class="collapse show" id="calendarDuration_calendarDuration-example4">
             <div class="card-body">
-                <p>The <code>'Format'</code> option controls how the SAME span is broken down for display. A format must contain <code>m</code>, <code>d</code> and <code>t</code>; it may also use <code>y</code> (years), <code>q</code> (quarters) and <code>w</code> (weeks), listed in the order y q m w d t.  Here one span shown four ways:</p>
+                <p>The <code>'Format'</code> option controls how the SAME span is broken down for display.  A format must contain <code>m</code>, <code>d</code> and <code>t</code>; it may also use <code>y</code> (years), <code>q</code> (quarters) and <code>w</code> (weeks), listed in the order y q m w d t. Here one span shown four ways:</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> calendarDuration (1, 14, 40, 'Format', 'ymdt')</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
   calendarDuration
@@ -591,7 +591,7 @@
           </div>
           <div class="collapse show" id="calendarDuration_calendarDuration-example5">
             <div class="card-body">
-                <p>A numeric matrix with three (or six) columns builds a whole array at once — one calendar duration per row.</p>
+                <p>A numeric matrix with three (or six) columns builds a whole array at once, one calendar duration per row.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> calendarDuration ([1, 2, 15; 0, 6, 3])</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
   2x1 calendarDuration array

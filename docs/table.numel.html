@@ -354,7 +354,6 @@
 					<li><a href="table.isscalar.html" class="text-decoration-none font-monospace"><small>isscalar</small></a></li>
 					<li><a href="table.istable.html" class="text-decoration-none font-monospace"><small>istable</small></a></li>
 					<li><a href="table.isvector.html" class="text-decoration-none font-monospace"><small>isvector</small></a></li>
-					<li><a href="table.length.html" class="text-decoration-none font-monospace"><small>length</small></a></li>
 					<li><a href="table.ndims.html" class="text-decoration-none font-monospace"><small>ndims</small></a></li>
 					<li><a href="table.numel.html" class="text-decoration-none font-monospace fw-bolder"><small>numel</small></a></li>
 					<li><a href="table.repelem.html" class="text-decoration-none font-monospace"><small>repelem</small></a></li>
@@ -398,7 +397,7 @@
  and the number of variables, not the underlying columns.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/table.m#L4165">table</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/cde9efc/inst/table.m#L4249">table</a>
 </p>
 </div>
         <div class="card rounded my-4">
@@ -416,7 +415,7 @@
           </div>
           <div class="collapse show" id="table_numel-example1">
             <div class="card-body">
-                <p>For a table <code>numel</code> returns rows times variables — the number of table <em>cells</em> — not the count of underlying data elements.  This 3-by-2 table therefore has 6 cells even though <code>BloodPressure</code> holds two columns.</p>
+                <p>For a table <code>numel</code> returns rows times variables, the number of table <em>cells</em>, not the count of underlying data elements.  This 3-by-2 table therefore has 6 cells even though <code>BloodPressure</code> holds two columns.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> Age = [38; 43; 40];
  Smoker = logical ([1; 0; 1]);
  BloodPressure = [124, 93; 109, 77; 117, 75];

@@ -354,7 +354,6 @@
 					<li><a href="table.isscalar.html" class="text-decoration-none font-monospace"><small>isscalar</small></a></li>
 					<li><a href="table.istable.html" class="text-decoration-none font-monospace"><small>istable</small></a></li>
 					<li><a href="table.isvector.html" class="text-decoration-none font-monospace"><small>isvector</small></a></li>
-					<li><a href="table.length.html" class="text-decoration-none font-monospace"><small>length</small></a></li>
 					<li><a href="table.ndims.html" class="text-decoration-none font-monospace"><small>ndims</small></a></li>
 					<li><a href="table.numel.html" class="text-decoration-none font-monospace"><small>numel</small></a></li>
 					<li><a href="table.repelem.html" class="text-decoration-none font-monospace"><small>repelem</small></a></li>
@@ -424,8 +423,9 @@
 <dt> <code>'SeparateInputs'</code></dt>
 <dd> A logical scalar.  When <code>true</code> (the default), the value of each
  input variable is passed to <var>func</var> as a separate argument.  When
- <code>false</code>, the values of the row are horizontally concatenated and
- passed as a single argument.</dd>
+ <code>false</code>, the values of the row are joined into one array, as
+ <code>table2array</code> joins the variables, and passed as a single
+ argument.  Variables that cannot form one array are refused.</dd>
 <dt> <code>'ExtractCellContents'</code></dt>
 <dd> A logical scalar.  When <code>true</code>, the contents of cell-valued
  variables are extracted before being passed to <var>func</var>.  It defaults
@@ -444,7 +444,7 @@
 </dl>
 
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/table.m#L3376">table</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/cde9efc/inst/table.m#L3469">table</a>
 </p>
 </div>
         <div class="card rounded my-4">
@@ -462,7 +462,7 @@
           </div>
           <div class="collapse show" id="table_rowfun-example1">
             <div class="card-body">
-                <p><code>rowfun</code> applies a function to each row, passing that row's variables as separate arguments — a row-wise map, complementing the column-wise <code>varfun</code>.</p>
+                <p><code>rowfun</code> applies a function to each row, passing that row's variables as separate arguments: a row-wise map, complementing the column-wise <code>varfun</code>.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> Weight = [176; 163; 133];
  Height = [71; 69; 64];
  T = table (Weight, Height)</pre>

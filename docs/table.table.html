@@ -354,7 +354,6 @@
 					<li><a href="table.isscalar.html" class="text-decoration-none font-monospace"><small>isscalar</small></a></li>
 					<li><a href="table.istable.html" class="text-decoration-none font-monospace"><small>istable</small></a></li>
 					<li><a href="table.isvector.html" class="text-decoration-none font-monospace"><small>isvector</small></a></li>
-					<li><a href="table.length.html" class="text-decoration-none font-monospace"><small>length</small></a></li>
 					<li><a href="table.ndims.html" class="text-decoration-none font-monospace"><small>ndims</small></a></li>
 					<li><a href="table.numel.html" class="text-decoration-none font-monospace"><small>numel</small></a></li>
 					<li><a href="table.repelem.html" class="text-decoration-none font-monospace"><small>repelem</small></a></li>
@@ -429,7 +428,7 @@
  variables.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/table.m#L398">table</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/cde9efc/inst/table.m#L413">table</a>
 </p>
 </div>
         <div class="card rounded my-4">
@@ -715,7 +714,7 @@
     06-Feb-2024    
     07-Mar-2024    
     08-Apr-2024</pre>
-                <p>Parenthesis indexing selects a sub-table — the result is still a table.</p>
+                <p>Parenthesis indexing selects a sub-table; the result is still a table.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> T(1:2, {'Name', 'Age'})</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
   2x2 table
@@ -814,7 +813,7 @@
           </div>
           <div class="collapse show" id="table_table-example9">
             <div class="card-body">
-                <p>This implementation fully supports <strong>chained</strong> referencing and assignment — indexing that reaches through several levels in a single expression.  (Octave extension: MATLAB permits chained <em>reference</em> but not chained <em>assignment</em>.)</p>
+                <p>This implementation fully supports <strong>chained</strong> referencing and assignment: indexing that reaches through several levels in a single expression. (Octave extension: MATLAB permits chained <em>reference</em> but not chained <em>assignment</em>.)</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> Age = [38; 43; 38; 40];
  Height = [71; 69; 64; 67];
  T = table (Age, Height)</pre>
@@ -857,7 +856,7 @@
           </div>
           <div class="collapse show" id="table_table-example10">
             <div class="card-body">
-                <p>Chaining is most useful with nested tables, reaching an inner variable directly — again both for reading and, unlike MATLAB, for writing.</p>
+                <p>Chaining is most useful with nested tables, reaching an inner variable directly, again both for reading and, unlike MATLAB, for writing.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> Inner = table ([1; 2; 3], [4; 5; 6], 'VariableNames', {'p', 'q'})</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">Inner =
   3x2 table

@@ -1,0 +1,1311 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Data Types for GNU Octave: timeseries</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj" crossorigin="anonymous"></script>
+    <script type="text/javascript" async
+      src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS_CHTML">
+    </script>
+    <script type="text/javascript">
+      window.addEventListener("load", () => {
+        for (let i of document.querySelectorAll(".collapse ul")) {
+          let tog = document.createElement("div");
+          tog.innerHTML = i.previousSibling.textContent;
+          tog.className = "toggle";
+          tog.onclick = () => tog.classList.toggle("show");
+          i.parentElement.removeChild(i.previousSibling);
+          i.parentElement.insertBefore(tog, i);
+        }
+      });
+      // Open the collapsible demo an "#example" link points to, then scroll to
+      // it.  getElementById (not querySelector) matches ids that contain a dot,
+      // e.g. "Class.method-example1".
+      function openHashTarget () {
+        if (! window.location.hash) { return; }
+        let el = document.getElementById (
+          decodeURIComponent (window.location.hash.slice (1)));
+        if (! el) { return; }
+        if (el.classList.contains ("collapse") &&
+            ! el.classList.contains ("show")) {
+          bootstrap.Collapse.getOrCreateInstance (el).show ();
+        }
+        el.scrollIntoView ();
+      }
+      window.addEventListener ("DOMContentLoaded", openHashTarget);
+      window.addEventListener ("hashchange", openHashTarget);
+      // When the collapsible named by the current URL fragment is collapsed,
+      // drop the fragment (replaceState: no scroll, no history entry).  Otherwise
+      // the fragment would still equal this id, so clicking the same #example
+      // link again fires no "hashchange" and the example would not re-expand.
+      document.addEventListener ("hide.bs.collapse", (e) => {
+        if (e.target.id && window.location.hash === "#" + e.target.id) {
+          history.replaceState (null, "",
+            window.location.pathname + window.location.search);
+        }
+      });
+      // Let the browser's find-in-page reach the text inside a collapsed
+      // panel.  The attribute "hidden=until-found" is what makes content
+      // searchable and revealable; the style block below clears the
+      // "display: none" that would otherwise stop the attribute meaning
+      // anything, a box that is not generated having nothing to reveal.  Set
+      // it only where it is understood, which "content-visibility" is no test
+      // for, Firefox having shipped the two apart.  Where it is not, the panel
+      // keeps the user agent's plain [hidden] and the page behaves as before.
+      window.addEventListener ("DOMContentLoaded", () => {
+        if (! ("onbeforematch" in document.body)) { return; }
+        document.documentElement.classList.add ("until-found");
+        let panels = document.querySelectorAll (
+          ".collapse:not(.show):not(.navbar-collapse)");
+        for (let el of panels) {
+          el.setAttribute ("hidden", "until-found");
+          // Fired on a find-in-page hit, before the browser drops the
+          // attribute and scrolls to it.  Bootstrap keeps a panel's state in
+          // its class list, so adding the class here opens the panel in the
+          // same frame and leaves the button shutting it correctly afterwards.
+          // Bootstrap's own show () would animate against that scroll, and the
+          // attribute once dropped, "display: none" would take the panel back
+          // part way through.
+          el.addEventListener ("beforematch", () => {
+            el.classList.add ("show");
+            for (let b of document.querySelectorAll ("[data-bs-target]")) {
+              if (b.getAttribute ("data-bs-target") === "#" + el.id) {
+                b.setAttribute ("aria-expanded", "true");
+              }
+            }
+          });
+        }
+        // Drop the attribute before Bootstrap measures the panel it is opening,
+        // which it does after firing this; a revealable one measures nothing.
+        document.addEventListener ("show.bs.collapse", (e) => {
+          e.target.removeAttribute ("hidden");
+        });
+        // Restore it once the panel is shut, rather than while it is shutting.
+        document.addEventListener ("hidden.bs.collapse", (e) => {
+          if (! e.target.classList.contains ("navbar-collapse")) {
+            e.target.setAttribute ("hidden", "until-found");
+          }
+        });
+      });
+    </script>
+    <style>
+    .fs {
+    margin-top: -0.15em;
+    margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
+    }
+    h6:hover {
+      color: gray;
+    }
+    code {
+    font-family: Consolas, "Courier New", monospace;
+    border-radius: 0.3em;
+    white-space: nowrap;
+    color: gray;
+    }
+    code.description {
+    font-family: Consolas, "Courier New", monospace;
+    border-radius: 0.3em;
+    white-space: normal;
+    font-size:1.2em;
+    color: gray;
+    }
+    var {
+    font-family: Consolas, "Courier New", monospace;
+    border-radius: 0.3em;
+    font-style: normal;
+    font-weight: bold;
+    color: gray;
+    }
+    td {
+      vertical-align: top;
+    }
+    [id^="togList"],                        /* HIDE CHECKBOX */
+    [id^="togList"] ~ .list,                /* HIDE LIST */
+    [id^="togList"] + label  span + span,   /* HIDE "Collapse" */
+    [id^="togList"]:checked + label span{   /* HIDE "Expand" (IF CHECKED) */
+      display:none;
+    }
+    [id^="togList"]:checked + label span + span{
+      display:inline-block;                 /* SHOW "Collapse" (IF CHECKED) */
+    }
+    [id^="togList"]:checked ~ .list{
+      display:block;                        /* SHOW LIST (IF CHECKED) */
+    }
+    /* Bootstrap hides a collapsed panel with "display: none", which generates
+       no box, so the "content-visibility: hidden" the user agent gives
+       "hidden=until-found" could never apply and the text would stay beyond
+       find-in-page.  Clear that one declaration, and only where the script
+       above has found the attribute to be understood: an attribute selector
+       matches a value the browser does not understand, so an ungated rule
+       would leave every panel of an older browser standing open.  The
+       "!important" is required rather than decoration: the reboot carries
+       "[hidden] {display: none !important}", which the attribute itself brings
+       into play, and only another "!important" can outrank it. */
+    html.until-found .collapse[hidden="until-found"]:not(.show) {
+      display: block !important;
+    }
+    </style>
+  </head>
+  <body>
+    <div class="bg-dark">
+      <div class="container-xl">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+          <div class="container-fluid">
+            <a class="navbar-brand" href=index.html>
+              <img src="assets/datatypes.png" alt="datatypes" class="d-inline-block align-top" width="25" height="25">
+              Data Types for GNU Octave
+            </a>
+            <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+              <ul class="navbar-nav">
+                <li class="nav-item">
+                  <a class="nav-link" href="index.html#timeseries objects">
+                    <i class="fas fa-list-alt"></i>
+                    timeseries objects
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="https://gnu-octave.github.io/packages/">
+                  <img src="assets/octave-logo.svg" alt="GNU Octave logo" class="d-inline-block align-top" width="25" height="25">
+                    Octave Packages
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="https://www.octave.org">
+                    <i class="fas fa-home"></i>
+                    GNU Octave website
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </div>
+    <div class="container-xl my-4">
+      <div class="row flex-nowrap" style="min-height:0">
+        <div class="col-md-2 bg-light" style="overflow-y: scroll; width: 250px;">
+          <div class="p-2" style="text-align: center;">
+            <h3>Categories &</h3>
+            <h4 style="color: blue">Functions List</h4>
+          </div>
+			<div class="row">
+				<input id="togList1" type="checkbox">
+				<label for="togList1">
+					<span><h6>categorical arrays</h6></span>
+					<span><h6>categorical arrays</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="categorical.html" class="text-decoration-none font-monospace"><small>categorical</small></a></li>
+					<li><a href="iscategorical.html" class="text-decoration-none font-monospace"><small>iscategorical</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList2" type="checkbox">
+				<label for="togList2">
+					<span><h6>calendarDuration arrays</h6></span>
+					<span><h6>calendarDuration arrays</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="calendarDuration.html" class="text-decoration-none font-monospace"><small>calendarDuration</small></a></li>
+					<li><a href="caldays.html" class="text-decoration-none font-monospace"><small>caldays</small></a></li>
+					<li><a href="calweeks.html" class="text-decoration-none font-monospace"><small>calweeks</small></a></li>
+					<li><a href="calmonths.html" class="text-decoration-none font-monospace"><small>calmonths</small></a></li>
+					<li><a href="calquarters.html" class="text-decoration-none font-monospace"><small>calquarters</small></a></li>
+					<li><a href="calyears.html" class="text-decoration-none font-monospace"><small>calyears</small></a></li>
+					<li><a href="iscalendarduration.html" class="text-decoration-none font-monospace"><small>iscalendarduration</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList3" type="checkbox">
+				<label for="togList3">
+					<span><h6>datetime arrays</h6></span>
+					<span><h6>datetime arrays</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="datetime.html" class="text-decoration-none font-monospace"><small>datetime</small></a></li>
+					<li><a href="isdatetime.html" class="text-decoration-none font-monospace"><small>isdatetime</small></a></li>
+					<li><a href="isnat.html" class="text-decoration-none font-monospace"><small>isnat</small></a></li>
+					<li><a href="NaT.html" class="text-decoration-none font-monospace"><small>NaT</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList4" type="checkbox">
+				<label for="togList4">
+					<span><h6>duration arrays</h6></span>
+					<span><h6>duration arrays</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="duration.html" class="text-decoration-none font-monospace"><small>duration</small></a></li>
+					<li><a href="days.html" class="text-decoration-none font-monospace"><small>days</small></a></li>
+					<li><a href="years.html" class="text-decoration-none font-monospace"><small>years</small></a></li>
+					<li><a href="hours.html" class="text-decoration-none font-monospace"><small>hours</small></a></li>
+					<li><a href="minutes.html" class="text-decoration-none font-monospace"><small>minutes</small></a></li>
+					<li><a href="seconds.html" class="text-decoration-none font-monospace"><small>seconds</small></a></li>
+					<li><a href="milliseconds.html" class="text-decoration-none font-monospace"><small>milliseconds</small></a></li>
+					<li><a href="isduration.html" class="text-decoration-none font-monospace"><small>isduration</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList5" type="checkbox">
+				<label for="togList5">
+					<span><h6>string arrays</h6></span>
+					<span><h6>string arrays</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="string.html" class="text-decoration-none font-monospace"><small>string</small></a></li>
+					<li><a href="strings.html" class="text-decoration-none font-monospace"><small>strings</small></a></li>
+					<li><a href="convertCharsToStrings.html" class="text-decoration-none font-monospace"><small>convertCharsToStrings</small></a></li>
+					<li><a href="convertStringsToChars.html" class="text-decoration-none font-monospace"><small>convertStringsToChars</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList6" type="checkbox">
+				<label for="togList6">
+					<span><h6>table arrays</h6></span>
+					<span><h6>table arrays</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="table.html" class="text-decoration-none font-monospace"><small>table</small></a></li>
+					<li><a href="array2table.html" class="text-decoration-none font-monospace"><small>array2table</small></a></li>
+					<li><a href="cell2table.html" class="text-decoration-none font-monospace"><small>cell2table</small></a></li>
+					<li><a href="csv2table.html" class="text-decoration-none font-monospace"><small>csv2table</small></a></li>
+					<li><a href="ods2table.html" class="text-decoration-none font-monospace"><small>ods2table</small></a></li>
+					<li><a href="ods2struct.html" class="text-decoration-none font-monospace"><small>ods2struct</small></a></li>
+					<li><a href="readtable.html" class="text-decoration-none font-monospace"><small>readtable</small></a></li>
+					<li><a href="struct2ods.html" class="text-decoration-none font-monospace"><small>struct2ods</small></a></li>
+					<li><a href="struct2xlsx.html" class="text-decoration-none font-monospace"><small>struct2xlsx</small></a></li>
+					<li><a href="struct2table.html" class="text-decoration-none font-monospace"><small>struct2table</small></a></li>
+					<li><a href="xlsx2struct.html" class="text-decoration-none font-monospace"><small>xlsx2struct</small></a></li>
+					<li><a href="istable.html" class="text-decoration-none font-monospace"><small>istable</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList7" type="checkbox">
+				<label for="togList7">
+					<span><h6>timetable arrays</h6></span>
+					<span><h6>timetable arrays</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="timetable.html" class="text-decoration-none font-monospace"><small>timetable</small></a></li>
+					<li><a href="array2timetable.html" class="text-decoration-none font-monospace"><small>array2timetable</small></a></li>
+					<li><a href="csv2timetable.html" class="text-decoration-none font-monospace"><small>csv2timetable</small></a></li>
+					<li><a href="ods2timetable.html" class="text-decoration-none font-monospace"><small>ods2timetable</small></a></li>
+					<li><a href="readtimetable.html" class="text-decoration-none font-monospace"><small>readtimetable</small></a></li>
+					<li><a href="istimetable.html" class="text-decoration-none font-monospace"><small>istimetable</small></a></li>
+					<li><a href="eventtable.html" class="text-decoration-none font-monospace"><small>eventtable</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList8" type="checkbox" checked>
+				<label for="togList8">
+					<span><h6>timeseries objects</h6></span>
+					<span><h6>timeseries objects</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="timeseries.html" class="text-decoration-none font-monospace fw-bolder"><small>timeseries</small></a></li>
+					<li><a href="istimeseries.html" class="text-decoration-none font-monospace"><small>istimeseries</small></a></li>
+					<li><a href="tscollection.html" class="text-decoration-none font-monospace"><small>tscollection</small></a></li>
+					<li><a href="istscollection.html" class="text-decoration-none font-monospace"><small>istscollection</small></a></li>
+					<li><a href="timeseries2timetable.html" class="text-decoration-none font-monospace"><small>timeseries2timetable</small></a></li>
+					<li><a href="tsdata.timemetadata.html" class="text-decoration-none font-monospace"><small>tsdata.timemetadata</small></a></li>
+					<li><a href="tsdata.datametadata.html" class="text-decoration-none font-monospace"><small>tsdata.datametadata</small></a></li>
+					<li><a href="tsdata.qualmetadata.html" class="text-decoration-none font-monospace"><small>tsdata.qualmetadata</small></a></li>
+					<li><a href="tsdata.interpolation.html" class="text-decoration-none font-monospace"><small>tsdata.interpolation</small></a></li>
+					<li><a href="tsdata.event.html" class="text-decoration-none font-monospace"><small>tsdata.event</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList9" type="checkbox">
+				<label for="togList9">
+					<span><h6>supplementary classes</h6></span>
+					<span><h6>supplementary classes</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="tabular.html" class="text-decoration-none font-monospace"><small>tabular</small></a></li>
+					<li><a href="missing.html" class="text-decoration-none font-monospace"><small>missing</small></a></li>
+					<li><a href="vartype.html" class="text-decoration-none font-monospace"><small>vartype</small></a></li>
+					<li><a href="timerange.html" class="text-decoration-none font-monospace"><small>timerange</small></a></li>
+					<li><a href="withtol.html" class="text-decoration-none font-monospace"><small>withtol</small></a></li>
+					<li><a href="rowfilter.html" class="text-decoration-none font-monospace"><small>rowfilter</small></a></li>
+					<li><a href="eventfilter.html" class="text-decoration-none font-monospace"><small>eventfilter</small></a></li>
+					<li><a href="@cell_disp.html" class="text-decoration-none font-monospace"><small>@cell/disp</small></a></li>
+					<li><a href="@cell_display.html" class="text-decoration-none font-monospace"><small>@cell/display</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList10" type="checkbox">
+				<label for="togList10">
+					<span><h6>supplementary functions</h6></span>
+					<span><h6>supplementary functions</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="findgroups.html" class="text-decoration-none font-monospace"><small>findgroups</small></a></li>
+					<li><a href="splitapply.html" class="text-decoration-none font-monospace"><small>splitapply</small></a></li>
+					<li><a href="groupcounts.html" class="text-decoration-none font-monospace"><small>groupcounts</small></a></li>
+					<li><a href="groupfilter.html" class="text-decoration-none font-monospace"><small>groupfilter</small></a></li>
+					<li><a href="groupsummary.html" class="text-decoration-none font-monospace"><small>groupsummary</small></a></li>
+					<li><a href="grouptransform.html" class="text-decoration-none font-monospace"><small>grouptransform</small></a></li>
+					<li><a href="discretize.html" class="text-decoration-none font-monospace"><small>discretize</small></a></li>
+					<li><a href="histcounts.html" class="text-decoration-none font-monospace"><small>histcounts</small></a></li>
+					<li><a href="keyHash.html" class="text-decoration-none font-monospace"><small>keyHash</small></a></li>
+					<li><a href="keyMatch.html" class="text-decoration-none font-monospace"><small>keyMatch</small></a></li>
+					<li><a href="parsePairedArguments.html" class="text-decoration-none font-monospace"><small>parsePairedArguments</small></a></li>
+					<li><a href="istabular.html" class="text-decoration-none font-monospace"><small>istabular</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList11" type="checkbox">
+				<label for="togList11">
+					<span><h6>compiled functions</h6></span>
+					<span><h6>compiled functions</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="__ckeyHash__.html" class="text-decoration-none font-monospace"><small>__ckeyHash__</small></a></li>
+					<li><a href="__nkeyHash__.html" class="text-decoration-none font-monospace"><small>__nkeyHash__</small></a></li>
+					<li><a href="__datetime__.html" class="text-decoration-none font-monospace"><small>__datetime__</small></a></li>
+					<li><a href="__ldml__.html" class="text-decoration-none font-monospace"><small>__ldml__</small></a></li>
+					<li><a href="__csv2table__.html" class="text-decoration-none font-monospace"><small>__csv2table__</small></a></li>
+					<li><a href="__table2csv__.html" class="text-decoration-none font-monospace"><small>__table2csv__</small></a></li>
+					<li><a href="__ods2table__.html" class="text-decoration-none font-monospace"><small>__ods2table__</small></a></li>
+					<li><a href="__table2ods__.html" class="text-decoration-none font-monospace"><small>__table2ods__</small></a></li>
+					<li><a href="__xlsx2table__.html" class="text-decoration-none font-monospace"><small>__xlsx2table__</small></a></li>
+					<li><a href="__table2xlsx__.html" class="text-decoration-none font-monospace"><small>__table2xlsx__</small></a></li>
+				</ul>
+				</div>
+			</div>
+
+			  </div>
+			  <div class="col-md-10">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <h3 class="d-inline-block mr-2">
+                Class&nbsp;Definition: <b><code>timeseries</code></b>
+                </h3>
+              </div>
+            </div>
+            <div class="card-body">
+<p class="h5 description mb-3"><code>datatypes: timeseries</code></p>
+<p> Array of samples indexed by time.
+</p>
+<div class="ms-5">
+<p> A <code>timeseries</code> object holds a sequence of samples, each taken at a
+ time on a common time vector, together with the metadata that describes
+ them: the units of the data and of the time, an optional absolute start
+ date, the method of evaluating the series between samples, a quality code
+ per sample, and named events.
+</p>
+<p> Each sample may be a scalar, a vector, or an array.  The time vector runs
+ either down the first dimension of the data, each row being a sample, or
+ along its last dimension, each slice being one; <code>IsTimeFirst</code>
+ reports which, as the constructor describes.
+</p>
+<p> <code>timeseries</code> is a value class: every method returns a modified copy
+ and leaves its input unchanged.  An array of <code>timeseries</code> objects is
+ built by concatenation, as <code>[<var>ts1</var>, <var>ts2</var>]</code>.
+</p>
+<p> MATLAB recommends <code>timetable</code> for new code; <code>timeseries</code> is
+ provided for code that exchanges it.
+</p>
+<p> Property names are case-sensitive in dot indexing, as for every other
+ class; MATLAB also reads <code><var>ts</var>.name</code> for
+ <code><var>ts</var>.Name</code>.  <code>get</code> and <code>set</code> accept any case.
+</p>
+<p> <strong>See also: </strong>
+  <a href="tscollection.html">tscollection</a>, 
+  <a href="timeseries2timetable.html">timeseries2timetable</a>, 
+  <a href="timetable.html">timetable</a>, 
+  <a href="tsdata.timemetadata.html">tsdata.timemetadata</a>, 
+  <a href="tsdata.datametadata.html">tsdata.datametadata</a>, 
+  <a href="tsdata.qualmetadata.html">tsdata.qualmetadata</a>, 
+  <a href="tsdata.event.html">tsdata.event</a>, 
+  <a href="tsdata.interpolation.html">tsdata.interpolation</a>
+</p>
+<p><strong>Source Code: </strong>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/cde9efc/inst/timeseries.m">timeseries</a>
+</p>
+</div>
+        <p class="lead my-3">The <code>timeseries</code> class contains the following properties:</p>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#timeseries_Events"
+              aria-expanded="false" aria-controls="timeseries_Events">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>Events</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+The events of the series.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="timeseries_Events">
+            <div class="border-bottom py-2">
+<p> </p>
+<p> A vector of <code>tsdata.event</code> objects, or <code>[]</code> when there are
+ none, by default.
+</p>
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#timeseries_Name"
+              aria-expanded="false" aria-controls="timeseries_Name">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>Name</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+The name of the series.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="timeseries_Name">
+            <div class="border-bottom py-2">
+<p> </p>
+<p> A character vector, <code>'unnamed'</code> by default, and <code>''</code> for a
+ series created with no argument.  A string scalar is converted; any
+ other value is refused, where MATLAB accepts it.
+</p>
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#timeseries_UserData"
+              aria-expanded="false" aria-controls="timeseries_UserData">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>UserData</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Any data the user attaches, <code>[]</code> by default.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="timeseries_UserData">
+            <div class="border-bottom py-2">
+<p> </p>
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#timeseries_Data"
+              aria-expanded="false" aria-controls="timeseries_Data">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>Data</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+The samples.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="timeseries_Data">
+            <div class="border-bottom py-2">
+<p> </p>
+<p> A numeric or logical array of any class, holding one sample per time
+ and read against the time vector as the constructor describes: rows,
+ or slices along the last dimension, with a matrix of as many columns
+ as there are times stored as an <code>Rx1xN</code> array.  Any other number
+ of samples than there are times is refused, except while one of the
+ two is empty, which lets a series be built by assigning <code>Time</code>
+ and <code>Data</code> in turn.
+</p>
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#timeseries_DataInfo"
+              aria-expanded="false" aria-controls="timeseries_DataInfo">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>DataInfo</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+The metadata of the data, a <code>tsdata.datametadata</code> object.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="timeseries_DataInfo">
+            <div class="border-bottom py-2">
+<p> </p>
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#timeseries_Time"
+              aria-expanded="false" aria-controls="timeseries_Time">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>Time</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+The time vector.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="timeseries_Time">
+            <div class="border-bottom py-2">
+<p> </p>
+<p> A column vector of finite, non-decreasing times, in
+ <code><var>ts</var>.TimeInfo.Units</code>, counted from
+ <code><var>ts</var>.TimeInfo.StartDate</code> when that is set.  Repeated times
+ are allowed.  An unsorted time vector is refused on assignment, since
+ sorting it would move samples it was not given with.  It is stored as
+ <code>double</code>: MATLAB keeps an integer class, and then rounds new times
+ to it.
+</p>
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#timeseries_TimeInfo"
+              aria-expanded="false" aria-controls="timeseries_TimeInfo">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>TimeInfo</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+The metadata of the time vector, a <code>tsdata.timemetadata</code> object.
+ Its <code>Length</code>, <code>Start</code>, <code>End</code> and <code>Increment</code>
+ follow <code>Time</code> and cannot be assigned.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="timeseries_TimeInfo">
+            <div class="border-bottom py-2">
+<p> </p>
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#timeseries_Quality"
+              aria-expanded="false" aria-controls="timeseries_Quality">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>Quality</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+A quality code per sample.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="timeseries_Quality">
+            <div class="border-bottom py-2">
+<p> </p>
+<p> Integers from -128 to 127, stored as <code>double</code>, <code>[]</code> by
+ default.  Either one code per sample, as a vector, or one per data
+ element, as an array the size of <code>Data</code>.  Their meaning is listed
+ in <code>QualityInfo</code>.
+</p>
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#timeseries_QualityInfo"
+              aria-expanded="false" aria-controls="timeseries_QualityInfo">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>QualityInfo</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+The description of the quality codes, a <code>tsdata.qualmetadata</code>
+ object.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="timeseries_QualityInfo">
+            <div class="border-bottom py-2">
+<p> </p>
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#timeseries_IsTimeFirst"
+              aria-expanded="false" aria-controls="timeseries_IsTimeFirst">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>IsTimeFirst</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Whether the time vector runs along the first dimension of the data.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="timeseries_IsTimeFirst">
+            <div class="border-bottom py-2">
+<p> </p>
+<p> <code>true</code> when each row of the data is a sample, <code>false</code> when
+ the time vector runs along the last dimension of the data, as the
+ constructor describes.  It is kept when samples are selected, so a
+ three-dimensional series cut to one sample holds a matrix with
+ <code>IsTimeFirst</code> still <code>false</code>.  Assigning the value it already
+ has is accepted, and assigning the other is refused, since it would
+ misalign the data with the time vector.
+</p>
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#timeseries_TreatNaNasMissing"
+              aria-expanded="false" aria-controls="timeseries_TreatNaNasMissing">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>TreatNaNasMissing</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Whether the statistics methods treat <code>NaN</code> as missing data.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="timeseries_TreatNaNasMissing">
+            <div class="border-bottom py-2">
+<p> </p>
+<p> A logical scalar, <code>true</code> by default; 0 and 1 are converted.
+</p>
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#timeseries_Length"
+              aria-expanded="false" aria-controls="timeseries_Length">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>Length</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+The number of samples, which is the length of the time vector.
+ Read-only.
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="timeseries_Length">
+            <div class="border-bottom py-2">
+<p> </p>
+
+
+            </div>
+          </div>
+        </div>
+
+        <p class="lead my-3">The <code>timeseries</code> class offers the following public methods:</p>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseGroup1"
+              aria-expanded="false" aria-controls="collapseGroup1">
+              <div class="row align-items-center">
+                <div class="col-12">
+                  <h4 class="d-inline-block mr-4">Create and describe 'timeseries'</h4>
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseGroup1">
+            <div class="border-bottom py-2">
+                  <table class="table table-striped">
+                    <tbody>
+                      <tr>
+                        <td><b><code><a href="timeseries.timeseries.html">timeseries</a></code></b></td>
+                        <td>Create a ‘timeseries’ object.
+
+  </td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.get.html">get</a></code></b></td>
+                        <td>Return property values.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.set.html">set</a></code></b></td>
+                        <td>Set property values.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseGroup2"
+              aria-expanded="false" aria-controls="collapseGroup2">
+              <div class="row align-items-center">
+                <div class="col-12">
+                  <h4 class="d-inline-block mr-4">Data and sample operations</h4>
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseGroup2">
+            <div class="border-bottom py-2">
+                  <table class="table table-striped">
+                    <tbody>
+                      <tr>
+                        <td><b><code><a href="timeseries.getdatasamples.html">getdatasamples</a></code></b></td>
+                        <td>Return the data of selected samples.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.getdatasamplesize.html">getdatasamplesize</a></code></b></td>
+                        <td>Return the size of one sample.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.getsamples.html">getsamples</a></code></b></td>
+                        <td>Return a series of selected samples.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.getsampleusingtime.html">getsampleusingtime</a></code></b></td>
+                        <td>Return a series of the samples at a time or between two times.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.addsample.html">addsample</a></code></b></td>
+                        <td>Add samples to a series.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.delsample.html">delsample</a></code></b></td>
+                        <td>Remove samples from a series.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.append.html">append</a></code></b></td>
+                        <td>Join series end to end in time.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.hasduplicatetimes.html">hasduplicatetimes</a></code></b></td>
+                        <td>True where a series repeats a time.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseGroup3"
+              aria-expanded="false" aria-controls="collapseGroup3">
+              <div class="row align-items-center">
+                <div class="col-12">
+                  <h4 class="d-inline-block mr-4">Time representation</h4>
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseGroup3">
+            <div class="border-bottom py-2">
+                  <table class="table table-striped">
+                    <tbody>
+                      <tr>
+                        <td><b><code><a href="timeseries.getabstime.html">getabstime</a></code></b></td>
+                        <td>Return the dates of the samples as text.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.setabstime.html">setabstime</a></code></b></td>
+                        <td>Set the time vector of a series from dates.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.setuniformtime.html">setuniformtime</a></code></b></td>
+                        <td>Give a series a uniform time vector.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseGroup4"
+              aria-expanded="false" aria-controls="collapseGroup4">
+              <div class="row align-items-center">
+                <div class="col-12">
+                  <h4 class="d-inline-block mr-4">Events</h4>
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseGroup4">
+            <div class="border-bottom py-2">
+                  <table class="table table-striped">
+                    <tbody>
+                      <tr>
+                        <td><b><code><a href="timeseries.addevent.html">addevent</a></code></b></td>
+                        <td>Add events to a series.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.delevent.html">delevent</a></code></b></td>
+                        <td>Remove events from a series.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.gettsbeforeevent.html">gettsbeforeevent</a></code></b></td>
+                        <td>Return a series of the samples before the event.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.gettsbeforeatevent.html">gettsbeforeatevent</a></code></b></td>
+                        <td>Return a series of the samples before and at the event.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.gettsatevent.html">gettsatevent</a></code></b></td>
+                        <td>Return a series of the samples at the event.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.gettsafteratevent.html">gettsafteratevent</a></code></b></td>
+                        <td>Return a series of the samples at and after the event.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.gettsafterevent.html">gettsafterevent</a></code></b></td>
+                        <td>Return a series of the samples after the event.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.gettsbetweenevents.html">gettsbetweenevents</a></code></b></td>
+                        <td>Return a series of the samples between two events.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseGroup5"
+              aria-expanded="false" aria-controls="collapseGroup5">
+              <div class="row align-items-center">
+                <div class="col-12">
+                  <h4 class="d-inline-block mr-4">Interpolation, resampling, synchronising</h4>
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseGroup5">
+            <div class="border-bottom py-2">
+                  <table class="table table-striped">
+                    <tbody>
+                      <tr>
+                        <td><b><code><a href="timeseries.getinterpmethod.html">getinterpmethod</a></code></b></td>
+                        <td>Return the name of the interpolation method.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.setinterpmethod.html">setinterpmethod</a></code></b></td>
+                        <td>Set the interpolation method.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.resample.html">resample</a></code></b></td>
+                        <td>Evaluate a series at new times.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.synchronize.html">synchronize</a></code></b></td>
+                        <td>Resample two series onto common times.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseGroup6"
+              aria-expanded="false" aria-controls="collapseGroup6">
+              <div class="row align-items-center">
+                <div class="col-12">
+                  <h4 class="d-inline-block mr-4">Statistics</h4>
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseGroup6">
+            <div class="border-bottom py-2">
+                  <table class="table table-striped">
+                    <tbody>
+                      <tr>
+                        <td><b><code><a href="timeseries.mean.html">mean</a></code></b></td>
+                        <td>Return the mean of a series over time.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.median.html">median</a></code></b></td>
+                        <td>Return the median of a series over time.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.mode.html">mode</a></code></b></td>
+                        <td>Return the mode of a series over time.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.std.html">std</a></code></b></td>
+                        <td>Return the standard deviation of a series over time.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.var.html">var</a></code></b></td>
+                        <td>Return the variance of a series over time.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.sum.html">sum</a></code></b></td>
+                        <td>Return the sum of a series over time.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.min.html">min</a></code></b></td>
+                        <td>Return the minimum of a series over time.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.max.html">max</a></code></b></td>
+                        <td>Return the maximum of a series over time.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.iqr.html">iqr</a></code></b></td>
+                        <td>Return the interquartile range of a series over time.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.getqualitydesc.html">getqualitydesc</a></code></b></td>
+                        <td>Return the description of each quality code.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseGroup7"
+              aria-expanded="false" aria-controls="collapseGroup7">
+              <div class="row align-items-center">
+                <div class="col-12">
+                  <h4 class="d-inline-block mr-4">Arithmetic and comparison</h4>
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseGroup7">
+            <div class="border-bottom py-2">
+                  <table class="table table-striped">
+                    <tbody>
+                      <tr>
+                        <td><b><code><a href="timeseries.plus.html">plus</a></code></b></td>
+                        <td>The sum of series, ‘A + B’.
+
+  </td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.minus.html">minus</a></code></b></td>
+                        <td>The difference of series, ‘A - B’.
+
+  </td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.times.html">times</a></code></b></td>
+                        <td>The element-wise product of series, ‘A .* B’.
+
+  </td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.mtimes.html">mtimes</a></code></b></td>
+                        <td>The matrix product of series, ‘A * B’.
+
+  </td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.rdivide.html">rdivide</a></code></b></td>
+                        <td>The element-wise quotient of series, ‘A ./ B’.
+
+  </td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.ldivide.html">ldivide</a></code></b></td>
+                        <td>The element-wise left quotient, ‘A .\ B’.
+
+  </td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.mrdivide.html">mrdivide</a></code></b></td>
+                        <td>The matrix right division of series, ‘A / B’.
+
+  </td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.mldivide.html">mldivide</a></code></b></td>
+                        <td>The matrix left division of series, ‘A \ B’.
+
+  </td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.eq.html">eq</a></code></b></td>
+                        <td>True when two series are equal, ‘A == B’.
+
+  </td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.isequal.html">isequal</a></code></b></td>
+                        <td>True when two series are equal.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.isequalwithequalnans.html">isequalwithequalnans</a></code></b></td>
+                        <td>True when two series are equal, ‘NaN’ equal to itself.
+
+  </td>
+                      </tr>
+                    </tbody>
+                  </table>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseGroup8"
+              aria-expanded="false" aria-controls="collapseGroup8">
+              <div class="row align-items-center">
+                <div class="col-12">
+                  <h4 class="d-inline-block mr-4">Filtering and detrending</h4>
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="collapseGroup8">
+            <div class="border-bottom py-2">
+                  <table class="table table-striped">
+                    <tbody>
+                      <tr>
+                        <td><b><code><a href="timeseries.detrend.html">detrend</a></code></b></td>
+                        <td>Remove a polynomial trend from a series.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.filter.html">filter</a></code></b></td>
+                        <td>Filter a series.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.idealfilter.html">idealfilter</a></code></b></td>
+                        <td>Filter a series with an ideal filter.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.get.html">get</a></code></b></td>
+                        <td>Return property values.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.set.html">set</a></code></b></td>
+                        <td>Set property values.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.get.html">get</a></code></b></td>
+                        <td>Return property values.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.set.html">set</a></code></b></td>
+                        <td>Set property values.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.get.html">get</a></code></b></td>
+                        <td>Return property values.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.set.html">set</a></code></b></td>
+                        <td>Set property values.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.get.html">get</a></code></b></td>
+                        <td>Return property values.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.set.html">set</a></code></b></td>
+                        <td>Set property values.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.get.html">get</a></code></b></td>
+                        <td>Return property values.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.set.html">set</a></code></b></td>
+                        <td>Set property values.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.get.html">get</a></code></b></td>
+                        <td>Return property values.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.set.html">set</a></code></b></td>
+                        <td>Set property values.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.get.html">get</a></code></b></td>
+                        <td>Return property values.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.set.html">set</a></code></b></td>
+                        <td>Set property values.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.get.html">get</a></code></b></td>
+                        <td>Return property values.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.set.html">set</a></code></b></td>
+                        <td>Set property values.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.get.html">get</a></code></b></td>
+                        <td>Return property values.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.set.html">set</a></code></b></td>
+                        <td>Set property values.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.get.html">get</a></code></b></td>
+                        <td>Return property values.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.set.html">set</a></code></b></td>
+                        <td>Set property values.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.get.html">get</a></code></b></td>
+                        <td>Return property values.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.set.html">set</a></code></b></td>
+                        <td>Set property values.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.get.html">get</a></code></b></td>
+                        <td>Return property values.</td>
+                      </tr>
+                      <tr>
+                        <td><b><code><a href="timeseries.set.html">set</a></code></b></td>
+                        <td>Set property values.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+
+            </div>
+          </div>
+        </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </body>
+</html>

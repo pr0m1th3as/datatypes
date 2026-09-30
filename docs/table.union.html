@@ -354,7 +354,6 @@
 					<li><a href="table.isscalar.html" class="text-decoration-none font-monospace"><small>isscalar</small></a></li>
 					<li><a href="table.istable.html" class="text-decoration-none font-monospace"><small>istable</small></a></li>
 					<li><a href="table.isvector.html" class="text-decoration-none font-monospace"><small>isvector</small></a></li>
-					<li><a href="table.length.html" class="text-decoration-none font-monospace"><small>length</small></a></li>
 					<li><a href="table.ndims.html" class="text-decoration-none font-monospace"><small>ndims</small></a></li>
 					<li><a href="table.numel.html" class="text-decoration-none font-monospace"><small>numel</small></a></li>
 					<li><a href="table.repelem.html" class="text-decoration-none font-monospace"><small>repelem</small></a></li>
@@ -398,6 +397,9 @@
  in the same order; <var>tbl</var> keeps the variable order of <var>tblA</var>.
  Rows are compared by their variable values only (row names are ignored),
  and by default <var>tbl</var> is sorted by those values.
+ A row holding a missing value (<code>NaN</code>, <code>NaT</code>,
+ <code>&lt;undefined&gt;</code> or <code>&lt;missing&gt;</code>) equals no other row, itself
+ included, and missing values sort last.
 </p>
 <p> <code><var>tbl</var> = union (<var>tblA</var>, <var>tblB</var>, <var>setOrder</var>)</code>
  controls the ordering of <var>tbl</var>.  <var>setOrder</var> is either
@@ -410,7 +412,7 @@
  <code><var>tblB</var>(<var>ixB</var>,:)</code>.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/table.m#L2701">table</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/cde9efc/inst/table.m#L2769">table</a>
 </p>
 </div>
         <div class="card rounded my-4">
@@ -428,7 +430,7 @@
           </div>
           <div class="collapse show" id="table_union-example1">
             <div class="card-body">
-                <p><code>union</code> returns the rows present in either table, with duplicates removed — set arithmetic over <em>whole rows</em>, comparing all variables together.  Both tables must share the same variables; here each row spans three types.</p>
+                <p><code>union</code> returns the rows present in either table, with duplicates removed: set arithmetic over <em>whole rows</em>, comparing all variables together.  Both tables must share the same variables; here each row spans three types.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> A = table ({'Li'; 'Diaz'; 'Brown'}, [38; 40; 49], ...
             categorical ({'NY'; 'CA'; 'MA'}), ...
             'VariableNames', {'Name', 'Age', 'State'})</pre>

@@ -354,7 +354,6 @@
 					<li><a href="table.isscalar.html" class="text-decoration-none font-monospace"><small>isscalar</small></a></li>
 					<li><a href="table.istable.html" class="text-decoration-none font-monospace"><small>istable</small></a></li>
 					<li><a href="table.isvector.html" class="text-decoration-none font-monospace"><small>isvector</small></a></li>
-					<li><a href="table.length.html" class="text-decoration-none font-monospace"><small>length</small></a></li>
 					<li><a href="table.ndims.html" class="text-decoration-none font-monospace"><small>ndims</small></a></li>
 					<li><a href="table.numel.html" class="text-decoration-none font-monospace"><small>numel</small></a></li>
 					<li><a href="table.repelem.html" class="text-decoration-none font-monospace"><small>repelem</small></a></li>
@@ -444,7 +443,7 @@
  unset.  The remaining variables keep theirs.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/table.m#L2073">table</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/cde9efc/inst/table.m#L2106">table</a>
 </p>
 </div>
         <div class="card rounded my-4">
@@ -462,7 +461,7 @@
           </div>
           <div class="collapse show" id="table_mergevars-example1">
             <div class="card-body">
-                <p><code>mergevars</code> combines several variables into one multi-column variable — the inverse of <code>splitvars</code>.  Name the merged variable with <code>'NewVariableName'</code>.</p>
+                <p><code>mergevars</code> combines several variables into one multi-column variable, the inverse of <code>splitvars</code>.  Name the merged variable with <code>'NewVariableName'</code>.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> T = table ([38; 43; 40], [124; 109; 125], [93; 77; 83], ...
             'VariableNames', {'Age', 'Systolic', 'Diastolic'})</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">T =

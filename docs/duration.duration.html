@@ -509,7 +509,7 @@
   <a href="datetime.html">datetime</a>
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/duration.m#L194">duration</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/cde9efc/inst/duration.m#L194">duration</a>
 </p>
 </div>
         <div class="card rounded my-4">
@@ -527,7 +527,7 @@
           </div>
           <div class="collapse show" id="duration_duration-example1">
             <div class="card-body">
-                <p><code>duration</code> represents a <em>fixed-length</em> elapsed time — unlike <code>calendarDuration</code>, here a day is always 24 hours and a year a fixed number of days.  Give hours, minutes and seconds:</p>
+                <p><code>duration</code> represents a <em>fixed-length</em> elapsed time.  Unlike <code>calendarDuration</code>, here a day is always 24 hours and a year a fixed number of days.  Give hours, minutes and seconds:</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> duration (1, 30, 15)</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
   duration
@@ -553,7 +553,7 @@
           </div>
           <div class="collapse show" id="duration_duration-example2">
             <div class="card-body">
-                <p>Values need not lie in the usual ranges — 25 hours is fine and stays 25 hours in the default <code>hh:mm:ss</code> display.  A fourth argument adds milliseconds.</p>
+                <p>Values need not lie in the usual ranges: 25 hours is fine and stays 25 hours in the default <code>hh:mm:ss</code> display.  A fourth argument adds milliseconds.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> duration (25, 30, 0)</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
   duration
@@ -666,7 +666,7 @@
           </div>
           <div class="collapse show" id="duration_duration-example5">
             <div class="card-body">
-                <p>A numeric matrix builds a column of durations, one per row — columns are hours, minutes and seconds.</p>
+                <p>A numeric matrix builds a column of durations, one per row; its columns are hours, minutes and seconds.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> duration ([1, 30, 0; 0, 45, 30])</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
   2x1 duration array

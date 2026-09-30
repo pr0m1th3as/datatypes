@@ -354,7 +354,6 @@
 					<li><a href="table.isscalar.html" class="text-decoration-none font-monospace"><small>isscalar</small></a></li>
 					<li><a href="table.istable.html" class="text-decoration-none font-monospace"><small>istable</small></a></li>
 					<li><a href="table.isvector.html" class="text-decoration-none font-monospace"><small>isvector</small></a></li>
-					<li><a href="table.length.html" class="text-decoration-none font-monospace"><small>length</small></a></li>
 					<li><a href="table.ndims.html" class="text-decoration-none font-monospace"><small>ndims</small></a></li>
 					<li><a href="table.numel.html" class="text-decoration-none font-monospace"><small>numel</small></a></li>
 					<li><a href="table.repelem.html" class="text-decoration-none font-monospace"><small>repelem</small></a></li>
@@ -403,6 +402,12 @@
  combination.  The rows of <var>tbl</var> are sorted by the values of the key
  variables, and any row names are dropped.
 </p>
+<p> A key holding a missing value (<code>NaN</code>, <code>NaT</code>,
+ <code>&lt;undefined&gt;</code> or <code>&lt;missing&gt;</code>) matches no other key.  Empty
+ text, an empty character vector in a cellstr or a blank row of a
+ character matrix, is a value and matches empty text, where MATLAB
+ matches it with nothing; <code>ismissing</code> still flags it as missing.
+</p>
 <p> By default <var>tbl</var> contains all the variables of <var>tblL</var> followed by
  the non-key variables of <var>tblR</var>.  Whenever a non-key variable name
  appears in both tables, a suffix derived from each input&rsquo;s argument name
@@ -410,6 +415,9 @@
  <var>tblL</var> and <var>tblR</var>, the suffixes <code>'_tblL'</code> and
  <code>'_tblR'</code>; when an input has no name, <code>'_left'</code> and
  <code>'_right'</code> are used).
+ When both inputs have the same name, as when a table is joined with
+ itself, the left names are numbered as well (<code>'_T_1'</code> beside
+ <code>'_T'</code>), as in MATLAB.
 </p>
 <p> <code><var>tbl</var> = innerjoin (<var>tblL</var>, <var>tblR</var>, <var>Name</var>,
  <var>Value</var>)</code> customizes the join with the following options:
@@ -436,7 +444,7 @@
  and <code><var>tblR</var>(<var>ixR</var>, rightVars)</code>.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/table.m#L2587">table</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/cde9efc/inst/table.m#L2642">table</a>
 </p>
 </div>
         <div class="card rounded my-4">
@@ -454,7 +462,7 @@
           </div>
           <div class="collapse show" id="table_innerjoin-example1">
             <div class="card-body">
-                <p><code>innerjoin</code> keeps only rows whose key exists in <em>both</em> tables — unmatched rows are dropped — and, unlike <code>join</code>, the right key need not be unique. Pass <code>'Keys'</code> to match on several variables at once; here a row must agree on both <code>Name</code> and <code>Year</code> to match.</p>
+                <p><code>innerjoin</code> keeps only rows whose key exists in <em>both</em> tables, dropping unmatched rows, and, unlike <code>join</code>, the right key need not be unique. Pass <code>'Keys'</code> to match on several variables at once; here a row must agree on both <code>Name</code> and <code>Year</code> to match.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> L = table ({'Li'; 'Li'; 'Diaz'}, [2023; 2024; 2023], [10; 11; 12], ...
             'VariableNames', {'Name', 'Year', 'Visits'})</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">L =

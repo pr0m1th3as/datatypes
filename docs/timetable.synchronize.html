@@ -245,7 +245,6 @@
 					<li><a href="timetable.size.html" class="text-decoration-none font-monospace"><small>size</small></a></li>
 					<li><a href="timetable.numel.html" class="text-decoration-none font-monospace"><small>numel</small></a></li>
 					<li><a href="timetable.ndims.html" class="text-decoration-none font-monospace"><small>ndims</small></a></li>
-					<li><a href="timetable.length.html" class="text-decoration-none font-monospace"><small>length</small></a></li>
 					<li><a href="timetable.isempty.html" class="text-decoration-none font-monospace"><small>isempty</small></a></li>
 					<li><a href="timetable.repelem.html" class="text-decoration-none font-monospace"><small>repelem</small></a></li>
 					<li><a href="timetable.repmat.html" class="text-decoration-none font-monospace"><small>repmat</small></a></li>
@@ -387,6 +386,9 @@
 					<li><a href="timetable.syncevents.html" class="text-decoration-none font-monospace"><small>syncevents</small></a></li>
 					<li><a href="timetable.addprop.html" class="text-decoration-none font-monospace"><small>addprop</small></a></li>
 					<li><a href="timetable.rmprop.html" class="text-decoration-none font-monospace"><small>rmprop</small></a></li>
+					<li><a href="timetable.table2array.html" class="text-decoration-none font-monospace"><small>table2array</small></a></li>
+					<li><a href="timetable.table2cell.html" class="text-decoration-none font-monospace"><small>table2cell</small></a></li>
+					<li><a href="timetable.table2struct.html" class="text-decoration-none font-monospace"><small>table2struct</small></a></li>
 					<li><a href="timetable.timetable2table.html" class="text-decoration-none font-monospace"><small>timetable2table</small></a></li>
 				</ul>
 				</div>
@@ -467,7 +469,9 @@
  renamed for the timetable they came from, so <var>a</var> from <var>tt1</var>
  and <var>tt2</var> become <code>a_tt1</code> and <code>a_tt2</code>.  An operand that
  is an expression rather than a variable is known by its place in the
- call.
+ call.  Operands with the same name, as a timetable synchronized with
+ itself, number the later names (<code>a_tt</code>, <code>a_tt_1</code>), as in
+ MATLAB.
 </p>
 <p> Where an operand is an <code>eventtable</code>, or carries one on its
  <code>Events</code> property, the result is an event table too and the
@@ -483,7 +487,7 @@
   <a href="timetable.isregular.html">timetable.isregular</a>
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/timetable.m#L4183">timetable</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/cde9efc/inst/timetable.m#L4186">timetable</a>
 </p>
 </div>
 

@@ -354,7 +354,6 @@
 					<li><a href="table.isscalar.html" class="text-decoration-none font-monospace"><small>isscalar</small></a></li>
 					<li><a href="table.istable.html" class="text-decoration-none font-monospace"><small>istable</small></a></li>
 					<li><a href="table.isvector.html" class="text-decoration-none font-monospace"><small>isvector</small></a></li>
-					<li><a href="table.length.html" class="text-decoration-none font-monospace"><small>length</small></a></li>
 					<li><a href="table.ndims.html" class="text-decoration-none font-monospace"><small>ndims</small></a></li>
 					<li><a href="table.numel.html" class="text-decoration-none font-monospace"><small>numel</small></a></li>
 					<li><a href="table.repelem.html" class="text-decoration-none font-monospace"><small>repelem</small></a></li>
@@ -401,13 +400,22 @@
  of values, and every key combination in <var>tblL</var> must be present in
  <var>tblR</var>.
 </p>
+<p> A key holding a missing value (<code>NaN</code>, <code>NaT</code>,
+ <code>&lt;undefined&gt;</code> or <code>&lt;missing&gt;</code>) matches no other key.  Empty
+ text, an empty character vector in a cellstr or a blank row of a
+ character matrix, is a value and matches empty text, where MATLAB
+ matches it with nothing; <code>ismissing</code> still flags it as missing.
+</p>
 <p> By default <var>tbl</var> contains all the variables of <var>tblL</var> followed by
  the non-key variables of <var>tblR</var>.  Whenever a non-key variable name
  appears in both tables, a suffix derived from each input&rsquo;s argument name
  is appended to the conflicting names (for inputs named <var>tblL</var> and
  <var>tblR</var>, the suffixes <code>'_tblL'</code> and <code>'_tblR'</code>; when an
- input has no name, <code>'_left'</code> and <code>'_right'</code> are used).  The
- row names of <var>tblL</var>, if any, are preserved.
+ input has no name, <code>'_left'</code> and <code>'_right'</code> are used).
+ When both inputs have the same name, as when a table is joined with
+ itself, the left names are numbered as well (<code>'_T_1'</code> beside
+ <code>'_T'</code>), as in MATLAB.
+ The row names of <var>tblL</var>, if any, are preserved.
 </p>
 <p> <code><var>tbl</var> = join (<var>tblL</var>, <var>tblR</var>, <var>Name</var>, <var>Value</var>)</code>
  customizes the join with the following options:
@@ -436,7 +444,7 @@
  row of <var>tblR</var>.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/table.m#L2522">table</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/cde9efc/inst/table.m#L2568">table</a>
 </p>
 </div>
         <div class="card rounded my-4">
@@ -454,7 +462,7 @@
           </div>
           <div class="collapse show" id="table_join-example1">
             <div class="card-body">
-                <p><code>join</code> performs a key-based merge: every row of the left table is matched to the one row of the right table sharing its key.  The key is the variable the two tables have in common (<code>Name</code>), and it must be <em>unique</em> on the right. The remaining right-hand variables — here of several different types — are appended to each matched left row.</p>
+                <p><code>join</code> performs a key-based merge: every row of the left table is matched to the one row of the right table sharing its key.  The key is the variable the two tables have in common (<code>Name</code>), and it must be <em>unique</em> on the right.  The remaining right-hand variables, here of several different types, are appended to each matched left row.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> L = table ({'Li'; 'Diaz'; 'Brown'}, [38; 40; 49], ...
             'VariableNames', {'Name', 'Age'})</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">L =

@@ -354,7 +354,6 @@
 					<li><a href="table.isscalar.html" class="text-decoration-none font-monospace"><small>isscalar</small></a></li>
 					<li><a href="table.istable.html" class="text-decoration-none font-monospace"><small>istable</small></a></li>
 					<li><a href="table.isvector.html" class="text-decoration-none font-monospace"><small>isvector</small></a></li>
-					<li><a href="table.length.html" class="text-decoration-none font-monospace"><small>length</small></a></li>
 					<li><a href="table.ndims.html" class="text-decoration-none font-monospace"><small>ndims</small></a></li>
 					<li><a href="table.numel.html" class="text-decoration-none font-monospace"><small>numel</small></a></li>
 					<li><a href="table.repelem.html" class="text-decoration-none font-monospace"><small>repelem</small></a></li>
@@ -463,7 +462,7 @@
  cell arrays of character vectors and their values are not reconstructed.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/table.m#L1028">table</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/cde9efc/inst/table.m#L1051">table</a>
 </p>
 </div>
         <div class="card rounded my-4">
@@ -526,10 +525,12 @@
           </div>
           <div class="collapse show" id="table_table2ods-example2">
             <div class="card-body">
-                <p>Writing to a named <code>'Sheet'</code> of an existing workbook adds or replaces just that sheet, leaving the others intact — so several tables can share one file.</p>
+                <p>Writing to a named <code>'Sheet'</code> of an existing workbook adds or replaces just that sheet, leaving the others intact, so several tables can share one file.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> filename = fullfile (tempdir (), 'workbook.ods');
- table2ods (table ([38; 43], 'VariableNames', {'Age'}), filename, 'Sheet', 'Patients');
- table2ods (table ([1; 2; 3], 'VariableNames', {'Visit'}), filename, 'Sheet', 'Visits');
+ table2ods (table ([38; 43], 'VariableNames', {'Age'}), filename, ...
+            'Sheet', 'Patients');
+ table2ods (table ([1; 2; 3], 'VariableNames', {'Visit'}), filename, ...
+            'Sheet', 'Visits');
  ods2table (filename, 'Sheet', 'Visits')</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
   3x1 table

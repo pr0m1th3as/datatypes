@@ -199,7 +199,7 @@
             </div>
             <div class="col-sm-9 col-md-10">
               <h3 class="d-inline-block mr-2">datatypes</h3>
-              <b>1.4.3&nbsp;2026-09-24</b>
+              <b>1.5.0&nbsp;2026-09-30</b>
               <p class="indent">
                 A package for providing extra data types  and related functionality for GNU Octave.
               </p>
@@ -216,6 +216,7 @@
              <option value="#string arrays">string arrays</option>
              <option value="#table arrays">table arrays</option>
              <option value="#timetable arrays">timetable arrays</option>
+             <option value="#timeseries objects">timeseries objects</option>
              <option value="#supplementary classes">supplementary classes</option>
              <option value="#supplementary functions">supplementary functions</option>
              <option value="#compiled functions">compiled functions</option>
@@ -443,6 +444,14 @@ units.</td>
                <tr>
                  <td>
                    <b><code>
+                   <a href="strings.html">strings</a>
+                   </code></b>
+                 </td>
+                 <td>Create a string array of strings with no characters.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
                    <a href="convertCharsToStrings.html">convertCharsToStrings</a>
                    </code></b>
                  </td>
@@ -626,6 +635,107 @@ units.</td>
                  </td>
                  <td>Timetable of events, describing what was happening rather than what was
 measured.</td>
+               </tr>
+             </tbody>
+           </table>
+           <h3 class="category">
+             <a name="timeseries objects">timeseries objects</a>
+           </h3>
+           <table class="table table-striped">
+             <tbody>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="timeseries.html">timeseries</a>
+                   </code></b>
+                 </td>
+                 <td>Array of samples indexed by time.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="istimeseries.html">istimeseries</a>
+                   </code></b>
+                 </td>
+                 <td>True if input is a ‘timeseries’ object, false otherwise.
+
+  </td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="tscollection.html">tscollection</a>
+                   </code></b>
+                 </td>
+                 <td>Collection of time series on one time vector.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="istscollection.html">istscollection</a>
+                   </code></b>
+                 </td>
+                 <td>True if input is a ‘tscollection’ object, false otherwise.
+
+  </td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="timeseries2timetable.html">timeseries2timetable</a>
+                   </code></b>
+                 </td>
+                 <td>Convert time series to a timetable.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="tsdata.timemetadata.html">tsdata.timemetadata</a>
+                   </code></b>
+                 </td>
+                 <td>The time metadata of a ‘timeseries’.
+
+  </td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="tsdata.datametadata.html">tsdata.datametadata</a>
+                   </code></b>
+                 </td>
+                 <td>The data metadata of a ‘timeseries’.
+
+  </td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="tsdata.qualmetadata.html">tsdata.qualmetadata</a>
+                   </code></b>
+                 </td>
+                 <td>The quality metadata of a ‘timeseries’.
+
+  </td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="tsdata.interpolation.html">tsdata.interpolation</a>
+                   </code></b>
+                 </td>
+                 <td>The interpolation method of a ‘timeseries’.
+
+  </td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="tsdata.event.html">tsdata.event</a>
+                   </code></b>
+                 </td>
+                 <td>An event of a ‘timeseries’.
+
+  </td>
                </tr>
              </tbody>
            </table>

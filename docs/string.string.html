@@ -398,7 +398,11 @@
 <li> character arrays are converted so that each row becomes a string
  element, with any trailing whitespace preserved; cell arrays of character
  vectors are stored as-is.
-</li><li> numeric arrays are converted via the code <code>num2str</code> function.
+</li><li> numeric arrays are converted with one precision for the whole
+ array: <em class="math">P</em> significant digits, where <em class="math">P</em> is four more than the
+ base-10 logarithm of its largest finite magnitude, rounded up, and lies
+ between 5 and 16.  Integer types are written exactly, and <code>NaN</code>
+ becomes a missing string.
 </li><li> logical arrays are converted to either <code>false</code> or
  <code>true</code> character sequences.
 </li><li> categorical arrays are converted via their <code>cellstr</code> method.
@@ -428,7 +432,7 @@
   <a href="missing.html">missing</a>
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/string.m#L157">string</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/cde9efc/inst/string.m#L161">string</a>
 </p>
 </div>
         <div class="card rounded my-4">
@@ -446,7 +450,7 @@
           </div>
           <div class="collapse show" id="string_string-example1">
             <div class="card-body">
-                <p>A <code>string</code> is MATLAB's string-array type.  There is a crucial Octave difference to keep in mind: in core Octave BOTH <code>'text'</code> and <code>"text"</code> produce ordinary <strong>character vectors</strong> (class <code>char</code>) — unlike MATLAB, the double quote does <em>not</em> make a string.  Only the <code>string</code> constructor produces a string array.</p>
+                <p>A <code>string</code> is MATLAB's string-array type.  There is a crucial Octave difference to keep in mind: in core Octave BOTH <code>'text'</code> and <code>"text"</code> produce ordinary <strong>character vectors</strong> (class <code>char</code>).  Unlike MATLAB, the double quote does <em>not</em> make a string.  Only the <code>string</code> constructor produces a string array.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> class ('text')             % single quotes -&gt; char</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans = char</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> class ("text")             % double quotes -&gt; ALSO char in Octave</pre>
@@ -473,7 +477,7 @@
           </div>
           <div class="collapse show" id="string_string-example2">
             <div class="card-body">
-                <p>Build a string array from a cell array of character vectors — one element per cell.  A string array prints its elements in double quotes.</p>
+                <p>Build a string array from a cell array of character vectors, one element per cell.  A string array prints its elements in double quotes.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> string ({'apple'; 'banana'; 'cherry'})</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
   3x1 string array

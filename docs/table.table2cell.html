@@ -354,7 +354,6 @@
 					<li><a href="table.isscalar.html" class="text-decoration-none font-monospace"><small>isscalar</small></a></li>
 					<li><a href="table.istable.html" class="text-decoration-none font-monospace"><small>istable</small></a></li>
 					<li><a href="table.isvector.html" class="text-decoration-none font-monospace"><small>isvector</small></a></li>
-					<li><a href="table.length.html" class="text-decoration-none font-monospace"><small>length</small></a></li>
 					<li><a href="table.ndims.html" class="text-decoration-none font-monospace"><small>ndims</small></a></li>
 					<li><a href="table.numel.html" class="text-decoration-none font-monospace"><small>numel</small></a></li>
 					<li><a href="table.repelem.html" class="text-decoration-none font-monospace"><small>repelem</small></a></li>
@@ -390,30 +389,16 @@
 <p> Converts a table to a cell array.
 </p>
 <div class="ms-5">
-<p> Each variable in <var>tbl</var> becomes a column of cells in the output
- <var>C</var>.  Multicolumnar variables are returned in a single column with
- each cell element containing a row vector.
-</p>
-<p> The size of the returned cell array, <var>C</var>, is the same as the input
- table, <var>tbl</var>.  The output <var>C</var> does not include any of the table&rsquo;s
- properties.  This also applies to row names.
-</p>
-<p> Compatibility Notes:
-</p>
-<p> Variables of types <code>categorical</code>, <code>calendarDuration</code>,
- <code>datetime</code>, <code>duration</code> and <code>string</code> are returned as
- in their printed representation as character vectors.  To revert them to
- their original class type you can parse the cell elements to the
- respective object constructor.
-</p>
-<p> Nested tables are handled as multicolumnar variables only if they contain
- data types, which can be converted to homogeneous array, i.e. numerical
- logical values. Other data types will result to a warning due to
- implicit conversion from numeric to char and the returned values will
- not contain all values from the nested table.
+<p> <code><var>C</var> = table2cell (<var>tbl</var>)</code> returns a cell array <var>C</var> of
+ the same size as <var>tbl</var>, in which each cell holds one row of one
+ variable, in the variable&rsquo;s own type.  A multicolumn variable gives a row
+ in each cell, a <code>char</code> matrix one row of text, and a nested table a
+ table of one row.  A cell variable of one column gives the contents of
+ its cells.  The row names and every other property of <var>tbl</var> are left
+ out.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/table.m#L648">table</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/cde9efc/inst/table.m#L695">table</a>
 </p>
 </div>
         <div class="card rounded my-4">

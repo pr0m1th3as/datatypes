@@ -354,7 +354,6 @@
 					<li><a href="table.isscalar.html" class="text-decoration-none font-monospace"><small>isscalar</small></a></li>
 					<li><a href="table.istable.html" class="text-decoration-none font-monospace"><small>istable</small></a></li>
 					<li><a href="table.isvector.html" class="text-decoration-none font-monospace"><small>isvector</small></a></li>
-					<li><a href="table.length.html" class="text-decoration-none font-monospace"><small>length</small></a></li>
 					<li><a href="table.ndims.html" class="text-decoration-none font-monospace"><small>ndims</small></a></li>
 					<li><a href="table.numel.html" class="text-decoration-none font-monospace"><small>numel</small></a></li>
 					<li><a href="table.repelem.html" class="text-decoration-none font-monospace"><small>repelem</small></a></li>
@@ -424,7 +423,7 @@
  added variables.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/table.m#L1844">table</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/cde9efc/inst/table.m#L1877">table</a>
 </p>
 </div>
         <div class="card rounded my-4">
@@ -442,7 +441,7 @@
           </div>
           <div class="collapse show" id="table_addvars-example1">
             <div class="card-body">
-                <p><code>addvars</code> inserts one or more variables into a table.  Appended at the end by default, the new columns can be named with <code>'NewVariableNames'</code> and may be of any type — here a <code>datetime</code> is added to a table of mixed variables.</p>
+                <p><code>addvars</code> inserts one or more variables into a table.  Appended at the end by default, the new columns can be named with <code>'NewVariableNames'</code> and may be of any type; here a <code>datetime</code> is added to a table of mixed variables.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> Name = string ({'Sanchez'; 'Johnson'; 'Li'});
  Age = [38; 43; 40];
  Gender = categorical ({'M'; 'M'; 'F'});
@@ -468,7 +467,8 @@
     "Johnson"     43         M    06-Feb-2024    
     "Li"          40         F    07-Mar-2024</pre>
                 <p>Use <code>'Before'</code> or <code>'After'</code> to place the new variable at a chosen position.</p>
-                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> addvars (T, logical ([1; 0; 1]), 'After', 'Age', 'NewVariableNames', {'Smoker'})</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> addvars (T, logical ([1; 0; 1]), 'After', 'Age', ...
+          'NewVariableNames', {'Smoker'})</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
   3x4 table
 

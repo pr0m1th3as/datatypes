@@ -464,8 +464,9 @@
  categorical arrays.  Setting <code>&quot;Protected&quot;</code> to <code>true</code> prevents
  from assigning new values that do not correspond to existing categories.
  When <code>false</code>, assigning new values to the array automatically
- updates the categories. Hence, categorical arrays with different sets of
- categories can be combined/merged into a new array with set operations.
+ adds the categories of the values assigned.  Hence, categorical arrays
+ with different sets of categories can be combined/merged into a new
+ array with set operations.
 </li></ul>
 
 <p> <strong>See also: </strong>
@@ -474,7 +475,7 @@
   <a href="iscategorical.html">iscategorical</a>
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/categorical.m#L193">categorical</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/cde9efc/inst/categorical.m#L194">categorical</a>
 </p>
 </div>
         <div class="card rounded my-4">
@@ -504,7 +505,7 @@
     {'S'}    
     {'L'}    
     {'M'}</pre>
-                <p>... the categories are detected automatically — the sorted unique values.</p>
+                <p>... the categories are detected automatically: the sorted unique values.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> C = categorical (sizes)</pre>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">C =
   7x1 categorical array

@@ -504,7 +504,7 @@
  evaluate the interpolation at new query points.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/duration.m#L3944">duration</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/cde9efc/inst/duration.m#L3966">duration</a>
 </p>
 </div>
         <div class="card rounded my-4">
@@ -522,7 +522,7 @@
           </div>
           <div class="collapse show" id="duration_interp1-example1">
             <div class="card-body">
-                <p><code>interp1</code> interpolates duration-valued data at new sample points — useful for resampling a time series measured in durations.</p>
+                <p><code>interp1</code> interpolates duration-valued data at new sample points, which is useful for resampling a time series measured in durations.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> t = hours ([0, 1, 2]);
  v = minutes ([10, 20, 40]);
  interp1 (t, v, hours (0.5))</pre>

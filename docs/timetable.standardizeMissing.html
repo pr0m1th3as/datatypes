@@ -245,7 +245,6 @@
 					<li><a href="timetable.size.html" class="text-decoration-none font-monospace"><small>size</small></a></li>
 					<li><a href="timetable.numel.html" class="text-decoration-none font-monospace"><small>numel</small></a></li>
 					<li><a href="timetable.ndims.html" class="text-decoration-none font-monospace"><small>ndims</small></a></li>
-					<li><a href="timetable.length.html" class="text-decoration-none font-monospace"><small>length</small></a></li>
 					<li><a href="timetable.isempty.html" class="text-decoration-none font-monospace"><small>isempty</small></a></li>
 					<li><a href="timetable.repelem.html" class="text-decoration-none font-monospace"><small>repelem</small></a></li>
 					<li><a href="timetable.repmat.html" class="text-decoration-none font-monospace"><small>repmat</small></a></li>
@@ -387,6 +386,9 @@
 					<li><a href="timetable.syncevents.html" class="text-decoration-none font-monospace"><small>syncevents</small></a></li>
 					<li><a href="timetable.addprop.html" class="text-decoration-none font-monospace"><small>addprop</small></a></li>
 					<li><a href="timetable.rmprop.html" class="text-decoration-none font-monospace"><small>rmprop</small></a></li>
+					<li><a href="timetable.table2array.html" class="text-decoration-none font-monospace"><small>table2array</small></a></li>
+					<li><a href="timetable.table2cell.html" class="text-decoration-none font-monospace"><small>table2cell</small></a></li>
+					<li><a href="timetable.table2struct.html" class="text-decoration-none font-monospace"><small>table2struct</small></a></li>
 					<li><a href="timetable.timetable2table.html" class="text-decoration-none font-monospace"><small>timetable2table</small></a></li>
 				</ul>
 				</div>
@@ -434,7 +436,11 @@
 <p> <code><var>ttB</var> = standardizeMissing (<var>ttA</var>, <var>indicator</var>)</code>
  replaces every value matching <var>indicator</var> with the missing value
  of its own type, so that <code>ismissing</code> and <code>rmmissing</code> will
- afterwards treat it as missing.
+ afterwards treat it as missing.  Each indicator applies only to the
+ variables of its own kind, as <code>table.standardizeMissing</code>
+ describes: numbers to floating point variables, text to text and
+ <code>categorical</code> variables, and <code>duration</code> and <code>datetime</code>
+ indicators to variables of their own type.
 </p>
 <p> <code>'DataVariables'</code> restricts it to the variables named.  The row
  times are not a data variable and are never rewritten, so the time
@@ -446,7 +452,7 @@
   <a href="timetable.html">timetable</a>
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/timetable.m#L2329">timetable</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/cde9efc/inst/timetable.m#L2320">timetable</a>
 </p>
 </div>
 

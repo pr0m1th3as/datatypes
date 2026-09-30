@@ -412,8 +412,11 @@
  the syntax <code><var>B</var> = [<var>A</var>, <var>B</var>, &hellip;]</code> and horizontally
  concatenates the categorical arrays <var>A</var>, <var>B</var>, &hellip;.  All input
  arrays must have the same size except along the second dimension.  Any of
- the input arrays may also be string arrays or cell arrays of character
- vectors of compatible size.
+ the input arrays may also be character vectors, string arrays or cell
+ arrays of character vectors of compatible size, whose texts name
+ categories, or missing values, which are undefined.  Empty arrays are
+ ignored.  A numeric or logical array is refused, since a number could
+ name a category or its code.
 </p>
 <p> If any input array is an ordinal categorical array, then all inputs must
  be ordinal categorical arrays with the same set and ordering of
@@ -426,7 +429,7 @@
  categories but not necessarily in the same order.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/categorical.m#L4269">categorical</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/cde9efc/inst/categorical.m#L4317">categorical</a>
 </p>
 </div>
 

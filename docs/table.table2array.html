@@ -354,7 +354,6 @@
 					<li><a href="table.isscalar.html" class="text-decoration-none font-monospace"><small>isscalar</small></a></li>
 					<li><a href="table.istable.html" class="text-decoration-none font-monospace"><small>istable</small></a></li>
 					<li><a href="table.isvector.html" class="text-decoration-none font-monospace"><small>isvector</small></a></li>
-					<li><a href="table.length.html" class="text-decoration-none font-monospace"><small>length</small></a></li>
 					<li><a href="table.ndims.html" class="text-decoration-none font-monospace"><small>ndims</small></a></li>
 					<li><a href="table.numel.html" class="text-decoration-none font-monospace"><small>numel</small></a></li>
 					<li><a href="table.repelem.html" class="text-decoration-none font-monospace"><small>repelem</small></a></li>
@@ -387,11 +386,52 @@
               </nav>
 
 <p class="h5 fs fs-last"><code>table: <var>A</var> = <b>table2array</b> (<var>tbl</var>)</code></p>
-<p> Converts a table to a homogeneous array.
+<p> Converts a table to an array.
 </p>
 <div class="ms-5">
+<p> <code><var>A</var> = table2array (<var>tbl</var>)</code> places the variables of
+ <var>tbl</var> side by side and joins them into one array <var>A</var>, as
+ concatenation with <code>[]</code> joins them in MATLAB.  A multicolumn
+ variable gives as many columns.  The row names and every other property
+ of <var>tbl</var> are left out.  <code><var>tbl</var>{:,:}</code> and
+ <code><var>tbl</var>.Variables</code> return the same array.
+</p>
+<p> The variables join as follows:
+</p>
+<ul>
+<li> Numeric and logical variables join as numbers do.  An integer type
+ takes precedence over <code>single</code>, <code>double</code> and
+ <code>logical</code>, the leftmost integer type over any other integer type,
+ <code>single</code> over <code>double</code>, and <code>double</code> over
+ <code>logical</code>.  Values outside the range of the resulting integer type
+ are clipped to its limits.
+</li><li> A numeric variable beside a <code>char</code> variable becomes the
+ characters of its values.  A logical variable does not join a
+ <code>char</code> variable.
+</li><li> Cell variables join only with other cell variables.
+</li><li> A <code>duration</code> variable joins <code>double</code> and logical
+ variables, whose values count days, and a <code>calendarDuration</code>
+ variable joins all three.
+</li><li> <code>categorical</code> variables join only if all or none of them are
+ ordinal, and <code>datetime</code> variables only if all or none of them have
+ a time zone.  Structures join only with the same fields, and nested
+ tables only with different variable names.
+</li><li> A <code>missing</code> variable joins <code>double</code>, <code>single</code>,
+ <code>categorical</code>, <code>datetime</code>, <code>duration</code> and
+ <code>calendarDuration</code> variables, as the missing value of their type.
+</li></ul>
+
+<p> Where the variables cannot form one array, <var>A</var> is the cell array
+ that <code>table2cell</code> returns; MATLAB raises an error instead.
+</p>
+<p> The exception is a <code>string</code> variable.  Numeric, logical,
+ <code>char</code>, cell and <code>missing</code> variables beside it are converted
+ to strings, and <var>A</var> is a string array instead of a cell array.  Each
+ row of a <code>char</code> variable becomes one string, each cell one string,
+ and a logical value the string <code>&quot;true&quot;</code> or <code>&quot;false&quot;</code>.
+</p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/table.m#L617">table</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/cde9efc/inst/table.m#L678">table</a>
 </p>
 </div>
         <div class="card rounded my-4">
@@ -409,7 +449,7 @@
           </div>
           <div class="collapse show" id="table_table2array-example1">
             <div class="card-body">
-                <p><code>table2array</code> horizontally concatenates the variables into a single array, so it is meant for tables whose variables share a common type.  Multi-column variables keep all their columns, so the result can be wider than the table.</p>
+                <p><code>table2array</code> horizontally concatenates the variables into a single array, so it is meant for tables whose variables share a common type. Multi-column variables keep all their columns, so the result can be wider than the table.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> Age = [38; 43; 40];
  BloodPressure = [124, 93; 109, 77; 117, 75];
  T = table (Age, BloodPressure)</pre>

@@ -354,7 +354,6 @@
 					<li><a href="table.isscalar.html" class="text-decoration-none font-monospace"><small>isscalar</small></a></li>
 					<li><a href="table.istable.html" class="text-decoration-none font-monospace"><small>istable</small></a></li>
 					<li><a href="table.isvector.html" class="text-decoration-none font-monospace"><small>isvector</small></a></li>
-					<li><a href="table.length.html" class="text-decoration-none font-monospace"><small>length</small></a></li>
 					<li><a href="table.ndims.html" class="text-decoration-none font-monospace"><small>ndims</small></a></li>
 					<li><a href="table.numel.html" class="text-decoration-none font-monospace"><small>numel</small></a></li>
 					<li><a href="table.repelem.html" class="text-decoration-none font-monospace"><small>repelem</small></a></li>
@@ -403,7 +402,7 @@
  also applies to row names.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/c8a2150/inst/table.m#L669">table</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/cde9efc/inst/table.m#L716">table</a>
 </p>
 </div>
         <div class="card rounded my-4">
@@ -421,7 +420,7 @@
           </div>
           <div class="collapse show" id="table_table2struct-example1">
             <div class="card-body">
-                <p>By default <code>table2struct</code> returns a <strong>struct array</strong>, one element per row, with one field per variable — handy for row-wise iteration.</p>
+                <p>By default <code>table2struct</code> returns a <strong>struct array</strong>, one element per row, with one field per variable, which is handy for row-wise iteration.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> LastName = {'Sanchez'; 'Johnson'; 'Li'};
  Age = [38; 43; 38];
  Height = [71; 69; 64];
@@ -460,7 +459,7 @@
           </div>
           <div class="collapse show" id="table_table2struct-example2">
             <div class="card-body">
-                <p>Pass <code>'ToScalar', true</code> to instead get a <strong>scalar struct</strong> whose fields are whole columns — the layout used by <code>struct2table</code> with <code>'AsArray', true</code>.</p>
+                <p>Pass <code>'ToScalar', true</code> to instead get a <strong>scalar struct</strong> whose fields are whole columns, the layout used by <code>struct2table</code> with <code>'AsArray', true</code>.</p>
                 <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> LastName = {'Sanchez'; 'Johnson'; 'Li'};
  Age = [38; 43; 38];
  Height = [71; 69; 64];
