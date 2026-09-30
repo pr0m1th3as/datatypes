@@ -11,8 +11,9 @@
 %! S(2).Age
 
 %!demo
-%! ## Pass `'ToScalar', true` to instead get a **scalar struct** whose fields are
-%! ## whole columns — the layout used by `struct2table` with `'AsArray', true`.
+%! ## Pass `'ToScalar', true` to instead get a **scalar struct** whose fields
+%! ## are whole columns — the layout used by `struct2table` with
+%! ## `'AsArray', true`.
 %!
 %! LastName = {'Sanchez'; 'Johnson'; 'Li'};
 %! Age = [38; 43; 38];

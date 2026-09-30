@@ -1,7 +1,7 @@
 %!demo
 %! ## `groupsummary` is the one-call grouped aggregation: group by one or more
-%! ## variables, then apply a summary method to the data variables.  It reports the
-%! ## group count alongside each requested statistic.
+%! ## variables, then apply a summary method to the data variables.  It reports
+%! ## the group count alongside each requested statistic.
 %!
 %! Species = {'setosa'; 'virginica'; 'setosa'; 'virginica'; 'setosa'};
 %! Petal = [1.4; 5.1; 1.5; 5.9; 1.3];

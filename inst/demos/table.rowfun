@@ -1,6 +1,7 @@
 %!demo
 %! ## `rowfun` applies a function to each row, passing that row's variables as
-%! ## separate arguments — a row-wise map, complementing the column-wise `varfun`.
+%! ## separate arguments — a row-wise map, complementing the column-wise
+%! ## `varfun`.
 %!
 %! Weight = [176; 163; 133];
 %! Height = [71; 69; 64];

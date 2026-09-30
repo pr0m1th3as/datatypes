@@ -1,6 +1,7 @@
 %!demo
-%! ## Concatenating categorical arrays *unions* their category lists, so the result
-%! ## can hold categories that neither operand had alone.  `[A; B]` stacks them.
+%! ## Concatenating categorical arrays *unions* their category lists, so the
+%! ## result can hold categories that neither operand had alone.  `[A; B]`
+%! ## stacks them.
 %!
 %! A = categorical ({'S'; 'M'})
 %! B = categorical ({'L'; 'XL'})

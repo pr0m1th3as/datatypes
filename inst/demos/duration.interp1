@@ -1,6 +1,6 @@
 %!demo
-%! ## `interp1` interpolates duration-valued data at new sample points — useful for
-%! ## resampling a time series measured in durations.
+%! ## `interp1` interpolates duration-valued data at new sample points — useful
+%! ## for resampling a time series measured in durations.
 %!
 %! t = hours ([0, 1, 2]);
 %! v = minutes ([10, 20, 40]);

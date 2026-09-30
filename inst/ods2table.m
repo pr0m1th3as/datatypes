@@ -243,8 +243,9 @@ function [tbl, rowTimesName] = ods2table (filename, varargin)
   endif
 
   ## A sheet replaced by another writer can leave metadata that no longer fits
-  ## it; a text, date or time cell under a numeric or logical type gives it away.
-  ## The text Inf, -Inf and NaN is how an infinity is written, not a mismatch.
+  ## it; a text, date or time cell under a numeric or logical type gives it
+  ## away.  The text Inf, -Inf and NaN is how an infinity is written, not a
+  ## mismatch.
   numvartype = {'double', 'single', 'int8', 'uint8', 'int16', 'uint16', ...
                 'int32', 'uint32', 'int64', 'uint64', 'logical'};
   number = @(x) ischar (x) && any (strcmpi (x, {'Inf', '-Inf', 'NaN'}));

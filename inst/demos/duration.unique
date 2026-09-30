@@ -1,5 +1,6 @@
 %!demo
-%! ## `unique` returns the distinct durations in an array (equal spans count once).
+%! ## `unique` returns the distinct durations in an array (equal spans count
+%! ## once).
 %!
 %! d = hours ([2, 1, 2, 3, 1])
 %! unique (d)

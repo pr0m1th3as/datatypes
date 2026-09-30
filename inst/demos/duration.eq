@@ -1,6 +1,6 @@
 %!demo
-%! ## `eq` (`==`) tests durations for equality; equal spans compare equal even when
-%! ## built from different units.
+%! ## `eq` (`==`) tests durations for equality; equal spans compare equal even
+%! ## when built from different units.
 %!
 %! hours (1) == minutes (60)
 %!

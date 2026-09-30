@@ -75,7 +75,8 @@
 %! Gender = categorical ({'M'; 'M'; 'F'});
 %! T = table (Name, Age, Gender)
 %!
-%! ## Dot assignment adds or overwrites a whole variable (here computed from Age).
+%! ## Dot assignment adds or overwrites a whole variable (here computed from
+%! ## Age).
 %! T.Senior = T.Age >= 40
 %!
 %! ## Parenthesis assignment with a cell sets a sub-table; a new row index grows
@@ -87,9 +88,10 @@
 %! T.Age'
 
 %!demo
-%! ## This implementation fully supports **chained** referencing and assignment —
-%! ## indexing that reaches through several levels in a single expression.  (Octave
-%! ## extension: MATLAB permits chained *reference* but not chained *assignment*.)
+%! ## This implementation fully supports **chained** referencing and assignment
+%! ## — indexing that reaches through several levels in a single expression.
+%! ## (Octave extension: MATLAB permits chained *reference* but not chained
+%! ## *assignment*.)
 %!
 %! Age = [38; 43; 38; 40];
 %! Height = [71; 69; 64; 67];

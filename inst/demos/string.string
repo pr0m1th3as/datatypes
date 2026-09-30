@@ -1,9 +1,9 @@
 %!demo
 %! ## A `string` is MATLAB's string-array type.  There is a crucial Octave
-%! ## difference to keep in mind: in core Octave BOTH `'text'` and `"text"` produce
-%! ## ordinary **character vectors** (class `char`) — unlike MATLAB, the double
-%! ## quote does *not* make a string.  Only the `string` constructor produces a
-%! ## string array.
+%! ## difference to keep in mind: in core Octave BOTH `'text'` and `"text"`
+%! ## produce ordinary **character vectors** (class `char`) — unlike MATLAB, the
+%! ## double quote does *not* make a string.  Only the `string` constructor
+%! ## produces a string array.
 %!
 %! class ('text')             % single quotes -> char
 %! class ("text")             % double quotes -> ALSO char in Octave
@@ -22,8 +22,8 @@
 
 %!demo
 %! ## The special `<missing>` value is the string counterpart of `NaN`, and is
-%! ## distinct from an empty string `""`.  Assign `string (missing)` to introduce
-%! ## one.
+%! ## distinct from an empty string `""`.  Assign `string (missing)` to
+%! ## introduce one.
 %!
 %! s = string ({'a'; 'b'; 'c'})
 %! s(2) = string (missing)

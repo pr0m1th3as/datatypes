@@ -1,6 +1,6 @@
 %!demo
-%! ## `pivot` builds a cross-tabulation.  With only `'Rows'` it counts the rows in
-%! ## each group — a one-way frequency table.
+%! ## `pivot` builds a cross-tabulation.  With only `'Rows'` it counts the rows
+%! ## in each group — a one-way frequency table.
 %!
 %! Region = {'N'; 'N'; 'S'; 'S'; 'N'; 'S'};
 %! Quarter = categorical ({'Q1'; 'Q2'; 'Q1'; 'Q2'; 'Q1'; 'Q2'});
@@ -9,9 +9,9 @@
 %! pivot (T, 'Rows', 'Region')
 
 %!demo
-%! ## Add `'Columns'` to spread a second grouping variable across the columns, and
-%! ## aggregate a data variable in each cell — here total `Sales` by region and
-%! ## quarter.
+%! ## Add `'Columns'` to spread a second grouping variable across the columns,
+%! ## and aggregate a data variable in each cell — here total `Sales` by region
+%! ## and quarter.
 %!
 %! Region = {'N'; 'N'; 'S'; 'S'; 'N'; 'S'};
 %! Quarter = categorical ({'Q1'; 'Q2'; 'Q1'; 'Q2'; 'Q1'; 'Q2'});

@@ -1,6 +1,7 @@
 %!demo
-%! ## `convertvars` changes the data type of selected variables, leaving the rest
-%! ## alone.  The target type is given as a name, or as a conversion function.
+%! ## `convertvars` changes the data type of selected variables, leaving the
+%! ## rest alone.  The target type is given as a name, or as a conversion
+%! ## function.
 %!
 %! T = table ([1; 0; 1], [38; 43; 40], 'VariableNames', {'Smoker', 'Age'})
 %! convertvars (T, 'Smoker', 'logical')

@@ -1,6 +1,6 @@
 %!demo
-%! ## `rmprop` removes custom properties previously added with `addprop`, whatever
-%! ## their scope.  Here a table starts with one property of each kind.
+%! ## `rmprop` removes custom properties previously added with `addprop`,
+%! ## whatever their scope.  Here a table starts with one property of each kind.
 %!
 %! Age = [38; 43];
 %! Gender = categorical ({'M'; 'F'});

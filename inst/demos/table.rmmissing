@@ -1,7 +1,8 @@
 %!demo
 %! ## `rmmissing` drops every row that has a missing value in any variable —
-%! ## listwise deletion — counting gaps of every type (`NaN`, `NaT`, `<undefined>`,
-%! ## `<missing>`).  Here the rows with a missing age, grade, or visit all go.
+%! ## listwise deletion — counting gaps of every type (`NaN`, `NaT`,
+%! ## `<undefined>`, `<missing>`).  Here the rows with a missing age, grade, or
+%! ## visit all go.
 %!
 %! Name = string ({'Li'; 'Diaz'; 'Brown'; 'Lee'});
 %! Age = [38; NaN; 40; 49];

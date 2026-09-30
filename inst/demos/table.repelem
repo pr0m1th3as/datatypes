@@ -7,6 +7,6 @@
 %! T = table (Name, Grade)
 %! repelem (T, 2, 1)
 %!
-%! ## A vector count sets the repeat count per row — here row 1 once, row 2 twice,
-%! ## row 3 three times.
+%! ## A vector count sets the repeat count per row — here row 1 once, row 2
+%! ## twice, row 3 three times.
 %! repelem (T, [1; 2; 3], 1)

@@ -1,6 +1,7 @@
 %!demo
-%! ## `isprotected` reports whether the category list is locked.  A nominal array
-%! ## is *unprotected*: assigning a new label simply extends its categories ...
+%! ## `isprotected` reports whether the category list is locked.  A nominal
+%! ## array is *unprotected*: assigning a new label simply extends its
+%! ## categories ...
 %!
 %! N = categorical ({'M'; 'S'})
 %! isprotected (N)

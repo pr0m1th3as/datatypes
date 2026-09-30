@@ -1,7 +1,7 @@
 %!demo
 %! ## Where `anymissing` gives a single yes/no, `ismissing` locates *every* gap,
-%! ## returning a logical array the size of the table — one flag per element.  It
-%! ## recognises the missing value proper to each type at once.
+%! ## returning a logical array the size of the table — one flag per element.
+%! ## It recognises the missing value proper to each type at once.
 %!
 %! Name = string ({'Li'; 'Diaz'; 'Brown'});
 %! Age = [38; NaN; 40];

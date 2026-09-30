@@ -1,6 +1,7 @@
 %!demo
-%! ## `categorical` stores discrete labels compactly: each value becomes an index
-%! ## into a shared list of *categories*.  Starting from repeated text labels ...
+%! ## `categorical` stores discrete labels compactly: each value becomes an
+%! ## index into a shared list of *categories*.  Starting from repeated text
+%! ## labels ...
 %!
 %! sizes = {'M'; 'S'; 'L'; 'M'; 'S'; 'L'; 'M'}
 %!
@@ -9,8 +10,8 @@
 %! categories (C)
 
 %!demo
-%! ## Supply a *valueset* with `'Ordinal', true` to impose a meaningful order, so
-%! ## the values compare with `<` and `>`, not only `==`.
+%! ## Supply a *valueset* with `'Ordinal', true` to impose a meaningful order,
+%! ## so the values compare with `<` and `>`, not only `==`.
 %!
 %! raw = {'M'; 'S'; 'L'; 'M'}
 %! C = categorical (raw, {'S', 'M', 'L'}, 'Ordinal', true)

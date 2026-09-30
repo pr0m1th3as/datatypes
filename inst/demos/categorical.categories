@@ -1,6 +1,6 @@
 %!demo
-%! ## `categories` lists an array's categories — the full declared label set, not
-%! ## merely the values that happen to be present.
+%! ## `categories` lists an array's categories — the full declared label set,
+%! ## not merely the values that happen to be present.
 %!
 %! C = categorical ({'M'; 'S'; 'M'}, {'S', 'M', 'L'}, 'Ordinal', true)
 %! categories (C)

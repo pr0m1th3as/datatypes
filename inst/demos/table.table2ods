@@ -11,11 +11,14 @@
 
 %!demo
 %! ## Writing to a named `'Sheet'` of an existing workbook adds or replaces just
-%! ## that sheet, leaving the others intact — so several tables can share one file.
+%! ## that sheet, leaving the others intact — so several tables can share one
+%! ## file.
 %!
 %! filename = fullfile (tempdir (), 'workbook.ods');
-%! table2ods (table ([38; 43], 'VariableNames', {'Age'}), filename, 'Sheet', 'Patients');
-%! table2ods (table ([1; 2; 3], 'VariableNames', {'Visit'}), filename, 'Sheet', 'Visits');
+%! table2ods (table ([38; 43], 'VariableNames', {'Age'}), filename, ...
+%!            'Sheet', 'Patients');
+%! table2ods (table ([1; 2; 3], 'VariableNames', {'Visit'}), filename, ...
+%!            'Sheet', 'Visits');
 %! ods2table (filename, 'Sheet', 'Visits')
 %!
 %! delete (filename);

@@ -1,6 +1,7 @@
 %!demo
 %! ## `table2cell` unpacks a table into a cell array with one cell per element,
-%! ## preserving heterogeneous variable types that `table2array` could not merge.
+%! ## preserving heterogeneous variable types that `table2array` could not
+%! ## merge.
 %!
 %! LastName = {'Sanchez'; 'Johnson'; 'Li'};
 %! Age = [38; 43; 38];

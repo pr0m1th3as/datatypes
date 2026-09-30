@@ -1,8 +1,8 @@
 %!demo
-%! ## `sortrows` orders the rows by one or more variables of any comparable type.
-%! ## Name the variables to sort by; a trailing direction (or one per key) flips
-%! ## ascending to descending.  Here an *ordinal* categorical `Grade` sets the
-%! ## primary order, with a `datetime` breaking ties.
+%! ## `sortrows` orders the rows by one or more variables of any comparable
+%! ## type.  Name the variables to sort by; a trailing direction (or one per
+%! ## key) flips ascending to descending.  Here an *ordinal* categorical `Grade`
+%! ## sets the primary order, with a `datetime` breaking ties.
 %!
 %! Name = string ({'Li'; 'Diaz'; 'Brown'; 'Lee'});
 %! Visit = datetime (2024, [3; 1; 2; 1], [7; 5; 6; 2]);

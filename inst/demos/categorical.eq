@@ -1,7 +1,7 @@
 %!demo
 %! ## `eq` (the `==` operator) compares a categorical array element by element,
-%! ## either to a single category name or to another categorical array.  Equality
-%! ## works for every categorical — nominal or ordinal.
+%! ## either to a single category name or to another categorical array.
+%! ## Equality works for every categorical — nominal or ordinal.
 %!
 %! C = categorical ({'M'; 'S'; 'L'; 'M'})
 %!
