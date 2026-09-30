@@ -41,7 +41,7 @@
 ## (see @code{addprop}) uses that value as the sheet name instead of the field
 ## name, which lets a sheet name that is not a valid identifier (for example
 ## @qcode{'Sales 2024'}) round-trip.  Sheet names must be non-empty and must not
-## contain any of the characters @qcode{[ ] * ? : / @backslashchar{}}, and the
+## contain any of the characters @qcode{[ ] * ? : \ /}, and the
 ## resolved names must be unique.
 ##
 ## @seealso{ods2struct, table.table2ods, ods2table, table.writetable}

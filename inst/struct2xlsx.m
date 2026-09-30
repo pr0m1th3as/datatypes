@@ -31,7 +31,7 @@
 ## @code{xlsx2struct}.  A field whose table carries an @qcode{'ActualSheetName'}
 ## custom property uses that value as the sheet name instead of the field name.
 ## Sheet names must be non-empty, at most 31 characters, and must not contain
-## any of the characters @qcode{[ ] * ? : / @backslashchar{}}; the resolved
+## any of the characters @qcode{[ ] * ? : \ /}; the resolved
 ## names must be unique.
 ##
 ## @seealso{xlsx2struct, struct2ods, table.writetable, readtable}

@@ -2632,7 +2632,7 @@ classdef timeseries
     ## -*- texinfo -*-
     ## @deftypefn {timeseries} {@var{ts} =} ldivide (@var{a}, @var{b})
     ##
-    ## The element-wise left quotient, @code{@var{a} .@backslashchar{} @var{b}}.
+    ## The element-wise left quotient, @code{@var{a} .\ @var{b}}.
     ##
     ## @code{@var{ts} = ldivide (@var{a}, @var{b})} returns the element-wise
     ## quotient of @var{b} by @var{a}, sample by sample.  One of them may be
@@ -2676,7 +2676,7 @@ classdef timeseries
     ## -*- texinfo -*-
     ## @deftypefn {timeseries} {@var{ts} =} mldivide (@var{a}, @var{b})
     ##
-    ## The matrix left division of series, @code{@var{a} @backslashchar{} @var{b}}.
+    ## The matrix left division of series, @code{@var{a} \ @var{b}}.
     ##
     ## @code{@var{ts} = mldivide (@var{a}, @var{b})} returns the matrix left
     ## division of @var{b} by @var{a}, sample by sample; each result keeps the
