@@ -20852,7 +20852,7 @@ struct2ods
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 1449
+# length: 1450
 datatypes: struct2ods (filename, s)
 Write a scalar structure of tables to a multi-sheet OpenDocument spreadsheet.
 
@@ -20877,7 +20877,7 @@ A field whose table carries an 'ActualSheetName' custom property
 (see addprop) uses that value as the sheet name instead of the field
 name, which lets a sheet name that is not a valid identifier (for example
 'Sales 2024') round-trip. Sheet names must be non-empty and must not
-contain any of the characters [ ] * ? : / , and the
+contain any of the characters [ ] * ? : \ /, and the
 resolved names must be unique.
 
 See also:
@@ -20958,7 +20958,7 @@ struct2xlsx
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 883
+# length: 884
 datatypes: struct2xlsx (filename, s)
 Write a scalar structure of tables to a multi-sheet Excel workbook.
 
@@ -20973,7 +20973,7 @@ followed by the data, with no hidden type metadata); read it back with
 xlsx2struct. A field whose table carries an 'ActualSheetName'
 custom property uses that value as the sheet name instead of the field name.
 Sheet names must be non-empty, at most 31 characters, and must not contain
-any of the characters [ ] * ? : / ; the resolved
+any of the characters [ ] * ? : \ /; the resolved
 names must be unique.
 
 See also:
@@ -27282,9 +27282,9 @@ timeseries.ldivide
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 486
+# length: 487
 timeseries: ts = ldivide (a, b)
-The element-wise left quotient, a . b.
+The element-wise left quotient, a .\ b.
 
 ts = ldivide (a, b) returns the element-wise
 quotient of b by a, sample by sample. One of them may be
@@ -27303,8 +27303,8 @@ timeseries.mldivide
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 35
-The element-wise left quotient, a .
+# length: 39
+The element-wise left quotient, a .\ b.
 
 
 
@@ -27532,9 +27532,9 @@ timeseries.mldivide
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 530
+# length: 532
 timeseries: ts = mldivide (a, b)
-The matrix left division of series, a b.
+The matrix left division of series, a \ b.
 
 ts = mldivide (a, b) returns the matrix left
 division of b by a, sample by sample; each result keeps the
@@ -27554,8 +27554,8 @@ timeseries.ldivide
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 40
-The matrix left division of series, a b.
+# length: 42
+The matrix left division of series, a \ b.
 
 
 
