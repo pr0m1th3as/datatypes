@@ -2,7 +2,7 @@
 # name: cache
 # type: cell
 # rows: 3
-# columns: 708
+# columns: 846
 # name: <cell-element>
 # type: sq_string
 # elements: 1
@@ -2489,15 +2489,18 @@ categorical.cat
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 937
+# length: 1140
 categorical: C = cat (dim, A, B, ...)
 Concatenate categorical arrays.
 
 C = cat (dim, A, B, ...) concatenates
 categorical arrays A, B, ... along dimension dim.
 All input arrays must have the same size except along the operating
-dimension dim. Any of the input arrays may also be string arrays
-or cell arrays of character vectors of compatible size.
+dimension dim. Any of the input arrays may also be character
+vectors, string arrays or cell arrays of character vectors of compatible
+size, whose texts name categories, or missing values, which are
+undefined. Empty arrays are ignored. A numeric or logical array is
+refused, since a number could name a category or its code.
 
 If any input array is an ordinal categorical array, then all inputs must
 be ordinal categorical arrays with the same set and ordering of
@@ -2528,7 +2531,7 @@ categorical.categorical
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 3239
+# length: 3259
 categorical: C = categorical (A)
 categorical: C = categorical (A, valueset)
 categorical: C = categorical (A, valueset, catnames)
@@ -2587,8 +2590,9 @@ unordered categorical arrays and it is always true for ordinal
 categorical arrays. Setting "Protected" to true prevents
 from assigning new values that do not correspond to existing categories.
 When false, assigning new values to the array automatically
-updates the categories. Hence, categorical arrays with different sets of
-categories can be combined/merged into a new array with set operations.
+adds the categories of the values assigned. Hence, categorical arrays
+with different sets of categories can be combined/merged into a new
+array with set operations.
 
 See also:
 categorical.categories,
@@ -3087,7 +3091,7 @@ categorical.horzcat
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 992
+# length: 1195
 categorical: C = horzcat (A, B, ...)
 Horizontal concatenation of categorical arrays.
 
@@ -3095,8 +3099,11 @@ C = horzcat (A, B, ... is the equivalent of
 the syntax B = [A, B, ...] and horizontally
 concatenates the categorical arrays A, B, .... All input
 arrays must have the same size except along the second dimension. Any of
-the input arrays may also be string arrays or cell arrays of character
-vectors of compatible size.
+the input arrays may also be character vectors, string arrays or cell
+arrays of character vectors of compatible size, whose texts name
+categories, or missing values, which are undefined. Empty arrays are
+ignored. A numeric or logical array is refused, since a number could
+name a category or its code.
 
 If any input array is an ordinal categorical array, then all inputs must
 be ordinal categorical arrays with the same set and ordering of
@@ -5695,7 +5702,7 @@ categorical.vertcat
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 987
+# length: 1190
 categorical: C = vertcat (A, B, ...)
 Vertical concatenation of categorical arrays.
 
@@ -5703,8 +5710,11 @@ C = vertcat (A, B, ... is the equivalent of
 the syntax B = [A; B; ...] and vertically
 concatenates the categorical arrays A, B, .... All input
 arrays must have the same size except along the first dimension. Any of
-the input arrays may also be string arrays or cell arrays of character
-vectors of compatible size.
+the input arrays may also be character vectors, string arrays or cell
+arrays of character vectors of compatible size, whose texts name
+categories, or missing values, which are undefined. Empty arrays are
+ignored. A numeric or logical array is refused, since a number could
+name a category or its code.
 
 If any input array is an ordinal categorical array, then all inputs must
 be ordinal categorical arrays with the same set and ordering of
@@ -5735,7 +5745,7 @@ cell2table
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 1221
+# length: 1289
 datatypes: tbl = cell2table (C)
 datatypes: tbl = cell2table (C, Name, Value)
 Convert a cell array to a table.
@@ -5745,7 +5755,8 @@ to the table tbl, where the contents of each column of C becomes
 a variable in tbl. The contents of each column are concatenated into
 their common data type (i.e. if a column of C contains explicitly
 double numbers, then the corresponding variable in tbl is of
-the same type), otherwise they are added as a column of cells.
+the same type), otherwise they are added as a column of cells. A column
+holding function handles always becomes a column of cells.
 
 tbl = cell2table (C, Name, Value) specifies
 optional parameters for creating the table tbl with the following
@@ -15275,7 +15286,7 @@ eventtable.DimensionNames
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 650
+# length: 818
 tabular: property DimensionNames
 Dimension names
 
@@ -15289,7 +15300,10 @@ By default, DimensionNames is specified as
 'Row', 'Variables'. You can access table data per rows or per
 columns by using either one of the two dimension names, respectively.
 However, if the table contains row names, then the first element of the
-DimensionNames corresponds to the row names.
+DimensionNames corresponds to the row names. The second name
+returns the variables joined into one array, as table2array joins
+them, and assigning to it writes them all, as curly brackets over the
+whole table do.
 
 
 # name: <cell-element>
@@ -16472,6 +16486,38 @@ True if input is a table or a timetable, false otherwise.
 # name: <cell-element>
 # type: sq_string
 # elements: 1
+# length: 12
+istimeseries
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 352
+datatypes: TF = istimeseries (X)
+True if input is a timeseries object, false otherwise.
+
+TF = istimeseries (X) always returns a logical scalar,
+irrespective of the size of X, so it is true for an array of
+timeseries objects too. MATLAB has no such function; it is provided
+as isduration and istimetable are for their classes.
+
+See also:
+timeseries,
+isa
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 54
+True if input is a timeseries object, false otherwise.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
 # length: 11
 istimetable
 
@@ -16499,6 +16545,38 @@ table
 # elements: 1
 # length: 46
 True if input is a timetable, false otherwise.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 14
+istscollection
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 362
+datatypes: TF = istscollection (X)
+True if input is a tscollection object, false otherwise.
+
+TF = istscollection (X) always returns a logical scalar,
+irrespective of the size of X, so it is true for an array of
+tscollection objects too. MATLAB has no such function; it is provided
+as isduration and istimetable are for their classes.
+
+See also:
+istimeseries,
+isa
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 56
+True if input is a tscollection object, false otherwise.
 
 
 
@@ -17839,7 +17917,7 @@ string
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 752
+# length: 761
 datatypes: string
 Array representing sequences of characters.
 
@@ -17857,6 +17935,7 @@ vectors or character vectors as if they were string arrays or string
 scalars, use the convertStringsToChars function.
 
 See also:
+strings,
 convertCharsToStrings,
 convertStringsToChars
 
@@ -20376,7 +20455,7 @@ string.string
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 1764
+# length: 1984
 string: str = string ()
 string: str = string (in)
 string: str = string (calendarDuration, 'Format', FMT)
@@ -20394,7 +20473,11 @@ options:
 character arrays are converted so that each row becomes a string
 element, with any trailing whitespace preserved; cell arrays of character
 vectors are stored as-is.
-numeric arrays are converted via the code num2str function.
+numeric arrays are converted with one precision for the whole
+array: P significant digits, where P is four more than the
+base-10 logarithm of its largest finite magnitude, rounded up, and lies
+between 5 and 16. Integer types are written exactly, and NaN
+becomes a missing string.
 logical arrays are converted to either false or
 true character sequences.
 categorical arrays are converted via their cellstr method.
@@ -20713,6 +20796,55 @@ Vertical concatenation of string arrays.
 # name: <cell-element>
 # type: sq_string
 # elements: 1
+# length: 7
+strings
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 868
+datatypes: str = strings
+datatypes: str = strings (n)
+datatypes: str = strings (sz1, ..., szN)
+datatypes: str = strings (sz)
+Create a string array of strings with no characters.
+
+str = strings returns a string scalar with no characters,
+"".
+
+str = strings (n) returns an NxN string array
+whose every element has no characters.
+
+str = strings (sz1, ..., szN) returns a string
+array of size sz1-by-...-by-szN, and
+str = strings (sz) takes the same sizes as the row vector
+sz.
+
+A size may be numeric or logical, and must be a real, finite integer. A
+negative size counts as zero, as does an empty size argument, and an empty
+size vector gives a 0x0 array.
+
+The elements are strings with no characters, not missing strings, so
+ismissing is false and strlength is zero for every one of
+them. string (cell (sz)) gives missing strings instead.
+
+See also:
+string,
+string.empty
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 52
+Create a string array of strings with no characters.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
 # length: 10
 struct2ods
 
@@ -20773,7 +20905,7 @@ struct2table
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 1142
+# length: 1247
 datatypes: tbl = struct2table (S)
 datatypes: tbl = struct2table (S, Name, Value)
 Convert a structure array to a table.
@@ -20782,7 +20914,9 @@ tbl = struct2table (S) converts a structure array S
 to the table tbl, where each field of the input structure becomes a
 variable in the output table. For a scalar structure with N fields,
 all of which have M rows, or an Mx1 or 1xM structure
-array with N fields, the output is an MxN table.
+array with N fields, the output is an MxN table. A field of
+function handles becomes a cell variable, since no other variable can hold
+a function handle.
 
 tbl = struct2table (S, Name, Value) specifies
 optional parameters for creating the table tbl with the following
@@ -20867,7 +21001,7 @@ table
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 2941
+# length: 3748
 datatypes: table
 Array of tabular data containing multiple columnar variables.
 
@@ -20910,11 +21044,18 @@ takes the height of what is assigned to it.
 
 Assigning with curly brackets writes the contents of the variables, as
 reading with them returns them: an array whose columns are those of the
-variables assigned, side by side, or a scalar that fills them all. Each
-variable converts what it is given as its own type does, so a cell
-variable takes a cell array. Variables and rows are created as with
-parentheses, and assigning an empty matrix is refused, since curly
-brackets never delete.
+variables assigned, side by side, and whose rows are the rows assigned,
+or a scalar that fills them all. A single new variable also takes one
+row as every one of its rows. Each variable converts what it is given
+as its own type does, so a cell variable takes a cell array and a
+double variable reads text as numbers. Variables and rows are
+created as with parentheses, a table with neither rows nor variables
+takes one variable for each column, and assigning an empty matrix is
+refused, since curly brackets never delete.
+
+Assigning to tbl.Variables, the second dimension name,
+writes every variable as curly brackets over the whole table do, but
+takes only a value with one row for each row of the table.
 
 Besides the table constructor, you can also use array2table,
 cell2table, and struct2table to create tables from the
@@ -20925,6 +21066,14 @@ stored in a table array are logical, categorical,
 cell, (including cellstr), calendarDuration,
 duration, datetime, string, and struct
 arrays, as well as table itself.
+
+A variable cannot be a function handle; only a cell variable can hold
+one. Every way of creating or replacing a variable refuses it, and the
+conversions cell2table and struct2table, as well as
+assignment of a cell array with parentheses, give a cell variable
+instead. MATLAB refuses it only in the constructor and addvars,
+and lets tbl.varname assignment, struct2table
+and convertvars create one.
 
 See also:
 vartype,
@@ -21023,7 +21172,7 @@ table.DimensionNames
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 650
+# length: 818
 tabular: property DimensionNames
 Dimension names
 
@@ -21037,7 +21186,10 @@ By default, DimensionNames is specified as
 'Row', 'Variables'. You can access table data per rows or per
 columns by using either one of the two dimension names, respectively.
 However, if the table contains row names, then the first element of the
-DimensionNames corresponds to the row names.
+DimensionNames corresponds to the row names. The second name
+returns the variables joined into one array, as table2array joins
+them, and assigning to it writes them all, as curly brackets over the
+whole table do.
 
 
 # name: <cell-element>
@@ -21578,7 +21730,7 @@ table.fillmissing
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 2634
+# length: 2885
 table: tblB = fillmissing (tblA, 'constant', val)
 table: tblB = fillmissing (tblA, method)
 table: tblB = fillmissing (..., Name, Value)
@@ -21612,6 +21764,11 @@ raises an error.
 The 'previous', 'next', and 'nearest' methods
 operate on variables of any data type. Leading or trailing missing
 entries that cannot be reached by the method are left missing.
+
+A variable with nothing ismissing counts as missing, such as a
+cell array that is not a cell array of character vectors, a structure
+or a nested table, is left as it is. MATLAB refuses the whole call
+when such a variable is among the data variables.
 
 The following Name/Value pairs are supported:
 
@@ -22140,7 +22297,7 @@ table.innerjoin
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 1951
+# length: 2388
 table: tbl = innerjoin (tblL, tblR)
 table: tbl = innerjoin (tblL, tblR, Name, Value)
 table: [tbl, ixL, ixR] = innerjoin (...)
@@ -22157,6 +22314,12 @@ combination, then tbl contains all mxn pairings for that
 combination. The rows of tbl are sorted by the values of the key
 variables, and any row names are dropped.
 
+A key holding a missing value (NaN, NaT,
+<undefined> or <missing>) matches no other key. Empty
+text, an empty character vector in a cellstr or a blank row of a
+character matrix, is a value and matches empty text, where MATLAB
+matches it with nothing; ismissing still flags it as missing.
+
 By default tbl contains all the variables of tblL followed by
 the non-key variables of tblR. Whenever a non-key variable name
 appears in both tables, a suffix derived from each input's argument name
@@ -22164,6 +22327,9 @@ is appended to the conflicting names in tbl (for inputs named
 tblL and tblR, the suffixes '_tblL' and
 '_tblR'; when an input has no name, '_left' and
 '_right' are used).
+When both inputs have the same name, as when a table is joined with
+itself, the left names are numbered as well ('_T_1' beside
+'_T'), as in MATLAB.
 
 tbl = innerjoin (tblL, tblR, Name,
 Value) customizes the join with the following options:
@@ -22206,7 +22372,7 @@ table.intersect
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 752
+# length: 887
 table: tbl = intersect (tblA, tblB)
 table: tbl = intersect (tblA, tblB, setOrder)
 table: [tbl, ixA, ixB] = intersect (...)
@@ -22218,6 +22384,9 @@ removed. Both tables must have the same variable names, although not
 necessarily in the same order; tbl keeps the variable order of
 tblA. Rows are compared by their variable values only (row names
 are ignored), and by default tbl is sorted by those values.
+A row holding a missing value (NaN, NaT,
+<undefined> or <missing>) equals no other row, itself
+included, and missing values sort last.
 
 tbl = intersect (tblA, tblB, setOrder)
 controls the ordering of tbl, either 'sorted' (default) or
@@ -22412,7 +22581,7 @@ table.ismember
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 636
+# length: 727
 table: TF = ismember (tblA, tblB)
 table: [TF, ixB] = ismember (tblA, tblB)
 Find set members between two tables by rows.
@@ -22423,6 +22592,8 @@ TF(i) is true when the i-th row of tblA
 also appears as a row of tblB. Both tables must have the same
 variable names, although not necessarily in the same order, and rows are
 compared by their variable values only (row names are ignored).
+A row holding a missing value (NaN, NaT,
+<undefined> or <missing>) is a member of nothing.
 
 [TF, ixB] = ismember (tblA, tblB) also
 returns a column vector ixB containing, for each row of tblA,
@@ -22448,7 +22619,7 @@ table.ismissing
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 1870
+# length: 1906
 table: TF = ismissing (tbl)
 table: TF = ismissing (tbl, indicator)
 table: TF = ismissing (..., 'OutputFormat', outFmt)
@@ -22478,8 +22649,10 @@ indicator.
 indicator can be either a vector of specific data type, in which
 case all other data types in table tbl are ignored, or a cell array
 containing mixed types of data types, in which case they match the data
-types of the variables in table tbl. Missing values specified by
-indicator also apply to nested tables.
+types of the variables in table tbl.
+
+A nested table variable is never missing, whatever it holds, with or
+without indicator, as in MATLAB.
 
 Besides the explicit data type match between indicator and
 tbl, the following additional data types matches apply.
@@ -22723,7 +22896,7 @@ table.join
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 1898
+# length: 2335
 table: tbl = join (tblL, tblR)
 table: tbl = join (tblL, tblR, Name, Value)
 table: [tbl, ixR] = join (...)
@@ -22738,13 +22911,22 @@ match. The key variables of tblR must contain unique combinations
 of values, and every key combination in tblL must be present in
 tblR.
 
+A key holding a missing value (NaN, NaT,
+<undefined> or <missing>) matches no other key. Empty
+text, an empty character vector in a cellstr or a blank row of a
+character matrix, is a value and matches empty text, where MATLAB
+matches it with nothing; ismissing still flags it as missing.
+
 By default tbl contains all the variables of tblL followed by
 the non-key variables of tblR. Whenever a non-key variable name
 appears in both tables, a suffix derived from each input's argument name
 is appended to the conflicting names (for inputs named tblL and
 tblR, the suffixes '_tblL' and '_tblR'; when an
-input has no name, '_left' and '_right' are used). The
-row names of tblL, if any, are preserved.
+input has no name, '_left' and '_right' are used).
+When both inputs have the same name, as when a table is joined with
+itself, the left names are numbered as well ('_T_1' beside
+'_T'), as in MATLAB.
+The row names of tblL, if any, are preserved.
 
 tbl = join (tblL, tblR, Name, Value)
 customizes the join with the following options:
@@ -22776,29 +22958,6 @@ row of tblR.
 # elements: 1
 # length: 47
 Combine two tables by rows using key variables.
-
-
-
-# name: <cell-element>
-# type: sq_string
-# elements: 1
-# length: 12
-table.length
-
-
-# name: <cell-element>
-# type: sq_string
-# elements: 1
-# length: 57
-table: out = length (tbl)
-Length along longest dimension.
-
-
-# name: <cell-element>
-# type: sq_string
-# elements: 1
-# length: 31
-Length along longest dimension.
 
 
 
@@ -22994,7 +23153,7 @@ table.outerjoin
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 2610
+# length: 3047
 table: tbl = outerjoin (tblL, tblR)
 table: tbl = outerjoin (tblL, tblR, Name, Value)
 table: [tbl, ixL, ixR] = outerjoin (...)
@@ -23012,13 +23171,23 @@ tblR share the same key combination, then tbl contains all
 mxn pairings for that combination. The rows of tbl are
 sorted by the values of the key variables and any row names are dropped.
 
+A key holding a missing value (NaN, NaT,
+<undefined> or <missing>) matches no other key. Empty
+text, an empty character vector in a cellstr or a blank row of a
+character matrix, is a value and matches empty text, where MATLAB
+matches it with nothing; ismissing still flags it as missing.
+
 By default tbl contains all the variables of tblL followed
 by all the variables of tblR. Because the key variables are kept
 from both tables, conflicting names receive a suffix derived from each
 input's argument name (for inputs named tblL and tblR, the
 suffixes '_tblL' and '_tblR'; when an input has no name,
-'_left' and '_right' are used). See 'MergeKeys'
-to combine the keys into single columns instead.
+'_left' and '_right' are used).
+When both inputs have the same name, as when a table is joined with
+itself, the left names are numbered as well ('_T_1' beside
+'_T'), as in MATLAB.
+See 'MergeKeys' to combine the keys into single columns
+instead.
 
 tbl = outerjoin (tblL, tblR, Name,
 Value) customizes the join with the following options:
@@ -23412,7 +23581,7 @@ table.rowfun
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 2268
+# length: 2351
 table: B = rowfun (func, A)
 table: B = rowfun (func, A, Name, Value, ...)
 Apply a function to each row of a table.
@@ -23449,8 +23618,9 @@ otherwise to 1.
 'SeparateInputs'
 A logical scalar. When true (the default), the value of each
 input variable is passed to func as a separate argument. When
-false, the values of the row are horizontally concatenated and
-passed as a single argument.
+false, the values of the row are joined into one array, as
+table2array joins the variables, and passed as a single
+argument. Variables that cannot form one array are refused.
 'ExtractCellContents'
 A logical scalar. When true, the contents of cell-valued
 variables are extracted before being passed to func. It defaults
@@ -23546,7 +23716,7 @@ table.setdiff
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 724
+# length: 859
 table: tbl = setdiff (tblA, tblB)
 table: tbl = setdiff (tblA, tblB, setOrder)
 table: [tbl, ixA] = setdiff (...)
@@ -23558,6 +23728,9 @@ rows removed. Both tables must have the same variable names, although
 not necessarily in the same order; tbl keeps the variable order of
 tblA. Rows are compared by their variable values only (row names
 are ignored), and by default tbl is sorted by those values.
+A row holding a missing value (NaN, NaT,
+<undefined> or <missing>) equals no other row, itself
+included, and missing values sort last.
 
 tbl = setdiff (tblA, tblB, setOrder)
 controls the ordering of tbl, either 'sorted' (default) or
@@ -23586,7 +23759,7 @@ table.setxor
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 787
+# length: 922
 table: tbl = setxor (tblA, tblB)
 table: tbl = setxor (tblA, tblB, setOrder)
 table: [tbl, ixA, ixB] = setxor (...)
@@ -23599,6 +23772,9 @@ names, although not necessarily in the same order; tbl keeps the
 variable order of tblA. Rows are compared by their variable values
 only (row names are ignored), and by default tbl is sorted by those
 values.
+A row holding a missing value (NaN, NaT,
+<undefined> or <missing>) equals no other row, itself
+included, and missing values sort last.
 
 tbl = setxor (tblA, tblB, setOrder)
 controls the ordering of tbl, either 'sorted' (default) or
@@ -23890,7 +24066,7 @@ table.stack
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 2893
+# length: 3072
 table: tblB = stack (tblA, vars)
 table: tblB = stack (tblA, {vars1, ..., varsN})
 table: tblB = stack (..., Name, Value)
@@ -23909,6 +24085,10 @@ categorical variable is named by appending '_Indicator' to the
 name of the stacked variable. Variables in tblA that are not
 defined in vars for stacking are replicated in tblB. If
 tblA contains RowNames, these are not stacked.
+
+The stacked variables are joined as table2array joins them, and
+must each have one column; variables that cannot join, such as a
+categorical and a numeric variable, are refused.
 
 tblB = stack (tblA, {vars1, ...,
 varsN}) stacks multiple groups of variables, given as a cell
@@ -23973,7 +24153,7 @@ table.standardizeMissing
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 1211
+# length: 1515
 table: tblB = standardizeMissing (tblA, indicator)
 table: tblB = standardizeMissing (..., Name, Value)
 Insert standard missing values into a table.
@@ -23981,17 +24161,24 @@ Insert standard missing values into a table.
 tblB = standardizeMissing (tblA, indicator)
 replaces every entry of tblA that matches a value in
 indicator with the standard missing value of that variable's data
-type (NaN for double/single, '' for cell
-arrays of character vectors, <missing> for string, and
-<undefined> for categorical).
+type (NaN for double/single and duration,
+'' for cell arrays of character vectors, <missing> for
+string, <undefined> for categorical, and
+NaT for datetime).
 
 indicator may be a numeric scalar or vector, a character vector, a
-string array, a cell array of character vectors, or a cell array
-mixing numeric and text indicators. Each indicator is applied only to
-the variables whose type is compatible with it: numeric indicators match
-double and single variables, while text indicators (char,
-string, or cellstr) match cell-array-of-character-vector,
-string, and categorical variables.
+string array, a cell array of character vectors, a
+duration or datetime array, or a cell array mixing any of
+these. Each indicator is applied only to the variables whose type is
+compatible with it: numeric indicators match double and
+single variables, text indicators (char, string, or
+cellstr) match cell-array-of-character-vector, string, and
+categorical variables, duration indicators match
+duration variables, and datetime indicators match
+datetime variables. A datetime indicator matches the same
+instant in any time zone, but indicators with and without a time zone
+cannot be mixed, nor compared with a variable that differs from them in
+having one.
 
 The 'DataVariables' Name/Value pair restricts the
 operation to a subset of variables, using the same variable referencing
@@ -23999,8 +24186,7 @@ as the other table methods. Variables not selected pass through
 unchanged.
 
 Logical and integer variables (which have no standard missing value) and
-duration, datetime, and calendarDuration variables
-pass through unchanged.
+calendarDuration variables pass through unchanged.
 
 
 # name: <cell-element>
@@ -24134,16 +24320,55 @@ table.table2array
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 69
+# length: 1790
 table: A = table2array (tbl)
-Converts a table to a homogeneous array.
+Converts a table to an array.
+
+A = table2array (tbl) places the variables of
+tbl side by side and joins them into one array A, as
+concatenation with [] joins them in MATLAB. A multicolumn
+variable gives as many columns. The row names and every other property
+of tbl are left out. tbl{:,:} and
+tbl.Variables return the same array.
+
+The variables join as follows:
+
+Numeric and logical variables join as numbers do. An integer type
+takes precedence over single, double and
+logical, the leftmost integer type over any other integer type,
+single over double, and double over
+logical. Values outside the range of the resulting integer type
+are clipped to its limits.
+A numeric variable beside a char variable becomes the
+characters of its values. A logical variable does not join a
+char variable.
+Cell variables join only with other cell variables.
+A duration variable joins double and logical
+variables, whose values count days, and a calendarDuration
+variable joins all three.
+categorical variables join only if all or none of them are
+ordinal, and datetime variables only if all or none of them have
+a time zone. Structures join only with the same fields, and nested
+tables only with different variable names.
+A missing variable joins double, single,
+categorical, datetime, duration and
+calendarDuration variables, as the missing value of their type.
+
+Where the variables cannot form one array, A is the cell array
+that table2cell returns; MATLAB raises an error instead.
+
+The exception is a string variable. Numeric, logical,
+char, cell and missing variables beside it are converted
+to strings, and A is a string array instead of a cell array. Each
+row of a char variable becomes one string, each cell one string,
+and a logical value the string "true" or "false".
 
 
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 40
-Converts a table to a homogeneous array.
+# length: 29
+Converts a table to an array.
 
 
 
@@ -24157,31 +24382,17 @@ table.table2cell
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 1016
+# length: 451
 table: C = table2cell (tbl)
 Converts a table to a cell array.
 
-Each variable in tbl becomes a column of cells in the output
-C. Multicolumnar variables are returned in a single column with
-each cell element containing a row vector.
-
-The size of the returned cell array, C, is the same as the input
-table, tbl. The output C does not include any of the table's
-properties. This also applies to row names.
-
-Compatibility Notes:
-
-Variables of types categorical, calendarDuration,
-datetime, duration and string are returned as
-in their printed representation as character vectors. To revert them to
-their original class type you can parse the cell elements to the
-respective object constructor.
-
-Nested tables are handled as multicolumnar variables only if they contain
-data types, which can be converted to homogeneous array, i.e. numerical
-logical values. Other data types will result to a warning due to
-implicit conversion from numeric to char and the returned values will
-not contain all values from the nested table.
+C = table2cell (tbl) returns a cell array C of
+the same size as tbl, in which each cell holds one row of one
+variable, in the variable's own type. A multicolumn variable gives a row
+in each cell, a char matrix one row of text, and a nested table a
+table of one row. A cell variable of one column gives the contents of
+its cells. The row names and every other property of tbl are left
+out.
 
 
 # name: <cell-element>
@@ -24611,7 +24822,7 @@ table.union
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 841
+# length: 976
 table: tbl = union (tblA, tblB)
 table: tbl = union (tblA, tblB, setOrder)
 table: [tbl, ixA, ixB] = union (...)
@@ -24623,6 +24834,9 @@ Both tables must have the same variable names, although not necessarily
 in the same order; tbl keeps the variable order of tblA.
 Rows are compared by their variable values only (row names are ignored),
 and by default tbl is sorted by those values.
+A row holding a missing value (NaN, NaT,
+<undefined> or <missing>) equals no other row, itself
+included, and missing values sort last.
 
 tbl = union (tblA, tblB, setOrder)
 controls the ordering of tbl. setOrder is either
@@ -24653,7 +24867,7 @@ table.unique
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 1117
+# length: 1254
 table: tblB = unique (tblA)
 table: tblB = unique (tblA, setOrder)
 table: tblB = unique (tblA, occurrence)
@@ -24661,7 +24875,9 @@ table: [tblB, ixA, ixB] = unique (...)
 Unique rows in a table.
 
 tblB = unique (tblA) returns the unique rows of table
-tblA in sorted order.
+tblA in sorted order. A row holding a missing value
+(NaN, NaT, <undefined> or <missing>)
+equals no other row, so each such row is kept; empty text is a value.
 
 tblB = unique (tblA, setOrder) returns the
 unique rows of table tblA in a specified order. setOrder can
@@ -25137,7 +25353,7 @@ tabular.DimensionNames
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 650
+# length: 818
 tabular: property DimensionNames
 Dimension names
 
@@ -25151,7 +25367,10 @@ By default, DimensionNames is specified as
 'Row', 'Variables'. You can access table data per rows or per
 columns by using either one of the two dimension names, respectively.
 However, if the table contains row names, then the first element of the
-DimensionNames corresponds to the row names.
+DimensionNames corresponds to the row names. The second name
+returns the variables joined into one array, as table2array joins
+them, and assigning to it writes them all, as curly brackets over the
+whole table do.
 
 
 # name: <cell-element>
@@ -25564,6 +25783,2624 @@ Create a time range subscript.
 # name: <cell-element>
 # type: sq_string
 # elements: 1
+# length: 10
+timeseries
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 1189
+datatypes: timeseries
+Array of samples indexed by time.
+
+A timeseries object holds a sequence of samples, each taken at a
+time on a common time vector, together with the metadata that describes
+them: the units of the data and of the time, an optional absolute start
+date, the method of evaluating the series between samples, a quality code
+per sample, and named events.
+
+Each sample may be a scalar, a vector, or an array. The time vector runs
+either down the first dimension of the data, each row being a sample, or
+along its last dimension, each slice being one; IsTimeFirst
+reports which, as the constructor describes.
+
+timeseries is a value class: every method returns a modified copy
+and leaves its input unchanged. An array of timeseries objects is
+built by concatenation, as [ts1, ts2].
+
+MATLAB recommends timetable for new code; timeseries is
+provided for code that exchanges it.
+
+Property names are case-sensitive in dot indexing, as for every other
+class; MATLAB also reads ts.name for
+ts.Name. get and set accept any case.
+
+See also:
+tscollection,
+timeseries2timetable,
+timetable,
+tsdata.timemetadata,
+tsdata.datametadata,
+tsdata.qualmetadata,
+tsdata.event,
+tsdata.interpolation
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 33
+Array of samples indexed by time.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 15
+timeseries.Data
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 455
+timeseries: property Data
+The samples.
+
+A numeric or logical array of any class, holding one sample per time
+and read against the time vector as the constructor describes: rows,
+or slices along the last dimension, with a matrix of as many columns
+as there are times stored as an Rx1xN array. Any other number
+of samples than there are times is refused, except while one of the
+two is empty, which lets a series be built by assigning Time
+and Data in turn.
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 12
+The samples.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 19
+timeseries.DataInfo
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 85
+timeseries: property DataInfo
+The metadata of the data, a tsdata.datametadata object.
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 55
+The metadata of the data, a tsdata.datametadata object.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 17
+timeseries.Events
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 127
+timeseries: property Events
+The events of the series.
+
+A vector of tsdata.event objects, or [] when there are
+none, by default.
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 25
+The events of the series.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 22
+timeseries.IsTimeFirst
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 515
+timeseries: property IsTimeFirst
+Whether the time vector runs along the first dimension of the data.
+
+true when each row of the data is a sample, false when
+the time vector runs along the last dimension of the data, as the
+constructor describes. It is kept when samples are selected, so a
+three-dimensional series cut to one sample holds a matrix with
+IsTimeFirst still false. Assigning the value it already
+has is accepted, and assigning the other is refused, since it would
+misalign the data with the time vector.
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 67
+Whether the time vector runs along the first dimension of the data.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 17
+timeseries.Length
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 101
+timeseries: property Length
+The number of samples, which is the length of the time vector.
+Read-only.
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 62
+The number of samples, which is the length of the time vector.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 15
+timeseries.Name
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 221
+timeseries: property Name
+The name of the series.
+
+A character vector, 'unnamed' by default, and '' for a
+series created with no argument. A string scalar is converted; any
+other value is refused, where MATLAB accepts it.
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 23
+The name of the series.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 18
+timeseries.Quality
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 252
+timeseries: property Quality
+A quality code per sample.
+
+Integers from -128 to 127, stored as double, [] by
+default. Either one code per sample, as a vector, or one per data
+element, as an array the size of Data. Their meaning is listed
+in QualityInfo.
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 26
+A quality code per sample.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 22
+timeseries.QualityInfo
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 100
+timeseries: property QualityInfo
+The description of the quality codes, a tsdata.qualmetadata
+object.
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 67
+The description of the quality codes, a tsdata.qualmetadata object.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 15
+timeseries.Time
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 392
+timeseries: property Time
+The time vector.
+
+A column vector of finite, non-decreasing times, in
+ts.TimeInfo.Units, counted from
+ts.TimeInfo.StartDate when that is set. Repeated times
+are allowed. An unsorted time vector is refused on assignment, since
+sorting it would move samples it was not given with. It is stored as
+double: MATLAB keeps an integer class, and then rounds new times
+to it.
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 16
+The time vector.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 19
+timeseries.TimeInfo
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 165
+timeseries: property TimeInfo
+The metadata of the time vector, a tsdata.timemetadata object.
+Its Length, Start, End and Increment
+follow Time and cannot be assigned.
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 62
+The metadata of the time vector, a tsdata.timemetadata object.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 28
+timeseries.TreatNaNasMissing
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 155
+timeseries: property TreatNaNasMissing
+Whether the statistics methods treat NaN as missing data.
+
+A logical scalar, true by default; 0 and 1 are converted.
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 57
+Whether the statistics methods treat NaN as missing data.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 19
+timeseries.UserData
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 72
+timeseries: property UserData
+Any data the user attaches, [] by default.
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 42
+Any data the user attaches, [] by default.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 19
+timeseries.addevent
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 1096
+timeseries: ts = addevent (ts, event)
+timeseries: ts = addevent (ts, name, time)
+Add events to a series.
+
+ts = addevent (ts, event) appends the
+tsdata.event object or array event to the Events of
+the series ts, in the order given.
+
+ts = addevent (ts, name, time) appends an
+event named name at time. name is a character vector
+or a string scalar, and time a real number in the series' units,
+counted from its TimeInfo.StartDate when it has one; for a
+series with a start date time may also be a date, as text or a
+datetime. For several events, name is a cell array of
+character vectors or a string array, and time a cell array, a
+numeric vector or a string array of as many times.
+
+Events are kept in the order they are added, not sorted; an event
+whose name and time match one already held is not added again, while
+the same name at another time is.
+
+A date on a series with no start date is refused, since the series has
+no calendar to place it on; MATLAB accepts it and reads the event as
+time 0. A NaN time is refused too.
+
+See also:
+timeseries.delevent,
+tsdata.event,
+timeseries.gettsatevent
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 23
+Add events to a series.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 20
+timeseries.addsample
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 1546
+timeseries: ts = addsample (ts, 'Data', data, 'Time', time)
+timeseries: ts = addsample (..., 'Quality', quality)
+timeseries: ts = addsample (..., 'OverwriteFlag', tf)
+timeseries: ts = addsample (ts, S)
+Add samples to a series.
+
+ts = addsample (ts, 'Data', data,
+'Time', time) inserts the samples data at the
+times time, one sample per time, keeping the series in time
+order; a sample at a time already present goes after the samples
+there. data is read against time as the constructor reads
+data against times, and each sample must have the size of the series'
+samples; a series with no samples takes any. For a series with no
+TimeInfo.StartDate time is numbers in its units; for one
+with a start date it may also be dates as text, or a datetime.
+The class of the data follows concatenation, so an int8 sample
+makes a double series int8.
+
+The option names are matched in any case, and a later occurrence
+overrides an earlier one. They may also be given as the fields of a
+structure S.
+
+'Quality'
+The quality codes of the new samples, one per sample or one per data
+element, as the series has them. Refused for a series without quality
+codes. When a series with codes is given none, each new sample takes
+the code of the sample nearest in time, the later one on a tie.
+'OverwriteFlag'
+When true, a new sample at a time already present replaces the
+data of every sample there, and their quality codes if
+'Quality' is given, instead of being inserted. false by
+default. MATLAB refuses 0 and 1 here.
+
+See also:
+timeseries.delsample,
+timeseries.append
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 24
+Add samples to a series.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 17
+timeseries.append
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 1103
+timeseries: ts = append (ts1, ts2, ...)
+Join series end to end in time.
+
+ts = append (ts1, ts2, ...) returns one
+series holding the samples of every argument in turn. An argument may
+be an array of series, taken element by element, and series with no
+samples are skipped. Each series must start at or after the end of the
+one before, so equal times where two meet give a repeated time; a gap
+is kept. Their samples must be of one size; the class of the data
+follows concatenation.
+
+Series with a TimeInfo.StartDate and series without one cannot
+be mixed. Times are converted to the coarsest units among them, and
+dates are counted from the first series' start date.
+
+Quality codes are joined when every series has them and refused when
+only some do; MATLAB then keeps too few codes or drops them. The
+result takes its name, DataInfo.Units and QualityInfo
+from the series when they all agree, and otherwise 'unnamed',
+'' and none; MATLAB always names it 'unnamed' and drops
+QualityInfo. Events are gathered from every series, and every
+other property is the first series'.
+
+See also:
+timeseries.addsample
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 31
+Join series end to end in time.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 19
+timeseries.delevent
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 591
+timeseries: ts = delevent (ts, name)
+timeseries: ts = delevent (ts, name, n)
+Remove events from a series.
+
+ts = delevent (ts, name) removes the first event
+named name, a character vector or a string scalar matched in case,
+from the Events of the series ts; for a cell array of
+names, the first event of each.
+
+ts = delevent (ts, name, n) removes the
+nth event of each name instead, counting only the events of that
+name in the order they are held.
+
+A name no event has, or an n beyond the events of that name, is
+refused; MATLAB then removes nothing, silently.
+
+See also:
+timeseries.addevent
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 28
+Remove events from a series.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 20
+timeseries.delsample
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 885
+timeseries: ts = delsample (ts, 'Index', ind)
+timeseries: ts = delsample (ts, 'Value', time)
+Remove samples from a series.
+
+ts = delsample (ts, 'Index', ind)
+removes the samples ind, a vector of positive integers not
+exceeding Length; repeats are allowed and [] removes
+nothing. A logical mask is refused, as in MATLAB.
+
+ts = delsample (ts, 'Value', time)
+removes every sample at each of the times time; a time no sample
+has removes nothing. For a series with no TimeInfo.StartDate
+the times are numbers in its units; for one with a start date they may
+also be dates as text, or a datetime.
+
+The option names are matched in any case. Every property but the
+samples is kept. MATLAB turns quality codes held per data element of
+three-dimensional data into a vector here; they lose the slice of each
+removed sample, as the data does.
+
+See also:
+timeseries.addsample,
+timeseries.getsamples
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 29
+Remove samples from a series.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 18
+timeseries.detrend
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 924
+timeseries: ts = detrend (ts, type)
+timeseries: ts = detrend (ts, type, ind)
+Remove a polynomial trend from a series.
+
+ts = detrend (ts, type) subtracts from each
+column of the data the polynomial fitted to it by least squares against
+Time: its mean for 'constant' or 0, a straight line for
+'linear' or 1, and a polynomial of that degree for any larger
+integer. NaN values are left out of the fit and stay NaN.
+Every other property is kept.
+
+ts = detrend (ts, type, ind) detrends
+only the columns ind of the data, or its rows where
+IsTimeFirst is false.
+
+The data must be double or single, of two dimensions.
+MATLAB fits against the positions of the samples, closing up the gaps
+left by NaN, so its line is wrong where the time is not uniform
+or a value is missing; it also returns a series of fewer than three
+samples unchanged, where here 'constant' of [1 3] is
+[-1 1].
+
+See also:
+timeseries.filter,
+timeseries.idealfilter
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 40
+Remove a polynomial trend from a series.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 13
+timeseries.eq
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 387
+timeseries: tf = eq (a, b)
+True when two series are equal, a == b.
+
+tf = eq (a, b) returns a single logical for the
+whole series, as in MATLAB, not one per sample: true when
+a and b are series equal in every property but
+UserData, the class of the data aside, and false when
+either is not a series. NaN is unequal to itself.
+
+See also:
+timeseries.isequal,
+timeseries.isequalwithequalnans
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 39
+True when two series are equal, a == b.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 17
+timeseries.filter
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 857
+timeseries: ts = filter (ts, b, a)
+timeseries: ts = filter (ts, b, a, ind)
+Filter a series.
+
+ts = filter (ts, b, a) runs each column
+of the data through the filter of numerator coefficients b and
+denominator coefficients a, as filter (b, a,
+x) does, along time from a zero initial state. NaN
+values are first filled by the interpolation method of the series, so
+the data must not begin or end with one. Every other property is
+kept.
+
+ts = filter (ts, b, a, ind)
+filters only the columns ind of the data, or its rows where
+IsTimeFirst is false.
+
+The data must be double or single, and the times
+uniformly spaced. MATLAB filters data of three dimensions across its
+rows when ind is not given, and filters a series with irregular
+times as if they were uniform, though its documentation requires them
+to be.
+
+See also:
+timeseries.idealfilter,
+timeseries.detrend
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 16
+Filter a series.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 14
+timeseries.get
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 711
+timeseries: S = get (ts)
+timeseries: value = get (ts, name)
+timeseries: values = get (ts, names)
+Return property values.
+
+S = get (ts) returns a structure of every property
+of the series ts.
+
+value = get (ts, name) returns the property
+name, a character vector or a string scalar matched in any case.
+
+values = get (ts, names) returns a row cell
+array of the properties named in the cell array names.
+
+For an array of series, get with one name returns a cell
+array the size of the array, with a cell array of names a cell
+array with a row per series and a column per property, and with no
+name a cell array with a row per series and a column per property of
+every property.
+
+See also:
+timeseries.set,
+timeseries
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 23
+Return property values.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 21
+timeseries.getabstime
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 788
+timeseries: dates = getabstime (ts)
+Return the dates of the samples as text.
+
+dates = getabstime (ts) returns a column cell array
+of character vectors, the date of each sample of the series ts:
+its time, in TimeInfo.Units, counted from
+TimeInfo.StartDate. They are written in the datestr
+format TimeInfo.Format, or 'dd-mmm-yyyy HH:MM:SS' when
+that is empty; seconds are rounded to the millisecond and the rest cut
+off, as datestr does. A series with no samples gives {}.
+A series with no TimeInfo.StartDate is refused.
+
+MATLAB uses TimeInfo.Format only when it is one of the formats
+its documentation lists, such as 'dd-mmm-yyyy' or
+'mm/dd/yyyy', and writes the default for any other,
+'yyyy-mm-dd' included; here every format is used.
+
+See also:
+timeseries.setabstime,
+tsdata.timemetadata
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 40
+Return the dates of the samples as text.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 25
+timeseries.getdatasamples
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 510
+timeseries: data = getdatasamples (ts, ind)
+Return the data of selected samples.
+
+data = getdatasamples (ts, ind) returns the
+data of the samples ind of the series ts, in the order
+given, repeats included: the rows ind of Data for a series
+whose time runs down its first dimension, the slices ind along the
+last dimension otherwise. ind is a vector of positive integers
+not exceeding Length, or a logical mask no longer than
+Length; [] returns [].
+
+See also:
+timeseries.getsamples,
+timeseries.getdatasamplesize
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 36
+Return the data of selected samples.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 28
+timeseries.getdatasamplesize
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 379
+timeseries: sz = getdatasamplesize (ts)
+Return the size of one sample.
+
+sz = getdatasamplesize (ts) returns the size of each
+sample of the series ts: [1 C] for data of C
+columns with a sample per row, and the size of a slice for data whose
+time runs along the last dimension, so [2 3] for a
+2x3x4 array. It is [] for a series with no samples.
+
+See also:
+timeseries.getdatasamples
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 30
+Return the size of one sample.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 26
+timeseries.getinterpmethod
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 255
+timeseries: name = getinterpmethod (ts)
+Return the name of the interpolation method.
+
+name = getinterpmethod (ts) returns
+'linear', 'zoh' or 'myFuncHandle', the
+Name of ts.DataInfo.Interpolation.
+
+See also:
+timeseries.setinterpmethod,
+tsdata.interpolation
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 44
+Return the name of the interpolation method.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 25
+timeseries.getqualitydesc
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 389
+timeseries: desc = getqualitydesc (ts)
+Return the description of each quality code.
+
+desc = getqualitydesc (ts) returns a cell array the
+size of ts.Quality holding, for each code, its description
+in ts.QualityInfo: the element of Description at
+the position of the code in Code. A series without quality
+codes gives {}. A code with no description is refused.
+
+See also:
+tsdata.qualmetadata
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 44
+Return the description of each quality code.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 21
+timeseries.getsamples
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 594
+timeseries: ts2 = getsamples (ts, ind)
+Return a series of selected samples.
+
+ts2 = getsamples (ts, ind) returns the series
+ts holding only the samples ind, which are taken in time
+order whatever order they are given in, repeats included. ind
+is as for getdatasamples. Their times and quality codes go with
+them, and every other property is kept.
+
+MATLAB names the result 'unnamed', and for an empty ind
+returns timeseries () with every property reset; here the name
+and properties are kept in both cases.
+
+See also:
+timeseries.getdatasamples,
+timeseries.getsampleusingtime,
+timeseries.delsample
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 36
+Return a series of selected samples.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 29
+timeseries.getsampleusingtime
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 991
+timeseries: ts2 = getsampleusingtime (ts, t)
+timeseries: ts2 = getsampleusingtime (ts, t, 'AllowDuplicateTimes', tf)
+timeseries: ts2 = getsampleusingtime (ts, t1, t2)
+Return a series of the samples at a time or between two times.
+
+ts2 = getsampleusingtime (ts, t) returns the
+series ts holding only the sample at time t. When several
+samples share that time the call is refused, unless
+'AllowDuplicateTimes' is true, which returns them all.
+MATLAB returns them all for false too.
+
+ts2 = getsampleusingtime (ts, t1, t2)
+returns the samples from t1 to t2, both included.
+
+For a series with no TimeInfo.StartDate the times are numbers
+in its units. For a series with one they are dates: text, a
+datenum, or a datetime, which MATLAB does not accept.
+No sample in range, NaN, or t1 after t2 give a
+series with no samples. Every property but the samples is kept;
+MATLAB names the result 'unnamed' and, when it is empty,
+resets every property.
+
+See also:
+timeseries.getsamples,
+timeseries.delsample
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 62
+Return a series of the samples at a time or between two times.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 28
+timeseries.gettsafteratevent
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 1039
+timeseries: ts2 = gettsafteratevent (ts, event)
+timeseries: ts2 = gettsafteratevent (ts, event, n)
+Return a series of the samples at and after the event.
+
+ts2 = gettsafteratevent (ts, event) returns the
+series ts holding only the samples whose time is at or after the
+time of event, compared exactly. event is the name of an
+event of ts, a character vector or a string scalar matched in case,
+which selects the first event of that name; or a tsdata.event
+object, which need not belong to ts.
+
+ts2 = gettsafteratevent (ts, event, n)
+uses the nth event named event, counting only the events of
+that name in the order they are held. For a tsdata.event object
+n can only be 1. A name no event has, or an n beyond the
+events of that name, is refused; MATLAB then returns an empty series. So
+is a dated event on a series with no start date, which MATLAB reads as
+time 0.
+
+See also:
+timeseries.gettsbeforeevent,
+timeseries.gettsbeforeatevent,
+timeseries.gettsatevent,
+timeseries.gettsafterevent,
+timeseries.gettsbetweenevents,
+timeseries.addevent
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 54
+Return a series of the samples at and after the event.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 26
+timeseries.gettsafterevent
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 1029
+timeseries: ts2 = gettsafterevent (ts, event)
+timeseries: ts2 = gettsafterevent (ts, event, n)
+Return a series of the samples after the event.
+
+ts2 = gettsafterevent (ts, event) returns the
+series ts holding only the samples whose time is strictly after the
+time of event, compared exactly. event is the name of an
+event of ts, a character vector or a string scalar matched in case,
+which selects the first event of that name; or a tsdata.event
+object, which need not belong to ts.
+
+ts2 = gettsafterevent (ts, event, n) uses
+the nth event named event, counting only the events of that
+name in the order they are held. For a tsdata.event object
+n can only be 1. A name no event has, or an n beyond the
+events of that name, is refused; MATLAB then returns an empty series. So
+is a dated event on a series with no start date, which MATLAB reads as
+time 0.
+
+See also:
+timeseries.gettsbeforeevent,
+timeseries.gettsbeforeatevent,
+timeseries.gettsatevent,
+timeseries.gettsafteratevent,
+timeseries.gettsbetweenevents,
+timeseries.addevent
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 47
+Return a series of the samples after the event.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 23
+timeseries.gettsatevent
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 1005
+timeseries: ts2 = gettsatevent (ts, event)
+timeseries: ts2 = gettsatevent (ts, event, n)
+Return a series of the samples at the event.
+
+ts2 = gettsatevent (ts, event) returns the
+series ts holding only the samples whose time is at the time of
+event, compared exactly. event is the name of an event of
+ts, a character vector or a string scalar matched in case, which
+selects the first event of that name; or a tsdata.event object,
+which need not belong to ts.
+
+ts2 = gettsatevent (ts, event, n) uses the
+nth event named event, counting only the events of that name
+in the order they are held. For a tsdata.event object n can
+only be 1. A name no event has, or an n beyond the events of that
+name, is refused; MATLAB then returns an empty series. So is a dated
+event on a series with no start date, which MATLAB reads as time 0.
+
+See also:
+timeseries.gettsbeforeevent,
+timeseries.gettsbeforeatevent,
+timeseries.gettsafteratevent,
+timeseries.gettsafterevent,
+timeseries.gettsbetweenevents,
+timeseries.addevent
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 44
+Return a series of the samples at the event.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 29
+timeseries.gettsbeforeatevent
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 1044
+timeseries: ts2 = gettsbeforeatevent (ts, event)
+timeseries: ts2 = gettsbeforeatevent (ts, event, n)
+Return a series of the samples before and at the event.
+
+ts2 = gettsbeforeatevent (ts, event) returns the
+series ts holding only the samples whose time is before or at the
+time of event, compared exactly. event is the name of an
+event of ts, a character vector or a string scalar matched in case,
+which selects the first event of that name; or a tsdata.event
+object, which need not belong to ts.
+
+ts2 = gettsbeforeatevent (ts, event, n)
+uses the nth event named event, counting only the events of
+that name in the order they are held. For a tsdata.event object
+n can only be 1. A name no event has, or an n beyond the
+events of that name, is refused; MATLAB then returns an empty series. So
+is a dated event on a series with no start date, which MATLAB reads as
+time 0.
+
+See also:
+timeseries.gettsbeforeevent,
+timeseries.gettsatevent,
+timeseries.gettsafteratevent,
+timeseries.gettsafterevent,
+timeseries.gettsbetweenevents,
+timeseries.addevent
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 55
+Return a series of the samples before and at the event.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 27
+timeseries.gettsbeforeevent
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 1034
+timeseries: ts2 = gettsbeforeevent (ts, event)
+timeseries: ts2 = gettsbeforeevent (ts, event, n)
+Return a series of the samples before the event.
+
+ts2 = gettsbeforeevent (ts, event) returns the
+series ts holding only the samples whose time is strictly before
+the time of event, compared exactly. event is the name of an
+event of ts, a character vector or a string scalar matched in case,
+which selects the first event of that name; or a tsdata.event
+object, which need not belong to ts.
+
+ts2 = gettsbeforeevent (ts, event, n) uses
+the nth event named event, counting only the events of that
+name in the order they are held. For a tsdata.event object
+n can only be 1. A name no event has, or an n beyond the
+events of that name, is refused; MATLAB then returns an empty series. So
+is a dated event on a series with no start date, which MATLAB reads as
+time 0.
+
+See also:
+timeseries.gettsbeforeatevent,
+timeseries.gettsatevent,
+timeseries.gettsafteratevent,
+timeseries.gettsafterevent,
+timeseries.gettsbetweenevents,
+timeseries.addevent
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 48
+Return a series of the samples before the event.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 29
+timeseries.gettsbetweenevents
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 780
+timeseries: ts2 = gettsbetweenevents (ts, event1, event2)
+timeseries: ts2 = gettsbetweenevents (ts, event1, event2, n1, n2)
+Return a series of the samples between two events.
+
+ts2 = gettsbetweenevents (ts, event1,
+event2) returns the series ts holding only the samples from
+the time of event1 to the time of event2, both included; none
+when event2 comes before event1. Each event is a name or a
+tsdata.event object, as for gettsafterevent.
+
+ts2 = gettsbetweenevents (ts, event1,
+event2, n1, n2) uses the n1th event named
+event1 and the n2th named event2; for an event given
+as a tsdata.event object its number can only be 1. Names and
+numbers no event has are refused, as for gettsafterevent.
+
+See also:
+timeseries.gettsafterevent,
+timeseries.gettsbeforeevent,
+timeseries.addevent
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 50
+Return a series of the samples between two events.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 28
+timeseries.hasduplicatetimes
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 367
+timeseries: tf = hasduplicatetimes (ts)
+True where a series repeats a time.
+
+tf = hasduplicatetimes (ts) returns true when
+two samples of the series ts share a time. For an array of
+series it returns a logical array of its size, one answer per series;
+MATLAB returns a single answer that can miss a series with repeated
+times.
+
+See also:
+timeseries.getsampleusingtime
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 35
+True where a series repeats a time.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 22
+timeseries.idealfilter
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 1244
+timeseries: ts = idealfilter (ts, intervals, type)
+timeseries: ts = idealfilter (ts, intervals, type, ind)
+Filter a series with an ideal filter.
+
+ts = idealfilter (ts, intervals, type)
+removes the mean of each column of the data, then keeps the frequencies
+in intervals (type 'pass') or removes them
+('notch') through the discrete Fourier transform. The mean is
+not added back. intervals holds one frequency interval per row,
+[lo, hi], in cycles per unit of
+TimeInfo.Units; a frequency f is in it when
+lo < f <= hi. NaN values are first
+filled by the interpolation method of the series, so the data must not
+begin or end with one. A series with irregular times is resampled
+first, by its interpolation method, onto as many uniformly spaced times
+from its first time to its last, which it keeps. Every other property
+is kept.
+
+ts = idealfilter (ts, intervals, type,
+ind) filters only the columns ind of the data, or its rows
+where IsTimeFirst is false.
+
+The data must be double or single, of two dimensions.
+MATLAB returns complex NaN throughout for data that begins or
+ends with NaN, keeps the mean of a series of fewer than three
+samples, and reads only the first and last columns of
+intervals.
+
+See also:
+timeseries.filter,
+timeseries.detrend
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 37
+Filter a series with an ideal filter.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 14
+timeseries.iqr
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 544
+timeseries: v = iqr (ts)
+timeseries: v = iqr (ts, name, value, ...)
+Return the interquartile range of a series over time.
+
+v = iqr (ts) returns the interquartile range of each
+data element over time, the quartiles placed by the (k - 0.5)/n
+rule, so v has the size of one sample; with 'time'
+weighting the cumulative weight takes the place of k. v is
+double whatever the class of the data, and [] for a series
+with no samples.
+
+The options, and where MATLAB differs, are given under
+timeseries.mean.
+
+See also:
+timeseries.median,
+timeseries.mean
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 53
+Return the interquartile range of a series over time.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 18
+timeseries.isequal
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 243
+timeseries: tf = isequal (a, b)
+True when two series are equal.
+
+tf = isequal (a, b) is a ==
+b: every property but UserData compared, the class of the
+data aside, NaN unequal to itself.
+
+See also:
+timeseries.eq,
+timeseries.isequalwithequalnans
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 31
+True when two series are equal.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 31
+timeseries.isequalwithequalnans
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 228
+timeseries: tf = isequalwithequalnans (a, b)
+True when two series are equal, NaN equal to itself.
+
+tf = isequalwithequalnans (a, b) is
+isequal (a, b) with NaN counted as equal to
+NaN.
+
+See also:
+timeseries.isequal,
+timeseries.eq
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 52
+True when two series are equal, NaN equal to itself.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 18
+timeseries.ldivide
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 486
+timeseries: ts = ldivide (a, b)
+The element-wise left quotient, a . b.
+
+ts = ldivide (a, b) returns the element-wise
+quotient of b by a, sample by sample. One of them may be
+a number: a scalar, or an array the size of one sample.
+
+The rules for two series are given under timeseries.plus,
+save that DataInfo.Units is dropped, since a product or
+quotient of units is the unit of neither; MATLAB keeps it where both
+series have the same.
+
+See also:
+timeseries.rdivide,
+timeseries.mldivide
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 35
+The element-wise left quotient, a .
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 14
+timeseries.max
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 547
+timeseries: v = max (ts)
+timeseries: v = max (ts, name, value, ...)
+Return the maximum of a series over time.
+
+v = max (ts) returns the largest value of each data
+element over time, so v has the size of one sample; weighting
+leaves it unchanged. v keeps the class of the data, and is
+[] for a series with no samples. Where a value is left without
+samples it is NaN, and v is then double, as integer
+and logical classes hold no NaN.
+
+The options, and where MATLAB differs, are given under
+timeseries.mean.
+
+See also:
+timeseries.min,
+timeseries.mean
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 41
+Return the maximum of a series over time.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 15
+timeseries.mean
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 1664
+timeseries: v = mean (ts)
+timeseries: v = mean (ts, name, value, ...)
+Return the mean of a series over time.
+
+v = mean (ts) returns the mean of each data element
+over time, so v has the size of one sample; with 'time'
+weighting it is the time-weighted mean. v is double
+whatever the class of the data, and [] for a series with no
+samples.
+
+v = mean (ts, name, value, ...) takes
+these options, which all nine statistics share, the names matched in any
+case:
+
+'Quality'
+the quality codes of samples to leave out, as missing; a value left
+without samples is NaN, a sum 0. A code no sample has leaves
+nothing out, with a warning.
+'MissingData'
+'remove', the default, leaves missing values out;
+'interpolate' fills those between samples linearly in time
+first.
+'Weighting'
+'none', the default, or 'time', which weights each sample
+by the time it covers: an interior sample by the mean of its two
+intervals, an end sample by its one interval, the weights scaled to a
+mean of 1, so that uniform time changes nothing.
+
+NaN is missing while TreatNaNasMissing is true;
+when it is false, mean, median, std,
+var and sum give NaN where the data holds one,
+while min, max, mode and iqr still skip it,
+as in MATLAB.
+
+MATLAB applies 'time' weighting by multiplying the data by the
+weights and taking the ordinary statistic of the product, which is
+right for mean and sum only: there the minimum of
+[1 2 4 8 16] at times [0 1 3 7 8] is 0.5556. Here each
+statistic is the time-weighted one: 1 for that minimum. MATLAB also
+fails on logical data, and in std, var and iqr on
+integer data, which here are computed in double.
+
+See also:
+timeseries.median,
+timeseries.std,
+timeseries.sum
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 38
+Return the mean of a series over time.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 17
+timeseries.median
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 588
+timeseries: v = median (ts)
+timeseries: v = median (ts, name, value, ...)
+Return the median of a series over time.
+
+v = median (ts) returns the median of each data
+element over time, so v has the size of one sample; with
+'time' weighting it is the time-weighted median. v keeps
+the class of the data, and is [] for a series with no samples.
+Where a value is left without samples it is NaN, and v is
+then double, as integer and logical classes hold no NaN.
+
+The options, and where MATLAB differs, are given under
+timeseries.mean.
+
+See also:
+timeseries.mean,
+timeseries.mode,
+timeseries.iqr
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 40
+Return the median of a series over time.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 14
+timeseries.min
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 548
+timeseries: v = min (ts)
+timeseries: v = min (ts, name, value, ...)
+Return the minimum of a series over time.
+
+v = min (ts) returns the smallest value of each data
+element over time, so v has the size of one sample; weighting
+leaves it unchanged. v keeps the class of the data, and is
+[] for a series with no samples. Where a value is left without
+samples it is NaN, and v is then double, as integer
+and logical classes hold no NaN.
+
+The options, and where MATLAB differs, are given under
+timeseries.mean.
+
+See also:
+timeseries.max,
+timeseries.mean
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 41
+Return the minimum of a series over time.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 16
+timeseries.minus
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 295
+timeseries: ts = minus (a, b)
+The difference of series, a - b.
+
+ts = minus (a, b) returns the difference of
+a and b, sample by sample. One of them may be a number: a
+scalar, or an array the size of one sample.
+
+The rules for two series are given under timeseries.plus.
+
+See also:
+timeseries.plus
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 32
+The difference of series, a - b.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 19
+timeseries.mldivide
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 530
+timeseries: ts = mldivide (a, b)
+The matrix left division of series, a b.
+
+ts = mldivide (a, b) returns the matrix left
+division of b by a, sample by sample; each result keeps the
+size of one sample. One of them may be a number whose size fits the
+division with one sample.
+
+The rules for two series are given under timeseries.plus,
+save that DataInfo.Units is dropped, since a product or
+quotient of units is the unit of neither; MATLAB keeps it where both
+series have the same.
+
+See also:
+timeseries.mrdivide,
+timeseries.ldivide
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 40
+The matrix left division of series, a b.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 15
+timeseries.mode
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 608
+timeseries: v = mode (ts)
+timeseries: v = mode (ts, name, value, ...)
+Return the mode of a series over time.
+
+v = mode (ts) returns the most frequent value of each
+data element over time, the smallest on a tie, so v has the size
+of one sample; with 'time' weighting it is the value of most
+total weight. v keeps the class of the data, and is [] for
+a series with no samples. Where a value is left without samples it is
+NaN, and v is then double, as integer and logical
+classes hold no NaN.
+
+The options, and where MATLAB differs, are given under
+timeseries.mean.
+
+See also:
+timeseries.mean,
+timeseries.median
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 38
+Return the mode of a series over time.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 19
+timeseries.mrdivide
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 649
+timeseries: ts = mrdivide (a, b)
+The matrix right division of series, a / b.
+
+ts = mrdivide (a, b) returns the matrix right
+division of a by b, sample by sample; each result keeps the
+size of one sample. One of them may be a number whose size fits the
+division with one sample.
+
+The rules for two series are given under timeseries.plus,
+save that DataInfo.Units is dropped, since a product or
+quotient of units is the unit of neither; MATLAB keeps it where both
+series have the same.
+
+A number divided by a series, 2 / ts, divides each sample;
+MATLAB divides by the whole data column as one matrix.
+
+See also:
+timeseries.mldivide,
+timeseries.rdivide
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 43
+The matrix right division of series, a / b.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 17
+timeseries.mtimes
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 468
+timeseries: ts = mtimes (a, b)
+The matrix product of series, a * b.
+
+ts = mtimes (a, b) returns the matrix product
+of a and b, sample by sample. One of them may be a number
+whose size fits the product with one sample.
+
+The rules for two series are given under timeseries.plus,
+save that DataInfo.Units is dropped, since a product or
+quotient of units is the unit of neither; MATLAB keeps it where both
+series have the same.
+
+See also:
+timeseries.times,
+timeseries.plus
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 36
+The matrix product of series, a * b.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 15
+timeseries.plus
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 848
+timeseries: ts = plus (a, b)
+The sum of series, a + b.
+
+ts = plus (a, b) returns the sum of a and
+b, sample by sample. One of them may be a number: a scalar, or an
+array the size of one sample.
+
+Two series must hold as many samples, of sizes the operator accepts,
+at times in the same units. Two dated series must be at the same
+instants; two undated ones may also differ by a constant offset, and
+the result then takes the times of a, with a warning. A dated
+series and an undated one are refused. The result is named
+'unnamed' and takes its other properties from a, with the
+events of both, no quality codes and linear interpolation;
+DataInfo.Units is kept where both series have the same. With a
+number, every property of the series is kept. The data is
+double whatever its class.
+
+See also:
+timeseries.minus,
+timeseries.times,
+timeseries.mtimes
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 25
+The sum of series, a + b.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 18
+timeseries.rdivide
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 493
+timeseries: ts = rdivide (a, b)
+The element-wise quotient of series, a ./ b.
+
+ts = rdivide (a, b) returns the element-wise
+quotient of a and b, sample by sample. One of them may be a
+number: a scalar, or an array the size of one sample.
+
+The rules for two series are given under timeseries.plus,
+save that DataInfo.Units is dropped, since a product or
+quotient of units is the unit of neither; MATLAB keeps it where both
+series have the same.
+
+See also:
+timeseries.ldivide,
+timeseries.mrdivide
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 44
+The element-wise quotient of series, a ./ b.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 19
+timeseries.resample
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 1449
+timeseries: ts = resample (ts, time)
+timeseries: ts = resample (ts, time, method)
+timeseries: ts = resample (ts, time, method, code)
+Evaluate a series at new times.
+
+ts = resample (ts, time) returns the series
+ts with its samples replaced by its values at time, found
+with its own interpolation method. time is numeric, in the
+series' units; for a series with a TimeInfo.StartDate it may
+also be dates, as text or a datetime, and numbers count from the
+start date. The new times are sorted, repeats kept. Samples that are
+NaN are left out before interpolating, as in MATLAB; at a time
+outside the series the data is NaN. The class of the data is
+kept. Every property but the samples is kept.
+
+ts = resample (ts, time, method) uses
+method, 'linear' or 'zoh' in any case, instead;
+[] keeps the series' own.
+
+ts = resample (ts, time, method,
+code) gives the quality code code, an integer listed in
+QualityInfo.Code, to every new time the series did not already
+hold. [] gives none.
+
+A series with quality codes gives each other new time the code of the
+nearest sample, a tie going to the later, as MATLAB does; under
+'zoh' a value takes the code of the sample it is held from,
+where MATLAB takes the nearest one's, which may be the next sample's.
+Outside the series a code is the nearest sample's too, where MATLAB
+raises for a series with codes. Custom methods are called on the data
+only.
+
+See also:
+timeseries.synchronize,
+timeseries.setinterpmethod
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 31
+Evaluate a series at new times.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 14
+timeseries.set
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 758
+timeseries: set (ts, name, value)
+timeseries: set (ts, name1, value1, ...)
+timeseries: ts2 = set (ts, name, value, ...)
+timeseries: S = set (ts)
+Set property values.
+
+set (ts, name, value, ...) sets each
+property name, matched in any case, to its value, in the
+order given, in the variable ts of the caller. ts must
+therefore be a variable, not an expression such as an indexed element
+or tc.Series; set those with dot assignment. For an array
+of series every element is set.
+
+ts2 = set (ts, name, value, ...)
+returns the modified series and leaves ts as it was, so
+ts may then be any expression.
+
+S = set (ts) returns what get (ts)
+does. A name with no value is refused; MATLAB returns the current
+value quoted as text.
+
+See also:
+timeseries.get,
+timeseries
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 20
+Set property values.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 21
+timeseries.setabstime
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 2024
+timeseries: ts = setabstime (ts, dates)
+timeseries: ts = setabstime (ts, dates, format)
+Set the time vector of a series from dates.
+
+ts = setabstime (ts, dates) gives the samples
+of the series ts the dates dates, one per sample, in order:
+a cell array of character vectors, a string array, a character matrix
+of one date per row, a character vector for a single sample, or a
+datetime array. The earliest date becomes
+TimeInfo.StartDate, stored as 'dd-mmm-yyyy HH:MM:SS'
+with milliseconds as '.FFF' when the seconds are not whole, and
+Time holds each date's offset from it in the series' own
+TimeInfo.Units, which are kept: a series in seconds given one
+date a day gets times [0 86400 172800 ...]. Each date is read
+by its own format. Dates given as times of day alone, such as
+'13:00:00', give times since midnight and no start date, as in
+MATLAB.
+
+ts = setabstime (ts, dates, format) reads
+every date strictly in the datestr format format. A date
+not written in format is refused. The start date is stored as
+above whatever the format, where MATLAB writes it in format, from
+which every later reading has to guess it again: 'dd/mm/yyyy'
+then comes back as a date of another month.
+
+The dates need not be sorted: the samples, with their quality codes,
+are sorted with them, keeping the order of samples at equal dates, as
+the constructor sorts them.
+
+MATLAB differs in four ways. It does not move the samples with unsorted
+dates, so each is given another sample's date. It reads every date by
+the format of the first, so {'01-Jan-2024', '2024-01-02'} gives
+a date in year 7. It forces text into format when it does not
+fit, so 'yyyy-mm-dd' on '01-Jan-2024' gives a date in
+year 6. And it takes datenum values, datetime values and
+plain numbers as relative seconds, dropping the dates; here numbers are
+refused, since a datenum cannot be told from a plain number, and
+a datetime is read as its dates. Convert a datenum
+x with datetime (x, 'ConvertFrom', 'datenum').
+
+See also:
+timeseries.getabstime,
+timeseries.setuniformtime
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 43
+Set the time vector of a series from dates.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 26
+timeseries.setinterpmethod
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 916
+timeseries: ts = setinterpmethod (ts, name)
+timeseries: ts = setinterpmethod (ts, fh)
+timeseries: ts = setinterpmethod (ts, ip)
+Set the interpolation method.
+
+ts = setinterpmethod (ts, name) sets the method
+resample and synchronize use to name,
+'linear' or 'zoh' (zero-order hold, keeping each value
+until the next sample), matched in any case and stored in lower case.
+MATLAB stores any name, 'cubic' included, and fails only on
+resampling; here another name is refused.
+
+ts = setinterpmethod (ts, fh) sets a method
+evaluated by the function handle fh, called as MATLAB calls it:
+newData = fh (newTime, oldTime,
+oldData), with the times as columns and the data with time along
+its first dimension, so three-dimensional data is passed permuted.
+
+ts = setinterpmethod (ts, ip) sets the method
+held by the tsdata.interpolation object ip.
+
+See also:
+timeseries.getinterpmethod,
+timeseries.resample,
+tsdata.interpolation
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 29
+Set the interpolation method.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 25
+timeseries.setuniformtime
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 1387
+timeseries: ts = setuniformtime (ts, 'StartTime', start)
+timeseries: ts = setuniformtime (ts, 'Interval', step)
+timeseries: ts = setuniformtime (ts, 'EndTime', end)
+timeseries: ts = setuniformtime (ts, name1, value1, name2, value2, ...)
+Give a series a uniform time vector.
+
+ts = setuniformtime (ts, ...) replaces the time
+vector of the series ts by one of evenly spaced times, one per
+sample, in its own units; the samples are not moved. The times are
+fixed by any one or two of these options, or all three when they
+agree, the names matched in any case and a later occurrence overriding
+an earlier one:
+
+Given Times
+'StartTime' from start, a step of 1
+'Interval' from 0, a step of step
+'EndTime' from 0 to end
+'StartTime', 'Interval' from start, a
+step of step
+'StartTime', 'EndTime' from start to
+end, both exact
+'Interval', 'EndTime' to end, a step of
+step
+
+Each value is a finite real scalar in the series' units, relative to
+TimeInfo.StartDate when the series has one. A step of zero gives
+equal times. A negative step, a start after the end, or an end below
+zero given alone are refused, since the times would run backwards;
+MATLAB then empties the time vector and keeps the data. MATLAB also
+ignores NaN, which is refused here, and a series of one sample
+given equal start and end times, which MATLAB refuses, gets that time.
+
+See also:
+timeseries.setabstime,
+tsdata.timemetadata
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 36
+Give a series a uniform time vector.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 14
+timeseries.std
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 510
+timeseries: v = std (ts)
+timeseries: v = std (ts, name, value, ...)
+Return the standard deviation of a series over time.
+
+v = std (ts) returns the standard deviation of each
+data element over time, normalised by N-1, so v has the
+size of one sample; with 'time' weighting it is taken about the
+time-weighted mean. v is double whatever the class of the
+data, and [] for a series with no samples.
+
+The options, and where MATLAB differs, are given under
+timeseries.mean.
+
+See also:
+timeseries.mean,
+timeseries.var
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 52
+Return the standard deviation of a series over time.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 14
+timeseries.sum
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 442
+timeseries: v = sum (ts)
+timeseries: v = sum (ts, name, value, ...)
+Return the sum of a series over time.
+
+v = sum (ts) returns the sum of each data element
+over time, so v has the size of one sample; with 'time'
+weighting it is the sum of the weighted samples. v is
+double whatever the class of the data, and [] for a series
+with no samples.
+
+The options, and where MATLAB differs, are given under
+timeseries.mean.
+
+See also:
+timeseries.mean
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 37
+Return the sum of a series over time.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 22
+timeseries.synchronize
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 1751
+timeseries: [ts1, ts2] = synchronize (ts1, ts2, method)
+timeseries: [ts1, ts2] = synchronize (..., name, value)
+Resample two series onto common times.
+
+[ts1, ts2] = synchronize (ts1, ts2,
+method) resamples both series onto one set of times within the
+span both cover, chosen by method, matched in any case:
+
+'union'
+every time of either series in that span;
+'intersection'
+the times both series hold, within the tolerance;
+'uniform'
+times from the start of the span, a step of 'Interval' apart.
+
+Series that do not overlap become series with no samples. Each keeps its
+own units, the times converted exactly; MATLAB converts them with errors
+near the tenth digit. Dated series are placed by their start dates, and
+both results count from the earlier of the two unless
+'KeepOriginalTimes' is true. A dated series with an
+undated one is refused, since the undated one has no calendar; MATLAB
+then reads both as undated.
+
+The options, matched in any case:
+
+'Interval'
+the step of 'uniform', a positive number in the first series'
+units, 1 by default; MATLAB accepts zero and negative steps and gives one
+sample or none.
+'InterpMethod'
+'linear' or 'zoh', for both series; by default each uses
+its own.
+'QualityCode'
+a quality code given to the times each series did not already hold, as
+for resample.
+'KeepOriginalTimes'
+true to keep each dated series on its own start date.
+'tolerance'
+how close two times must be to count as one, in the first series'
+units, 1e-10 by default; the second series' time is kept. This
+is the documented meaning; MATLAB ignores any tolerance above about
+1e-10, so there 0.1 matches no times 0.05 apart,
+while here it matches them.
+
+Quality codes follow the rules of resample.
+
+See also:
+timeseries.resample,
+timeseries.append
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 38
+Resample two series onto common times.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 16
+timeseries.times
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 482
+timeseries: ts = times (a, b)
+The element-wise product of series, a .* b.
+
+ts = times (a, b) returns the element-wise
+product of a and b, sample by sample. One of them may be a
+number: a scalar, or an array the size of one sample.
+
+The rules for two series are given under timeseries.plus,
+save that DataInfo.Units is dropped, since a product or
+quotient of units is the unit of neither; MATLAB keeps it where both
+series have the same.
+
+See also:
+timeseries.mtimes,
+timeseries.plus
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 43
+The element-wise product of series, a .* b.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 21
+timeseries.timeseries
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 2727
+timeseries: ts = timeseries ()
+timeseries: ts = timeseries (name)
+timeseries: ts = timeseries (data)
+timeseries: ts = timeseries (data, time)
+timeseries: ts = timeseries (data, time, quality)
+timeseries: ts = timeseries (..., 'Name', name)
+Create a timeseries object.
+
+ts = timeseries () returns an empty series with no name.
+
+ts = timeseries (name) returns an empty series named
+name, a character vector or a string scalar. MATLAB takes a
+string scalar here as the data of a one-sample series.
+
+ts = timeseries (data) returns a series of the
+samples in data, a numeric or logical array, at times 0, 1, 2,
+... seconds. For data of two dimensions or fewer each row is a
+sample; for data of three dimensions or more each slice along the last
+dimension is one. A row vector of more than one element is taken as
+that many scalar samples and stored as a 1x1xN array.
+
+ts = timeseries (data, time) takes the samples
+at time, which is one of:
+
+a numeric vector of one time per sample, in seconds;
+a cell array of character vectors, a string array or a
+datetime array of dates, one per sample, which gives Time
+in days from the earliest of them, with that date as
+TimeInfo.StartDate; each date is read by its own format, a time
+zone is dropped and the clock time kept, and NaT is refused;
+a duration array, relative times in the units its display
+format names: 's', 'm', 'h' and 'd' give
+seconds, minutes, hours and days, any other format seconds;
+a cell array of numeric scalars, read as a numeric vector;
+[], for the default times.
+
+With N times, data of three dimensions or more must have N
+slices along its last dimension. A matrix with N rows has a
+sample per row; otherwise one with N columns is stored as an
+Rx1xN array, a sample per column, so a row vector of N
+elements gives N scalar samples; and with a single time the whole
+matrix is one sample. The times need not be sorted: the samples are
+sorted with them, keeping the order of samples at equal times. They
+are stored as double whatever their class. MATLAB accepts
+neither datetime nor duration arrays here.
+
+ts = timeseries (data, time, quality)
+also sets a quality code per sample: integers from -128 to 127, as a
+vector of one per sample or an array the size of data as stored,
+or [] for none. A matrix stored a sample per column, as an
+Rx1xN array, takes codes per element in that shape too; MATLAB
+refuses them in the matrix's own RxN shape, as here.
+
+ts = timeseries (..., 'Name', name) names
+the series; the option name is matched in any case, and a later
+occurrence overrides an earlier one. A name that is not text is
+refused, where MATLAB ignores it.
+
+ts = timeseries (ts0) returns the series ts0
+itself.
+
+See also:
+timetable,
+istimeseries,
+tsdata.timemetadata
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 27
+Create a timeseries object.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 14
+timeseries.var
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 490
+timeseries: v = var (ts)
+timeseries: v = var (ts, name, value, ...)
+Return the variance of a series over time.
+
+v = var (ts) returns the variance of each data
+element over time, normalised by N-1, so v has the size of
+one sample; with 'time' weighting it is taken about the
+time-weighted mean. v is double whatever the class of the
+data, and [] for a series with no samples.
+
+The options, and where MATLAB differs, are given under
+timeseries.mean.
+
+See also:
+timeseries.mean,
+timeseries.std
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 42
+Return the variance of a series over time.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 20
+timeseries2timetable
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 2495
+datatypes: TT = timeseries2timetable (ts)
+datatypes: TT = timeseries2timetable (ts1, ..., tsN)
+datatypes: TT = timeseries2timetable (tc)
+Convert time series to a timetable.
+
+TT = timeseries2timetable (ts) returns a timetable with
+a variable for each series in the timeseries array ts, and
+TT = timeseries2timetable (ts1, ..., tsN) one
+for each of the series ts1 to tsN, which must then each be a
+single series. A tscollection tc may stand for any of them
+and gives a variable for each of its members, in order; MATLAB accepts
+timeseries alone.
+
+Every series must have samples, and all the same times, in the same
+units, with the same TimeInfo.StartDate; convert series on other
+times one by one and combine the timetables with synchronize.
+
+The row times are the time vector: a duration array for series
+without a start date, displayed in the units of the series (seconds and
+finer units in seconds, weeks in days), and a datetime array from
+the start date otherwise, in the format TimeInfo.Format gives,
+or 'dd-MMM-uuuu HH:mm:ss' when it is empty. MATLAB copies
+TimeInfo.Format, a datestr format, as it is and fails;
+here it is translated to the datetime format that writes the same
+text, but for an hour on a 12-hour clock, which datestr pads with
+a space and a datetime writes without padding.
+
+Each variable is named after its series, Data for a series with
+no name, made unique with the suffixes _1, _2, ... in
+order. A name reserved in a timetable, Properties, Time
+or Variables, takes a suffix too, with a warning; MATLAB raises
+for the last two. The data are laid with time along the first
+dimension, so data whose time runs along its last dimension is permuted;
+a series whose samples then need more than two dimensions is refused,
+since a timetable here holds two-dimensional variables only, where
+MATLAB gives a variable of more.
+
+DataInfo.Units becomes VariableUnits, and the
+interpolation method VariableContinuity: 'linear' is
+'continuous' and 'zoh' is 'step'; a series with an
+interpolation function is refused. Properties.UserData is the
+UserData of the first series that has any.
+
+The events of the series become the Properties.Events of the
+timetable: an eventtable of their times, with their names as
+EventLabels and, when any event has some, their EventData
+as a variable; an event held by several series appears once. MATLAB drops
+the events, with a warning. Quality codes are dropped, with a warning, as
+in MATLAB.
+
+See also:
+timeseries,
+tscollection,
+timetable,
+eventtable
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 35
+Convert time series to a timetable.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
 # length: 9
 timetable
 
@@ -25571,7 +28408,7 @@ timetable
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 2378
+# length: 2414
 datatypes: timetable
 Array of tabular data whose rows are labelled by time.
 
@@ -25604,13 +28441,13 @@ variables exactly as it does for a table, and the row times go
 with the rows they label. The row times themselves cannot be deleted.
 
 Assigning to a subscripted timetable with parentheses or curly
-brackets writes values and creates variables and rows as it does for a
-table; a row added this way has a missing row time, or the next
-one along a step given when the timetable was created. A timetable
-assigned with parentheses must carry the row times of the rows it is
-assigned to, and is refused otherwise, where MATLAB pastes its rows by
-position and ignores their times; synchronize aligns two
-timetables first.
+brackets, or to its variable dimension name, writes values and
+creates variables and rows as it does for a table; a row added
+this way has a missing row time, or the next one along a step given
+when the timetable was created. A timetable assigned with parentheses
+must carry the row times of the rows it is assigned to, and is refused
+otherwise, where MATLAB pastes its rows by position and ignores their
+times; synchronize aligns two timetables first.
 
 Besides the timetable constructor, you can also use
 table2timetable and array2timetable to create timetables
@@ -25720,7 +28557,7 @@ timetable.DimensionNames
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 650
+# length: 818
 tabular: property DimensionNames
 Dimension names
 
@@ -25734,7 +28571,10 @@ By default, DimensionNames is specified as
 'Row', 'Variables'. You can access table data per rows or per
 columns by using either one of the two dimension names, respectively.
 However, if the table contains row names, then the first element of the
-DimensionNames corresponds to the row names.
+DimensionNames corresponds to the row names. The second name
+returns the variables joined into one array, as table2array joins
+them, and assigning to it writes them all, as curly brackets over the
+whole table do.
 
 
 # name: <cell-element>
@@ -26500,7 +29340,7 @@ timetable.fillmissing
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 1428
+# length: 1679
 timetable: ttB = fillmissing (ttA, method)
 timetable: ttB = fillmissing (ttA, 'constant', v)
 timetable: ttB = fillmissing (..., Name, Value)
@@ -26528,6 +29368,11 @@ filled around the gap.
 'EndValues' says what to do with a gap that has no neighbour
 on one side, taking 'extrap', another method name, or a
 constant.
+
+A variable with nothing ismissing counts as missing, such as a
+cell array that is not a cell array of character vectors, a structure
+or a nested table, is left as it is. MATLAB refuses the whole call
+when such a variable is among the data variables.
 
 [ttB, TF] = fillmissing (...) also returns a
 logical array marking what was filled. The row times themselves are
@@ -27539,39 +30384,6 @@ Shift the data of a timetable along its own row times.
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 16
-timetable.length
-
-
-# name: <cell-element>
-# type: sq_string
-# elements: 1
-# length: 293
-timetable: length (tt)
-Length is not defined for a timetable.
-
-length (tt) always raises. A timetable has two
-dimensions that mean different things, and the larger of them is not
-a useful answer about either; ask height, width or
-size for the one that is wanted.
-
-See also:
-height,
-width,
-size
-
-
-# name: <cell-element>
-# type: sq_string
-# elements: 1
-# length: 38
-Length is not defined for a timetable.
-
-
-
-# name: <cell-element>
-# type: sq_string
-# elements: 1
 # length: 19
 timetable.mergevars
 
@@ -28062,7 +30874,7 @@ timetable.retime
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 4521
+# length: 4649
 timetable: ttB = retime (ttA, newTimes)
 timetable: ttB = retime (ttA, newTimeStep)
 timetable: ttB = retime (..., method)
@@ -28097,7 +30909,9 @@ of which is required. 'SampleRate' is in hertz. It is bounded
 by the same rule.
 
 method says how a row that the old times do not carry takes its
-value. 'fillwithmissing' leaves it missing;
+value. 'fillwithmissing' leaves it missing, a character
+variable blank, where MATLAB puts char (0), and a logical or
+cell variable, which has no missing value, is refused;
 'previous', 'next' and 'nearest' copy a
 neighbouring value; and 'linear', 'spline',
 'pchip' and 'makima' interpolate, which restricts the
@@ -28276,7 +31090,7 @@ timetable.rowfun
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 2431
+# length: 2514
 timetable: B = rowfun (func, A)
 timetable: B = rowfun (func, A, Name, Value, ...)
 Apply a function to each row of a timetable.
@@ -28317,8 +31131,9 @@ otherwise to 1.
 'SeparateInputs'
 A logical scalar. When true (the default), the value of each
 input variable is passed to func as a separate argument. When
-false, the values of the row are horizontally concatenated and
-passed as a single argument.
+false, the values of the row are joined into one array, as
+table2array joins the variables, and passed as a single
+argument. Variables that cannot form one array are refused.
 'ExtractCellContents'
 A logical scalar. When true, the contents of cell-valued
 variables are extracted before being passed to func. It defaults
@@ -28597,7 +31412,7 @@ timetable.stack
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 1359
+# length: 1490
 timetable: tt2 = stack (tt, vars)
 timetable: tt2 = stack (tt, vars, Name, Value)
 timetable: [tt2, index] = stack (...)
@@ -28613,7 +31428,9 @@ pairs of equal row times, which generally makes it irregular.
 
 vars names the variables to stack. A cell array of variable
 references stacks several groups at once, one new variable per group,
-each group holding the same number of variables.
+each group holding the same number of variables. The stacked variables
+are joined as table2array joins them, and must each have one
+column; variables that cannot join are refused.
 
 [tt2, index] = stack (...) also returns
 index, naming the row of tt each row of tt2 came
@@ -28653,7 +31470,7 @@ timetable.standardizeMissing
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 562
+# length: 809
 timetable: ttB = standardizeMissing (ttA, indicator)
 timetable: ttB = standardizeMissing (..., 'DataVariables', vars)
 Make given values missing in a timetable.
@@ -28661,7 +31478,11 @@ Make given values missing in a timetable.
 ttB = standardizeMissing (ttA, indicator)
 replaces every value matching indicator with the missing value
 of its own type, so that ismissing and rmmissing will
-afterwards treat it as missing.
+afterwards treat it as missing. Each indicator applies only to the
+variables of its own kind, as table.standardizeMissing
+describes: numbers to floating point variables, text to text and
+categorical variables, and duration and datetime
+indicators to variables of their own type.
 
 'DataVariables' restricts it to the variables named. The row
 times are not a data variable and are never rewritten, so the time
@@ -28806,7 +31627,7 @@ timetable.synchronize
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 1868
+# length: 1991
 timetable: tt = synchronize (tt1, tt2)
 timetable: tt = synchronize (tt1, ..., ttN)
 timetable: tt = synchronize (..., newTimes)
@@ -28845,7 +31666,9 @@ Two timetables carrying a variable of the same name have both of them
 renamed for the timetable they came from, so a from tt1
 and tt2 become a_tt1 and a_tt2. An operand that
 is an expression rather than a variable is known by its place in the
-call.
+call. Operands with the same name, as a timetable synchronized with
+itself, number the later names (a_tt, a_tt_1), as in
+MATLAB.
 
 Where an operand is an eventtable, or carries one on its
 Events property, the result is an event table too and the
@@ -28866,6 +31689,117 @@ timetable.isregular
 # elements: 1
 # length: 73
 Put several timetables on one set of row times and set them side by side.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 21
+timetable.table2array
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 422
+timetable: A = table2array (tt)
+Converts a timetable to an array.
+
+A = table2array (tt) places the variables of
+tt side by side and joins them into one array A, as
+table.table2array joins the variables of a table. The row
+times and every other property of tt are left out.
+tt{:,:} and tt.Variables return the same
+array.
+
+See also:
+timetable.table2cell,
+timetable.table2struct,
+timetable.timetable2table,
+table.table2array
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 33
+Converts a timetable to an array.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 20
+timetable.table2cell
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 413
+timetable: C = table2cell (tt)
+Converts a timetable to a cell array.
+
+C = table2cell (tt) returns a cell array C of
+the same size as tt, in which each cell holds one row of one
+variable, in the variable's own type, as table.table2cell does
+for a table. The row times and every other property of tt are
+left out.
+
+See also:
+timetable.table2array,
+timetable.table2struct,
+timetable.timetable2table,
+table.table2cell
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 37
+Converts a timetable to a cell array.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 22
+timetable.table2struct
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 600
+timetable: S = table2struct (tt)
+timetable: S = table2struct (tt, 'ToScalar', true)
+Converts a timetable to a scalar structure or structure array.
+
+S = table2struct (tt) returns a structure array with
+the same fields as the variables in tt. The length of S is
+the same as the height of tt.
+
+S = table2struct (tt, 'ToScalar',
+true) returns a scalar structure with the same fields as the
+variables in tt. Each field has the same rows as tt.
+
+The row times and every other property of tt are left out.
+
+See also:
+timetable.table2array,
+timetable.table2cell,
+timetable.timetable2table,
+table.table2struct
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 62
+Converts a timetable to a scalar structure or structure array.
 
 
 
@@ -29671,6 +32605,2354 @@ table.writetable
 # elements: 1
 # length: 58
 Write a timetable to a file in the MATLAB-compatible form.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 12
+tscollection
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 901
+datatypes: tscollection
+Collection of time series on one time vector.
+
+A tscollection object holds several timeseries objects,
+its members, which share one time vector: a sample of the collection is
+the sample of every member at one time. Each member is reached by its
+name, as tc.name, and keeps its own data, quality
+codes, events and metadata; only the time vector and its
+TimeInfo are the collection's.
+
+tscollection is a value class: every method returns a modified
+copy and leaves its input unchanged.
+
+Its size is the number of samples by the number of members, and
+tc(i, j) selects samples i of members
+j, the members given by position or by name.
+
+Member names are unique ignoring case, and read with the exact name;
+MATLAB reads tc.A for a member a. A member cannot
+take the name of one of the four properties.
+
+See also:
+timeseries,
+istscollection,
+timeseries2timetable,
+tsdata.timemetadata
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 45
+Collection of time series on one time vector.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 19
+tscollection.Length
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 103
+tscollection: property Length
+The number of samples, which is the length of the time vector.
+Read-only.
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 62
+The number of samples, which is the length of the time vector.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 17
+tscollection.Name
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 181
+tscollection: property Name
+The name of the collection.
+
+A character vector, 'unnamed' by default. A string scalar is
+converted; any other value is refused, where MATLAB accepts it.
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 27
+The name of the collection.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 17
+tscollection.Time
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 394
+tscollection: property Time
+The time vector every member shares.
+
+A column vector of finite, non-decreasing times, in
+tc.TimeInfo.Units, counted from
+tc.TimeInfo.StartDate when that is set, and stored as
+double. Repeated times are allowed. Assigning it gives every
+member the new times, without moving any sample; it must hold as many
+times as there are samples, and an unsorted one is refused.
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 36
+The time vector every member shares.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 21
+tscollection.TimeInfo
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 262
+tscollection: property TimeInfo
+The metadata of the time vector, a tsdata.timemetadata object,
+which every member shares. Assigning it, or one of its properties,
+assigns it to every member. Its Length, Start,
+End and Increment follow Time and cannot be
+assigned.
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 89
+The metadata of the time vector, a tsdata.timemetadata object, which every member shares.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 34
+tscollection.addsampletocollection
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 960
+tscollection: tc = addsampletocollection (tc, 'Time', time, name1, data1, ...)
+Add samples to every member.
+
+tc = addsampletocollection (tc, 'Time',
+time, name1, data1, ...) inserts samples at the
+times time, keeping the collection in time order; a sample at a
+time already present goes after the samples there. The member
+name1, its exact name, takes the samples data1, one per
+time, read against time as the timeseries constructor reads
+data against times and each of the size of the member's samples. A
+member not named takes NaN, or 0 for integer data and
+false for logical data. 'Time' is matched in any case.
+
+For a collection with no TimeInfo.StartDate time is
+numbers in its units; for one with a start date it may also be dates as
+text, or a datetime. A member with quality codes gives each new
+sample the code of the sample nearest in time, the later one on a tie,
+as MATLAB does.
+
+See also:
+tscollection.delsamplefromcollection,
+timeseries.addsample
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 28
+Add samples to every member.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 18
+tscollection.addts
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 1097
+tscollection: tc = addts (tc, ts)
+tscollection: tc = addts (tc, {ts1, ts2, ...})
+tscollection: tc = addts (tc, data, name)
+Add members to a collection.
+
+tc = addts (tc, ts) adds the timeseries
+ts as the last member of tc, and
+tc = addts (tc, {ts1, ts2, ...})
+adds each series in the cell array in turn. Each must have the times of
+the collection, in the same units; a series with a
+TimeInfo.StartDate added to a collection without one loses its
+start date, with a warning, as in MATLAB, and the reverse is refused. A
+collection with no samples and no members takes the times of the first
+series. Each member is named as the constructor names it.
+
+tc = addts (tc, data, name) adds a member
+name holding the samples data, a numeric or logical array of
+one sample per time of the collection, read against the time vector as
+the timeseries constructor reads it.
+
+Names must be unique ignoring case: MATLAB refuses A beside
+a here, though settimeseriesnames allows it there.
+MATLAB also ignores a fourth argument, which is refused here.
+
+See also:
+tscollection.removets,
+tscollection.settimeseriesnames
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 28
+Add members to a collection.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 36
+tscollection.delsamplefromcollection
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 828
+tscollection: tc = delsamplefromcollection (tc, 'Index', ind)
+tscollection: tc = delsamplefromcollection (tc, 'Value', time)
+Remove samples from every member.
+
+tc = delsamplefromcollection (tc, 'Index',
+ind) removes the samples ind, a vector of positive integers
+not exceeding Length; repeats are allowed and [] removes
+nothing. A logical mask is refused, as in MATLAB.
+
+tc = delsamplefromcollection (tc, 'Value',
+time) removes every sample at each of the times time; a
+time no sample has removes nothing. For a collection with no
+TimeInfo.StartDate the times are numbers in its units; for one
+with a start date they may also be dates as text, or a datetime.
+
+The option names are matched in any case. Removing every sample leaves
+the members, with no samples.
+
+See also:
+tscollection.addsampletocollection,
+timeseries.delsample
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 33
+Remove samples from every member.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 23
+tscollection.fieldnames
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 295
+tscollection: names = fieldnames (tc)
+Return the names of the properties and members.
+
+names = fieldnames (tc) returns a column cell array
+of Name, Time, TimeInfo and Length,
+followed by the names of the members of tc in order.
+
+See also:
+tscollection.properties,
+tscollection.gettimeseriesnames
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 47
+Return the names of the properties and members.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 16
+tscollection.get
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 526
+tscollection: S = get (tc)
+tscollection: value = get (tc, name)
+tscollection: values = get (tc, names)
+Return property values and members.
+
+S = get (tc) returns a structure of the four
+properties of the collection tc followed by its members.
+
+value = get (tc, name) returns the property or
+member name, a character vector or a string scalar matched in any
+case.
+
+values = get (tc, names) returns a row cell
+array of the properties and members named in the cell array
+names.
+
+See also:
+tscollection.set,
+tscollection.fieldnames
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 35
+Return property values and members.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 23
+tscollection.getabstime
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 489
+tscollection: dates = getabstime (tc)
+Return the dates of the samples as text.
+
+dates = getabstime (tc) returns a column cell array
+of character vectors, the date of each sample of the collection
+tc, written as timeseries.getabstime writes them: in the
+format TimeInfo.Format, or 'dd-mmm-yyyy HH:MM:SS' when
+that is empty. MATLAB writes the default whatever
+TimeInfo.Format says. A collection with no
+TimeInfo.StartDate is refused.
+
+See also:
+tscollection.setabstime,
+timeseries.getabstime
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 40
+Return the dates of the samples as text.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 31
+tscollection.getsampleusingtime
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 847
+tscollection: tc2 = getsampleusingtime (tc, t)
+tscollection: tc2 = getsampleusingtime (tc, t, 'AllowDuplicateTimes', tf)
+tscollection: tc2 = getsampleusingtime (tc, t1, t2)
+Return a collection of the samples at a time or between two times.
+
+tc2 = getsampleusingtime (tc, t) returns the
+collection tc holding only the sample at time t. When
+several samples share that time the call is refused, unless
+'AllowDuplicateTimes' is true, which returns them all.
+
+tc2 = getsampleusingtime (tc, t1, t2)
+returns the samples from t1 to t2, both included.
+
+The times are read as timeseries.getsampleusingtime reads them.
+No sample in range gives a collection with no samples and every member.
+The name and every member's properties are kept; MATLAB names the
+result 'unnamed' and, when it is empty, drops every member.
+
+See also:
+timeseries.getsampleusingtime
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 66
+Return a collection of the samples at a time or between two times.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 31
+tscollection.gettimeseriesnames
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 273
+tscollection: names = gettimeseriesnames (tc)
+Return the names of the members.
+
+names = gettimeseriesnames (tc) returns a row cell
+array of the names of the members of tc, in order, or {}
+when it has none.
+
+See also:
+tscollection.settimeseriesnames,
+tscollection.fieldnames
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 32
+Return the names of the members.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 30
+tscollection.hasduplicatetimes
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 218
+tscollection: tf = hasduplicatetimes (tc)
+True where a collection repeats a time.
+
+tf = hasduplicatetimes (tc) returns true when
+two samples of the collection tc share a time.
+
+See also:
+tscollection.getsampleusingtime
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 39
+True where a collection repeats a time.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 20
+tscollection.horzcat
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 680
+tscollection: tc = horzcat (tc1, tc2, ...)
+Join the members of collections.
+
+tc = [tc1, tc2, ...] returns one collection
+holding the members of every argument, sorted by name, as in MATLAB,
+capitals before lower case letters. The collections must have the
+same time vector, in the same units, and the same
+TimeInfo.StartDate. A member name present in more than one is
+taken once when the members are equal in every property, NaN
+equal to itself, and refused otherwise; MATLAB compares their data
+alone. Names differing only in case are refused. The result keeps
+the name of the first collection, where MATLAB names it
+'unnamed'.
+
+See also:
+tscollection.vertcat,
+tscollection.addts
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 32
+Join the members of collections.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 20
+tscollection.isempty
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 253
+tscollection: tf = isempty (tc)
+True for a collection with no samples.
+
+tf = isempty (tc) returns true when the
+collection tc has no times, whether it has members or not, and
+false for a collection with times and no members.
+
+See also:
+tscollection.size
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 38
+True for a collection with no samples.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 20
+tscollection.isequal
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 334
+tscollection: tf = isequal (tc1, tc2, ...)
+True when collections are equal.
+
+tf = isequal (tc1, tc2, ...) returns
+true when every argument is a tscollection with the same
+name, time vector and TimeInfo, and the same members in the same
+order, each equal as isequal compares series, NaN unequal
+to itself.
+
+See also:
+timeseries.isequal
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 32
+True when collections are equal.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 19
+tscollection.length
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 177
+tscollection: n = length (tc)
+Return the number of samples.
+
+n = length (tc) returns tc.Length, the
+number of times, whatever the number of members.
+
+See also:
+tscollection.size
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 29
+Return the number of samples.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 23
+tscollection.properties
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 223
+tscollection: names = properties (tc)
+Return the names of the properties and members.
+
+names = properties (tc) returns what
+fieldnames (tc) does: the members are reached as properties
+are.
+
+See also:
+tscollection.fieldnames
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 47
+Return the names of the properties and members.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 21
+tscollection.removets
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 453
+tscollection: tc = removets (tc, names)
+Remove members from a collection.
+
+tc = removets (tc, names) removes the members
+names, a character vector, a cell array of character vectors or a
+string array, each the exact name of a member. The time vector stays,
+so removing every member leaves a collection with times and no members.
+A name that is no member is refused, where MATLAB ignores it.
+
+See also:
+tscollection.addts,
+tscollection.gettimeseriesnames
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 33
+Remove members from a collection.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 21
+tscollection.resample
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 941
+tscollection: tc = resample (tc, time)
+tscollection: tc = resample (tc, time, method)
+tscollection: tc = resample (tc, time, method, code)
+Evaluate every member at new times.
+
+tc = resample (tc, time) returns the collection
+tc with every member evaluated at time by its own
+interpolation method, as timeseries.resample evaluates a series:
+at a time outside the collection the data is NaN, and a member
+with quality codes gives each new time the code of the nearest sample.
+MATLAB raises there for a member with quality codes.
+
+tc = resample (tc, time, method) uses
+method, 'linear' or 'zoh', for every member;
+[] keeps each member's own.
+
+tc = resample (tc, time, method,
+code) gives the quality code code to every new time the
+collection did not already hold, in each member with quality codes; it
+must be listed in the QualityInfo.Code of each of them. Members
+without quality codes are resampled without it.
+
+See also:
+timeseries.resample
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 35
+Evaluate every member at new times.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 16
+tscollection.set
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 555
+tscollection: set (tc, name, value)
+tscollection: set (tc, name1, value1, ...)
+tscollection: tc2 = set (tc, name, value, ...)
+tscollection: S = set (tc)
+Set property values and members.
+
+set (tc, name, value, ...) sets each
+property or member name, matched in any case, to its value,
+in the order given, in the variable tc of the caller, as dot
+assignment does. tc must therefore be a variable.
+
+tc2 = set (tc, name, value, ...)
+returns the modified collection and leaves tc as it was.
+
+S = set (tc) returns what get (tc)
+does.
+
+See also:
+tscollection.get
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 32
+Set property values and members.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 30
+tscollection.setTimeseriesName
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 223
+tscollection: tc = setTimeseriesName (tc, old, new)
+Rename a member.
+
+tc = setTimeseriesName (tc, old, new) is
+settimeseriesnames, kept for compatibility; MATLAB marks it
+obsolete.
+
+See also:
+tscollection.settimeseriesnames
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 16
+Rename a member.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 23
+tscollection.setabstime
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 849
+tscollection: tc = setabstime (tc, dates)
+tscollection: tc = setabstime (tc, dates, format)
+Set the time vector of a collection from dates.
+
+tc = setabstime (tc, dates) gives the samples
+of the collection tc the dates dates, one per sample, in
+order, exactly as timeseries.setabstime gives them to a series,
+in the collection's own units; every member takes them. With
+format every date is read strictly in it.
+
+The dates need not be sorted: every member's samples, with their quality
+codes, are sorted with them. MATLAB sorts the times alone, so each
+sample is given another's date. It also reads every date by the format
+of the first, forces text into format, and takes numbers and
+datetime values as relative times, dropping the dates; see
+timeseries.setabstime for how each is read here.
+
+See also:
+tscollection.getabstime,
+timeseries.setabstime
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 47
+Set the time vector of a collection from dates.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 31
+tscollection.settimeseriesnames
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 649
+tscollection: tc = settimeseriesnames (tc, old, new)
+Rename a member.
+
+tc = settimeseriesnames (tc, old, new)
+renames the member old, its exact name, to new, a valid
+variable name, both character vectors or string scalars; the series
+takes the new name too, and the member becomes the last, as in
+MATLAB. new must not be the name of another member, ignoring
+case, nor of one of the four properties.
+
+MATLAB accepts the name of another member and drops that member, and
+accepts a name differing from another only in case, after which that
+member cannot be reached; both are refused here.
+
+See also:
+tscollection.gettimeseriesnames,
+tscollection.addts
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 16
+Rename a member.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 17
+tscollection.size
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 483
+tscollection: sz = size (tc)
+tscollection: dim_sz = size (tc, dim)
+tscollection: [nsamples, nmembers] = size (tc)
+Return the number of samples and the number of members.
+
+sz = size (tc) returns [nsamples,
+nmembers]. size (tc, dim) returns the size
+along dimension dim, a positive integer or a vector of them;
+dimensions above 2 have size 1. With several outputs each takes one
+dimension, where MATLAB refuses more than one output.
+
+See also:
+tscollection.length,
+tscollection.isempty
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 55
+Return the number of samples and the number of members.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 25
+tscollection.tscollection
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 1701
+tscollection: tc = tscollection ()
+tscollection: tc = tscollection (ts)
+tscollection: tc = tscollection ({ts1, ts2, ...})
+tscollection: tc = tscollection (time)
+tscollection: tc = tscollection (..., 'Name', name)
+Create a tscollection object.
+
+tc = tscollection () returns an empty collection, with no
+samples and no members.
+
+tc = tscollection (ts) returns a collection of the
+single timeseries ts, on its time vector and its
+TimeInfo. A series with no samples gives an empty collection,
+as in MATLAB.
+
+tc = tscollection ({ts1, ts2, ...})
+returns a collection of the series in the cell array, a row or a column,
+on the time vector of the first; every other series must have the same
+times, in the same units, and the same TimeInfo.StartDate. An
+empty cell array gives an empty collection, and a series with no
+samples is refused, as in MATLAB.
+
+tc = tscollection (time) returns a collection with no
+members on the numeric vector time, which must be finite and is
+sorted, in seconds.
+
+Each member is named by matlab.lang.makeValidName of the name of
+its series, which it then takes: a series named 'my data'
+becomes the member myData, and one named '' the member
+x. The names must be unique ignoring case, and none may be the
+name of a property: Name, Time, TimeInfo or
+Length. MATLAB refuses only Length, and a member named
+Time then hides the time vector.
+
+tc = tscollection (..., 'Name', name)
+names the collection, 'unnamed' by default; the option name is
+matched in any case, and a later occurrence overrides an earlier one.
+
+MATLAB ignores a second positional argument, so that
+tscollection (ts1, ts2) holds ts1 only; here it
+is refused.
+
+See also:
+timeseries,
+tscollection.addts,
+istscollection
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 29
+Create a tscollection object.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 20
+tscollection.vertcat
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 926
+tscollection: tc = vertcat (tc1, tc2, ...)
+Join collections end to end in time.
+
+tc = [tc1; tc2; ...] returns one collection
+holding the samples of every argument in turn. The collections must
+have the same members, by name, taken in the order of the first, with a
+warning when another orders them differently, as in MATLAB. Each must
+start at or after the end of the one before, so equal times where two
+meet give a repeated time. Each member is joined as
+timeseries.append joins series: times in the coarsest units among
+them, dates counted from the first start date, and samples of one size
+and one class, as in MATLAB.
+
+A member's quality codes are joined when it has them in every
+collection, and refused when only some do; MATLAB then gives a member
+that cannot be read, or drops them. The result keeps the name of the
+first collection, where MATLAB names it 'unnamed'.
+
+See also:
+tscollection.horzcat,
+timeseries.append
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 36
+Join collections end to end in time.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 19
+tsdata.datametadata
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 253
+datatypes: tsdata.datametadata
+The data metadata of a timeseries.
+
+A tsdata.datametadata object describes the samples of a
+timeseries: their units, how the series is evaluated between them,
+and any data the user attaches. It is what
+ts.DataInfo returns.
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 34
+The data metadata of a timeseries.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 33
+tsdata.datametadata.Interpolation
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 324
+tsdata.datametadata: property Interpolation
+The interpolation method.
+
+A tsdata.interpolation object, 'linear' by default.
+A method name or a function handle may be assigned, and is converted.
+MATLAB starts a tsdata.datametadata created on its own with
+[] here, and a timeseries with 'linear'; here
+both start with 'linear'.
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 25
+The interpolation method.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 46
+tsdata.datametadata.InterpretSingleRowDataAs3D
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 460
+tsdata.datametadata: property InterpretSingleRowDataAs3D
+Stored for compatibility, with no effect.
+
+A logical scalar, false by default. In MATLAB it affects only
+addsample given a row of data, where true gives
+two-dimensional data whose time runs along its last dimension while the
+sample holds the whole row, a state no other method can read
+consistently. Here the orientation of the data always follows its
+dimensions, as IsTimeFirst of timeseries describes.
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 41
+Stored for compatibility, with no effect.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 25
+tsdata.datametadata.Units
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 176
+tsdata.datametadata: property Units
+The units of the data.
+
+A character vector, '' by default. It is free text: nothing
+checks it against the data or converts the data with it.
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 22
+The units of the data.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 28
+tsdata.datametadata.UserData
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 81
+tsdata.datametadata: property UserData
+Any data the user attaches, [] by default.
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 42
+Any data the user attaches, [] by default.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 32
+tsdata.datametadata.datametadata
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 351
+tsdata.datametadata: di = tsdata.datametadata ()
+Create a data metadata object.
+
+di = tsdata.datametadata () returns an object with
+Units '', Interpolation 'linear',
+UserData [] and InterpretSingleRowDataAs3D
+false. A timeseries creates its own; this is needed
+only to assign a whole new one to ts.DataInfo.
+
+See also:
+timeseries,
+tsdata.interpolation
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 30
+Create a data metadata object.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 23
+tsdata.datametadata.get
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 603
+tsdata.datametadata: S = get (di)
+tsdata.datametadata: value = get (di, name)
+tsdata.datametadata: values = get (di, names)
+Return property values.
+
+S = get (di) returns a structure of every
+property of di. value = get (di,
+name) returns the property name, a character vector or a
+string scalar matched in any case, and values = get
+(di, names) a row cell array of the properties named in
+the cell array names. For an array, one name gives a cell
+array of its size, and no name, or several, a cell array with a row
+per object and a column per property.
+
+See also:
+tsdata.datametadata.set,
+timeseries.get
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 23
+Return property values.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 23
+tsdata.datametadata.set
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 610
+tsdata.datametadata: set (di, name, value, ...)
+tsdata.datametadata: di2 = set (di, name, value, ...)
+tsdata.datametadata: S = set (di)
+Set property values.
+
+set (di, name, value, ...) sets each
+property name, matched in any case, to its value, in the
+order given, in the variable di of the caller, which must
+therefore be a variable. Metadata held by a timeseries is set
+with dot assignment instead, as
+ts.TimeInfo.Units = 'days'.
+
+di2 = set (di, name, value, ...)
+returns the modified object and leaves di as it was.
+S = set (di) returns what get (di)
+does.
+
+See also:
+tsdata.datametadata.get,
+timeseries.set
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 20
+Set property values.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 12
+tsdata.event
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 344
+datatypes: tsdata.event
+An event of a timeseries.
+
+A tsdata.event object marks a named instant, with any data the user
+attaches to it. The Events property of a timeseries holds
+an array of them. An event carries its own time, in its own units and
+optionally from its own start date, so it keeps its instant when the
+series' time vector changes.
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 25
+An event of a timeseries.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 22
+tsdata.event.EventData
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 75
+tsdata.event: property EventData
+Any data the user attaches, [] by default.
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 42
+Any data the user attaches, [] by default.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 17
+tsdata.event.Name
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 96
+tsdata.event: property Name
+The name of the event, a character vector. Names need not be unique.
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 42
+The name of the event, a character vector.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 22
+tsdata.event.StartDate
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 204
+tsdata.event: property StartDate
+The absolute date Time counts from, or '' for a
+relative time. A string scalar or a scalar datetime is converted
+to a character vector; text that is not a date is refused.
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 62
+The absolute date Time counts from, or '' for a relative time.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 17
+tsdata.event.Time
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 156
+tsdata.event: property Time
+The time of the event, a real scalar in Units, counted from
+StartDate when that is set. NaN is refused, where
+MATLAB accepts it.
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 87
+The time of the event, a real scalar in Units, counted from StartDate when that is set.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 18
+tsdata.event.Units
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 135
+tsdata.event: property Units
+The units of Time.
+
+One of the units a timeseries time vector takes, or ''.
+MATLAB accepts any value here.
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 18
+The units of Time.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 18
+tsdata.event.event
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 682
+tsdata.event: e = tsdata.event ()
+tsdata.event: e = tsdata.event (name)
+tsdata.event: e = tsdata.event (name, time)
+Create an event.
+
+e = tsdata.event (name) returns an event named
+name, a character vector or a string scalar, at Time 0
+with no Units. With no argument the name is ''.
+
+e = tsdata.event (name, time) places it at
+time. A real scalar is a relative time in seconds. A date, as
+text or as a scalar datetime, is an absolute time: the event is
+then at Time 0 in 'days' from a StartDate of
+that date, stored as 'dd-mmm-yyyy HH:MM:SS', with milliseconds
+as '.FFF' when the seconds are not whole.
+
+MATLAB ignores a third argument and refuses a datetime.
+
+See also:
+timeseries
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 16
+Create an event.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 16
+tsdata.event.get
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 801
+tsdata.event: S = get (e)
+tsdata.event: value = get (e, name)
+tsdata.event: values = get (e, names)
+Return property values.
+
+S = get (e) returns a structure of every
+property of e. value = get (e,
+name) returns the property name, a character vector or a
+string scalar matched in any case, and values = get
+(e, names) a row cell array of the properties named in
+the cell array names. For an array, one name gives a cell
+array of its size, and no name, or several, a cell array with a row
+per object and a column per property.
+
+MATLAB refuses an output argument to set on an event and, given
+an array of events and one name, returns the first event's value only;
+here set returns the modified events as on any other class, and
+get returns one value per event.
+
+See also:
+tsdata.event.set,
+timeseries.get
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 23
+Return property values.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 16
+tsdata.event.set
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 571
+tsdata.event: set (e, name, value, ...)
+tsdata.event: e2 = set (e, name, value, ...)
+tsdata.event: S = set (e)
+Set property values.
+
+set (e, name, value, ...) sets each
+property name, matched in any case, to its value, in the
+order given, in the variable e of the caller, which must
+therefore be a variable. Metadata held by a timeseries is set
+with dot assignment instead, as
+ts.TimeInfo.Units = 'days'.
+
+e2 = set (e, name, value, ...)
+returns the modified object and leaves e as it was.
+S = set (e) returns what get (e)
+does.
+
+See also:
+tsdata.event.get,
+timeseries.set
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 20
+Set property values.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 20
+tsdata.interpolation
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 443
+datatypes: tsdata.interpolation
+The interpolation method of a timeseries.
+
+A tsdata.interpolation object names how a timeseries is
+evaluated between its samples, and holds the function that does it. It is
+what ts.DataInfo.Interpolation returns, and it is the value
+setinterpmethod sets.
+
+Two methods are built in, 'linear' and 'zoh' (zero-order
+hold, which keeps each value until the next sample), and any function
+handle may be given instead.
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 41
+The interpolation method of a timeseries.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 28
+tsdata.interpolation.Fhandle
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 569
+tsdata.interpolation: property Fhandle
+The interpolating function.
+
+A function handle called as
+newData = fh (newTime, oldTime,
+oldData), as in MATLAB: newTime and oldTime are
+column vectors, and oldData and newData have time along
+their first dimension, a sample per row. It is [] for an object
+that names no method. Assigning a function handle sets Name to
+'myFuncHandle'.
+
+MATLAB stores this property in several shapes, among them a cell
+holding the handle and, for a built-in method, a cell holding a handle
+and a function name; here it is always the handle itself.
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 27
+The interpolating function.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 25
+tsdata.interpolation.Name
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 393
+tsdata.interpolation: property Name
+The name of the interpolation method.
+
+One of 'linear', 'zoh' or 'myFuncHandle', or
+'' for an object that names no method. Assigning
+'linear' or 'zoh' also sets Fhandle to the
+built-in function; 'myFuncHandle' is set by assigning a function
+handle to Fhandle, not by name. MATLAB accepts any name and
+leaves Fhandle as it was, so the two can disagree there.
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 37
+The name of the interpolation method.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 24
+tsdata.interpolation.get
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 607
+tsdata.interpolation: S = get (ip)
+tsdata.interpolation: value = get (ip, name)
+tsdata.interpolation: values = get (ip, names)
+Return property values.
+
+S = get (ip) returns a structure of every
+property of ip. value = get (ip,
+name) returns the property name, a character vector or a
+string scalar matched in any case, and values = get
+(ip, names) a row cell array of the properties named in
+the cell array names. For an array, one name gives a cell
+array of its size, and no name, or several, a cell array with a row
+per object and a column per property.
+
+See also:
+tsdata.interpolation.set,
+timeseries.get
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 23
+Return property values.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 34
+tsdata.interpolation.interpolation
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 729
+tsdata.interpolation: ip = tsdata.interpolation ()
+tsdata.interpolation: ip = tsdata.interpolation (name)
+tsdata.interpolation: ip = tsdata.interpolation (fh)
+Create an interpolation method object.
+
+ip = tsdata.interpolation () returns an object that names
+no method, with Name '' and Fhandle [].
+
+ip = tsdata.interpolation (name) returns the built-in
+method name, 'linear' or 'zoh', given as a
+character vector or a string scalar.
+
+ip = tsdata.interpolation (fh) returns a method
+evaluated by the function handle fh, called as
+newData = fh (newTime, oldTime,
+oldData), and names it 'myFuncHandle'.
+
+A cell array is refused, where MATLAB returns an empty object for it
+without an error.
+
+See also:
+timeseries,
+tsdata.datametadata
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 38
+Create an interpolation method object.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 24
+tsdata.interpolation.set
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 614
+tsdata.interpolation: set (ip, name, value, ...)
+tsdata.interpolation: ip2 = set (ip, name, value, ...)
+tsdata.interpolation: S = set (ip)
+Set property values.
+
+set (ip, name, value, ...) sets each
+property name, matched in any case, to its value, in the
+order given, in the variable ip of the caller, which must
+therefore be a variable. Metadata held by a timeseries is set
+with dot assignment instead, as
+ts.TimeInfo.Units = 'days'.
+
+ip2 = set (ip, name, value, ...)
+returns the modified object and leaves ip as it was.
+S = set (ip) returns what get (ip)
+does.
+
+See also:
+tsdata.interpolation.get,
+timeseries.set
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 20
+Set property values.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 19
+tsdata.qualmetadata
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 277
+datatypes: tsdata.qualmetadata
+The quality metadata of a timeseries.
+
+A tsdata.qualmetadata object lists the quality codes a
+timeseries may carry in its Quality property, and a
+description of each. It is what ts.QualityInfo returns.
+Code Code(k) is described by
+Description{k}.
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 37
+The quality metadata of a timeseries.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 24
+tsdata.qualmetadata.Code
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 192
+tsdata.qualmetadata: property Code
+The quality codes.
+
+A vector of distinct integers from -128 to 127, stored as
+double, [] by default. MATLAB accepts any number here,
+repeated codes included.
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 18
+The quality codes.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 31
+tsdata.qualmetadata.Description
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 181
+tsdata.qualmetadata: property Description
+The description of each quality code.
+
+A cell array of character vectors, [] by default. A character
+vector or a string array is converted.
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 37
+The description of each quality code.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 28
+tsdata.qualmetadata.UserData
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 81
+tsdata.qualmetadata: property UserData
+Any data the user attaches, [] by default.
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 42
+Any data the user attaches, [] by default.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 23
+tsdata.qualmetadata.get
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 603
+tsdata.qualmetadata: S = get (qi)
+tsdata.qualmetadata: value = get (qi, name)
+tsdata.qualmetadata: values = get (qi, names)
+Return property values.
+
+S = get (qi) returns a structure of every
+property of qi. value = get (qi,
+name) returns the property name, a character vector or a
+string scalar matched in any case, and values = get
+(qi, names) a row cell array of the properties named in
+the cell array names. For an array, one name gives a cell
+array of its size, and no name, or several, a cell array with a row
+per object and a column per property.
+
+See also:
+tsdata.qualmetadata.set,
+timeseries.get
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 23
+Return property values.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 32
+tsdata.qualmetadata.qualmetadata
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 290
+tsdata.qualmetadata: qi = tsdata.qualmetadata ()
+Create a quality metadata object.
+
+qi = tsdata.qualmetadata () returns an object with
+Code, Description and UserData all [].
+A timeseries creates its own; this is needed only to assign a
+whole new one to ts.QualityInfo.
+
+See also:
+timeseries
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 33
+Create a quality metadata object.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 23
+tsdata.qualmetadata.set
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 610
+tsdata.qualmetadata: set (qi, name, value, ...)
+tsdata.qualmetadata: qi2 = set (qi, name, value, ...)
+tsdata.qualmetadata: S = set (qi)
+Set property values.
+
+set (qi, name, value, ...) sets each
+property name, matched in any case, to its value, in the
+order given, in the variable qi of the caller, which must
+therefore be a variable. Metadata held by a timeseries is set
+with dot assignment instead, as
+ts.TimeInfo.Units = 'days'.
+
+qi2 = set (qi, name, value, ...)
+returns the modified object and leaves qi as it was.
+S = set (qi) returns what get (qi)
+does.
+
+See also:
+tsdata.qualmetadata.get,
+timeseries.set
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 20
+Set property values.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 19
+tsdata.timemetadata
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 458
+datatypes: tsdata.timemetadata
+The time metadata of a timeseries.
+
+A tsdata.timemetadata object describes the time vector of a
+timeseries: its units, an optional absolute start date, and the
+length, first and last times and uniform step derived from it. It is what
+ts.TimeInfo returns.
+
+The derived properties Length, Start, End and
+Increment follow the time vector and cannot be assigned; change
+the time vector of the series instead, or use setuniformtime.
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 34
+The time metadata of a timeseries.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 23
+tsdata.timemetadata.End
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 91
+tsdata.timemetadata: property End
+The last time, or [] for an empty time vector. Read-only.
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 46
+The last time, or [] for an empty time vector.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 26
+tsdata.timemetadata.Format
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 373
+tsdata.timemetadata: property Format
+The display format of absolute times.
+
+A datestr format as a character vector, '' by default,
+which getabstime writes the dates in. Text holding no date field
+at all, such as 'bogus', is refused, where MATLAB accepts any
+value; MATLAB also ignores every format but the few its documentation
+lists, while here any datestr format is used.
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 37
+The display format of absolute times.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 29
+tsdata.timemetadata.Increment
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 388
+tsdata.timemetadata: property Increment
+The step of a uniform time vector.
+
+The step when every one is exactly equal and not zero, NaN
+otherwise and for a single time, [] for an empty time vector.
+Read-only; use setuniformtime to give a series a uniform time
+vector. MATLAB still accepts an assignment here, with a warning that
+it will not in future, and rebuilds the time vector from it.
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 34
+The step of a uniform time vector.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 26
+tsdata.timemetadata.Length
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 87
+tsdata.timemetadata: property Length
+The number of times in the time vector. Read-only.
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 39
+The number of times in the time vector.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 25
+tsdata.timemetadata.Start
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 194
+tsdata.timemetadata: property Start
+The first time, or [] for an empty time vector. Read-only.
+MATLAB still accepts an assignment here, with a warning that it will
+not in future, and ignores it.
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 47
+The first time, or [] for an empty time vector.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 29
+tsdata.timemetadata.StartDate
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 512
+tsdata.timemetadata: property StartDate
+The absolute date the time vector counts from.
+
+A date as a character vector, or '' for a relative time vector,
+by default. Text, a string scalar or a scalar datetime is
+stored in one form, 'dd-mmm-yyyy HH:MM:SS', with milliseconds
+as '.FFF' when the seconds are not whole, so a date is read
+once, when it is assigned, and never guessed at again. Text that is not
+a whole date (a year, a time of day) is refused, where MATLAB accepts
+any value and keeps the text as given.
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 46
+The absolute date the time vector counts from.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 25
+tsdata.timemetadata.Units
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 321
+tsdata.timemetadata: property Units
+The units of the time vector.
+
+One of 'weeks', 'days', 'hours',
+'minutes', 'seconds', 'milliseconds',
+'microseconds' or 'nanoseconds', in any case, stored in
+lower case; 'seconds' by default. Assigning it relabels the
+time vector and does not rescale it. MATLAB accepts any value here.
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 29
+The units of the time vector.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 28
+tsdata.timemetadata.UserData
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 81
+tsdata.timemetadata: property UserData
+Any data the user attaches, [] by default.
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 42
+Any data the user attaches, [] by default.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 23
+tsdata.timemetadata.get
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 603
+tsdata.timemetadata: S = get (ti)
+tsdata.timemetadata: value = get (ti, name)
+tsdata.timemetadata: values = get (ti, names)
+Return property values.
+
+S = get (ti) returns a structure of every
+property of ti. value = get (ti,
+name) returns the property name, a character vector or a
+string scalar matched in any case, and values = get
+(ti, names) a row cell array of the properties named in
+the cell array names. For an array, one name gives a cell
+array of its size, and no name, or several, a cell array with a row
+per object and a column per property.
+
+See also:
+tsdata.timemetadata.set,
+timeseries.get
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 23
+Return property values.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 23
+tsdata.timemetadata.set
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 610
+tsdata.timemetadata: set (ti, name, value, ...)
+tsdata.timemetadata: ti2 = set (ti, name, value, ...)
+tsdata.timemetadata: S = set (ti)
+Set property values.
+
+set (ti, name, value, ...) sets each
+property name, matched in any case, to its value, in the
+order given, in the variable ti of the caller, which must
+therefore be a variable. Metadata held by a timeseries is set
+with dot assignment instead, as
+ts.TimeInfo.Units = 'days'.
+
+ti2 = set (ti, name, value, ...)
+returns the modified object and leaves ti as it was.
+S = set (ti) returns what get (ti)
+does.
+
+See also:
+tsdata.timemetadata.get,
+timeseries.set
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 20
+Set property values.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 32
+tsdata.timemetadata.timemetadata
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 698
+tsdata.timemetadata: ti = tsdata.timemetadata ()
+tsdata.timemetadata: ti = tsdata.timemetadata (time)
+Create a time metadata object.
+
+ti = tsdata.timemetadata () returns an object for an empty
+time vector: Units 'seconds', Format and
+StartDate '', Length 0, and Start,
+End and Increment [].
+
+ti = tsdata.timemetadata (time) derives
+Length, Start, End and Increment from
+the numeric vector time, which must be finite and non-decreasing.
+MATLAB gives an Increment of NaN here even for a uniform
+time; here it is the step, as for a timeseries.
+
+A timeseries creates its own; this is needed only to assign a
+whole new one to ts.TimeInfo, whose time vector is then
+the series' own.
+
+See also:
+timeseries
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 30
+Create a time metadata object.
 
 
 
