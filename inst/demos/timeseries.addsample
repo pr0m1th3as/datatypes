@@ -1,0 +1,18 @@
+%!demo
+%! ## New samples are put in time order; one at a time already present goes
+%! ## after the samples there.
+%!
+%! ts = timeseries ([10; 20; 30], [0; 1; 2]);
+%! ts = addsample (ts, 'Data', [15; 25], 'Time', [0.5; 1]);
+%! [ts.Time, ts.Data]
+
+%!demo
+%! ## A series with quality codes gives each new sample the code of the
+%! ## nearest sample, unless `'Quality'` is given.  `'OverwriteFlag'`
+%! ## replaces the samples at a time instead of adding one.
+%!
+%! ts = timeseries ([10; 20; 30], [0; 1; 2], [1; 2; 3]);
+%! s = addsample (ts, 'Data', 99, 'Time', 1.8);
+%! [s.Time, s.Data, s.Quality]
+%! s = addsample (ts, 'Data', 99, 'Time', 1, 'OverwriteFlag', true);
+%! [s.Time, s.Data, s.Quality]

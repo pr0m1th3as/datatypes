@@ -1,0 +1,10 @@
+%!demo
+%! ## `setabstime` dates the samples of every member.  Unsorted dates move
+%! ## each member's samples with them; MATLAB sorts the dates alone.
+%!
+%! tc = tscollection ({timeseries([10; 20; 30], [0; 1; 2], 'Name', 'a'), ...
+%!                     timeseries([1; 2; 3], [0; 1; 2], 'Name', 'b')});
+%! tc.TimeInfo.Units = 'days';
+%! tc = setabstime (tc, {'03-Mar-2024', '01-Mar-2024', '02-Mar-2024'});
+%! getabstime (tc)
+%! [tc.a.Data, tc.b.Data]

@@ -1,0 +1,8 @@
+%!demo
+%! ## `delevent` removes events by name; a number chooses one occurrence of
+%! ## a repeated name.
+%!
+%! ts = timeseries ((1:10)', 0:9);
+%! ts = addevent (ts, {'mark', 'mark', 'peak'}, [2, 5, 7]);
+%! s = delevent (ts, 'mark', 2);
+%! {s.Events.Name; s.Events.Time}

@@ -1,0 +1,14 @@
+%!demo
+%! ## The operators work sample by sample, between two series on the same
+%! ## times or between a series and a number.  Units survive `+` and `-`
+%! ## and are dropped by products and quotients.
+%!
+%! a = timeseries ([1; 2; 3], [0; 1; 2]);
+%! a.DataInfo.Units = 'm';
+%! b = timeseries ([10; 20; 30], [0; 1; 2]);
+%! b.DataInfo.Units = 'm';
+%! s = a + b;
+%! [s.Time, s.Data]
+%! s.DataInfo.Units
+%! p = a .* b;
+%! p.DataInfo.Units

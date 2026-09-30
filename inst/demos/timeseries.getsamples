@@ -1,0 +1,10 @@
+%!demo
+%! ## `getsamples` returns a series of the samples asked for, in time order,
+%! ## with their times and quality codes.  A logical mask works too.
+%!
+%! ts = timeseries ([10; 20; 30; 40], [0; 1; 2; 3], [1; 1; 0; 1]);
+%! [ts.Time, ts.Data, ts.Quality]
+%! s = getsamples (ts, [3, 1]);
+%! [s.Time, s.Data, s.Quality]
+%! s = getsamples (ts, ts.Data > 15);
+%! [s.Time, s.Data]

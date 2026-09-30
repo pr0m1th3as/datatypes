@@ -1,0 +1,12 @@
+%!demo
+%! ## The interpolation method says how the series behaves between samples,
+%! ## which `resample` and `synchronize` follow: `'linear'` joins them,
+%! ## `'zoh'` holds each value until the next sample.
+%!
+%! ts = timeseries ([0; 10; 20], [0; 1; 2]);
+%! s = resample (ts, 0:0.5:2);
+%! s.Data'
+%! ts = setinterpmethod (ts, 'zoh');
+%! getinterpmethod (ts)
+%! s = resample (ts, 0:0.5:2);
+%! s.Data'

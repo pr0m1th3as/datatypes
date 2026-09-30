@@ -1,0 +1,8 @@
+%!demo
+%! ## `gettsbetweenevents` keeps the samples from one event to the other,
+%! ## both times included.
+%!
+%! ts = timeseries ((10:10:60)', 0:5);
+%! ts = addevent (ts, {'on', 'off'}, [1, 4]);
+%! s = gettsbetweenevents (ts, 'on', 'off');
+%! [s.Time, s.Data]

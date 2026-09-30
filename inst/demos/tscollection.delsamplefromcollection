@@ -1,0 +1,7 @@
+%!demo
+%! ## Samples are removed from every member, by position or by time.
+%!
+%! tc = tscollection ({timeseries([1; 2; 3], [0; 1; 2], 'Name', 'a'), ...
+%!                     timeseries([10; 20; 30], [0; 1; 2], 'Name', 'b')});
+%! s = delsamplefromcollection (tc, 'Value', 1);
+%! [s.Time, s.a.Data, s.b.Data]

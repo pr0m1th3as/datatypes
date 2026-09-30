@@ -1,0 +1,9 @@
+%!demo
+%! ## Samples are removed by position with `'Index'`, or by time with
+%! ## `'Value'`, which removes every sample at that time.
+%!
+%! ts = timeseries ([10; 20; 30; 40], [0; 1; 1; 2]);
+%! s = delsample (ts, 'Index', [1, 4]);
+%! [s.Time, s.Data]
+%! s = delsample (ts, 'Value', 1);
+%! [s.Time, s.Data]

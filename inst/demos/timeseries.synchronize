@@ -1,0 +1,11 @@
+%!demo
+%! ## `synchronize` resamples two series onto common times within the span
+%! ## both cover: the union of their times, their intersection, or a
+%! ## uniform grid.
+%!
+%! a = timeseries ([1; 2; 3], [0; 2; 4]);
+%! b = timeseries ([10; 20; 30], [1; 2; 3]);
+%! [a2, b2] = synchronize (a, b, 'union');
+%! [a2.Time, a2.Data, b2.Data]
+%! [a2, b2] = synchronize (a, b, 'uniform', 'Interval', 0.5);
+%! [a2.Time, a2.Data, b2.Data]

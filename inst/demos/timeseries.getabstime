@@ -1,0 +1,10 @@
+%!demo
+%! ## `getabstime` writes the date of each sample, in `TimeInfo.Format` when
+%! ## it is set.
+%!
+%! ts = timeseries ([1; 2; 3], [0; 6; 12]);
+%! ts.TimeInfo.Units = 'hours';
+%! ts.TimeInfo.StartDate = '01-Mar-2024 06:00:00';
+%! getabstime (ts)
+%! ts.TimeInfo.Format = 'yyyy-mm-dd HH:MM';
+%! getabstime (ts)

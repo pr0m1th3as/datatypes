@@ -1,0 +1,7 @@
+%!demo
+%! ## `[tc1, tc2]` joins the members of collections on the same times,
+%! ## sorted by name, as in MATLAB.
+%!
+%! tc1 = tscollection (timeseries ([1; 2], [0; 1], 'Name', 'z'));
+%! tc2 = tscollection (timeseries ([3; 4], [0; 1], 'Name', 'a'));
+%! gettimeseriesnames ([tc1, tc2])

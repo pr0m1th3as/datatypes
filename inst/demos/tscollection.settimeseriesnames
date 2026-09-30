@@ -1,0 +1,9 @@
+%!demo
+%! ## Renaming a member renames its series too, and makes it the last
+%! ## member, as in MATLAB.
+%!
+%! tc = tscollection ({timeseries([1; 2], [0; 1], 'Name', 'a'), ...
+%!                     timeseries([3; 4], [0; 1], 'Name', 'b')});
+%! tc = settimeseriesnames (tc, 'a', 'alpha');
+%! gettimeseriesnames (tc)
+%! tc.alpha.Name

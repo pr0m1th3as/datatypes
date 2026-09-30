@@ -1,0 +1,9 @@
+%!demo
+%! ## `[tc1; tc2]` joins collections of the same members end to end in time.
+%!
+%! tc1 = tscollection ({timeseries([1; 2], [0; 1], 'Name', 'a'), ...
+%!                      timeseries([10; 20], [0; 1], 'Name', 'b')});
+%! tc2 = tscollection ({timeseries([3; 4], [2; 3], 'Name', 'a'), ...
+%!                      timeseries([30; 40], [2; 3], 'Name', 'b')});
+%! tc = [tc1; tc2];
+%! [tc.Time, tc.a.Data, tc.b.Data]

@@ -1,0 +1,32 @@
+%!demo
+%! ## A series is a sequence of samples, each taken at a time.  The data
+%! ## alone gives the times 0, 1, 2, ... seconds, and the display summarises
+%! ## the series rather than listing it.
+%!
+%! ts = timeseries ([12.1; 14.5; 13.2; 15.8], 'Name', 'temp')
+%! [ts.Time, ts.Data]
+
+%!demo
+%! ## Times may be given, in any order: the samples are sorted with them.
+%! ## A third argument sets a quality code for each sample.
+%!
+%! ts = timeseries ([12.1; 14.5; 13.2], [30; 0; 60], [0; 1; 0]);
+%! [ts.Time, ts.Data, ts.Quality]
+
+%!demo
+%! ## Dates as text, or a `datetime` array, give times in days counted from
+%! ## the earliest date, which becomes `TimeInfo.StartDate`.
+%!
+%! ts = timeseries ([3; 5; 4], {'01-Mar-2024', '03-Mar-2024', '02-Mar-2024'});
+%! ts.Time
+%! ts.TimeInfo.StartDate
+%! ts.TimeInfo.Units
+
+%!demo
+%! ## A matrix holds one sample per row, and data of three dimensions one
+%! ## sample per slice along the last, which `IsTimeFirst` reports.
+%!
+%! ts2 = timeseries ([1, 10; 2, 20; 3, 30]);
+%! size (ts2.Data), ts2.IsTimeFirst
+%! ts3 = timeseries (rand (2, 2, 5));
+%! size (ts3.Data), ts3.IsTimeFirst

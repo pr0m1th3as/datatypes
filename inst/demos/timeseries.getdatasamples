@@ -1,0 +1,7 @@
+%!demo
+%! ## `getdatasamples` returns the data of the samples asked for, in the
+%! ## order asked, repeats included.
+%!
+%! ts = timeseries ([10; 20; 30; 40; 50], 'Name', 'level');
+%! ts.Data'
+%! getdatasamples (ts, [4, 1, 1])'

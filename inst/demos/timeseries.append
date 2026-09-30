@@ -1,0 +1,18 @@
+%!demo
+%! ## `append` joins series end to end.  Each must start at or after the end
+%! ## of the one before; where two meet at a time, that time repeats.
+%!
+%! a = timeseries ([1; 2; 3], [0; 1; 2]);
+%! b = timeseries ([4; 5], [2; 3]);
+%! ts = append (a, b);
+%! [ts.Time, ts.Data]
+
+%!demo
+%! ## Times in different units are converted to the coarser.
+%!
+%! a = timeseries ([1; 2], [0; 30]);
+%! b = timeseries ([3; 4], [1; 2]);
+%! b.TimeInfo.Units = 'minutes';
+%! ts = append (a, b);
+%! ts.TimeInfo.Units
+%! [ts.Time, ts.Data]

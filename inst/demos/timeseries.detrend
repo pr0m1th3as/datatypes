@@ -1,0 +1,9 @@
+%!demo
+%! ## `detrend` removes the mean, or the best line, fitted against the
+%! ## times, so irregular times are handled correctly.
+%!
+%! ts = timeseries ([2; 3; 8; 13], [0; 1; 2; 6]);
+%! s = detrend (ts, 'linear');
+%! s.Data'
+%! s = detrend (ts, 'constant');
+%! s.Data'

@@ -1,0 +1,18 @@
+%!demo
+%! ## The statistics run over time.  `NaN` is left out while
+%! ## `TreatNaNasMissing` is true, and `'Quality'` names codes whose samples
+%! ## are left out.
+%!
+%! ts = timeseries ([2; NaN; 4; 100], [0; 1; 2; 3], [0; 0; 0; 5]);
+%! mean (ts)
+%! mean (ts, 'Quality', 5)
+
+%!demo
+%! ## `'Weighting', 'time'` weights each sample by the time it stands for,
+%! ## which matters on irregular times.  The other statistics take the same
+%! ## options.
+%!
+%! ts = timeseries ([1; 2; 4; 8; 16], [0; 1; 3; 7; 8]);
+%! mean (ts)
+%! mean (ts, 'Weighting', 'time')
+%! median (ts, 'Weighting', 'time')

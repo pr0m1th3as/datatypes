@@ -39,7 +39,8 @@ classdef tscollection
   ## MATLAB reads @code{@var{tc}.A} for a member @qcode{a}.  A member cannot
   ## take the name of one of the four properties.
   ##
-  ## @seealso{timeseries, istscollection, tsdata.timemetadata}
+  ## @seealso{timeseries, istscollection, timeseries2timetable,
+  ## tsdata.timemetadata}
   ## @end deftp
 
   properties (Dependent)

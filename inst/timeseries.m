@@ -43,8 +43,9 @@ classdef timeseries
   ## class; MATLAB also reads @code{@var{ts}.name} for
   ## @code{@var{ts}.Name}.  @code{get} and @code{set} accept any case.
   ##
-  ## @seealso{timetable, tsdata.timemetadata, tsdata.datametadata,
-  ## tsdata.qualmetadata, tsdata.event, tsdata.interpolation}
+  ## @seealso{tscollection, timeseries2timetable, timetable,
+  ## tsdata.timemetadata, tsdata.datametadata, tsdata.qualmetadata,
+  ## tsdata.event, tsdata.interpolation}
   ## @end deftp
 
   properties (Dependent)

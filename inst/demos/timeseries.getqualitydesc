@@ -1,0 +1,8 @@
+%!demo
+%! ## `getqualitydesc` reads each sample's quality code against
+%! ## `QualityInfo`.
+%!
+%! ts = timeseries ([1; 2; 3], [0; 1; 2], [0; 1; 0]);
+%! ts.QualityInfo.Code = [0, 1];
+%! ts.QualityInfo.Description = {'good', 'suspect'};
+%! getqualitydesc (ts)

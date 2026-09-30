@@ -1,0 +1,10 @@
+%!demo
+%! ## The six event queries cut a series at an event: before it, after it,
+%! ## at it, or between two.  The `at` forms include the event's own time.
+%!
+%! ts = timeseries ((10:10:60)', 0:5);
+%! ts = addevent (ts, 'switch', 3);
+%! s = gettsafterevent (ts, 'switch');
+%! [s.Time, s.Data]
+%! s = gettsafteratevent (ts, 'switch');
+%! [s.Time, s.Data]

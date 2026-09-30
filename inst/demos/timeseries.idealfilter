@@ -1,0 +1,9 @@
+%!demo
+%! ## `idealfilter` keeps (`'pass'`) or removes (`'notch'`) the frequencies in
+%! ## the intervals given, in cycles per unit of time.  The result is
+%! ## centred on zero.
+%!
+%! t = (0:99)';
+%! ts = timeseries (sin (2 * pi * 0.02 * t) + 0.5 * sin (2 * pi * 0.3 * t), t);
+%! s = idealfilter (ts, [0, 0.1], 'pass');
+%! max (abs (s.Data - sin (2 * pi * 0.02 * t)))

@@ -1,0 +1,19 @@
+%!demo
+%! ## `setabstime` gives the samples dates, keeping the series' own units,
+%! ## so a series in seconds given a date a day gets steps of 86400.
+%!
+%! ts = timeseries ([10; 20; 30]);
+%! ts = setabstime (ts, {'01-Mar-2024', '02-Mar-2024', '03-Mar-2024'});
+%! ts.Time'
+%! ts.TimeInfo.StartDate
+
+%!demo
+%! ## The dates need not be sorted: each sample keeps the date it was given,
+%! ## and the series is sorted with them.  MATLAB sorts the dates alone,
+%! ## leaving every sample on another's date.
+%!
+%! ts = timeseries ([10; 20; 30], [0; 1; 2], [1; 2; 3]);
+%! ts.TimeInfo.Units = 'days';
+%! ts = setabstime (ts, {'03-Mar-2024', '01-Mar-2024', '02-Mar-2024'});
+%! getabstime (ts)
+%! [ts.Data, ts.Quality]

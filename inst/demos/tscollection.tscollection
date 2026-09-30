@@ -1,0 +1,30 @@
+%!demo
+%! ## A collection holds several series on one time vector.  Each member is
+%! ## reached by its name, and a sample of the collection is the sample of
+%! ## every member at one time.
+%!
+%! temp = timeseries ([12.1; 14.5; 13.2], [0; 1; 2], 'Name', 'temp');
+%! wind = timeseries ([3, 40; 5, 45; 4, 90], [0; 1; 2], 'Name', 'wind');
+%! tc = tscollection ({temp, wind}, 'Name', 'station')
+%! size (tc)
+%! tc.wind.Data
+
+%!demo
+%! ## Member names follow `matlab.lang.makeValidName`, and must be unique
+%! ## ignoring case.
+%!
+%! tc = tscollection (timeseries ([1; 2], [0; 1], 'Name', 'air temp'));
+%! gettimeseriesnames (tc)
+
+%!demo
+%! ## `tc(i, j)` selects samples, then members by position or by name.
+%! ## The shared `Time` and `TimeInfo` belong to the collection: assigning
+%! ## them assigns every member.
+%!
+%! temp = timeseries ([12.1; 14.5; 13.2], [0; 1; 2], 'Name', 'temp');
+%! rain = timeseries ([0; 2.5; 0.4], [0; 1; 2], 'Name', 'rain');
+%! tc = tscollection ({temp, rain});
+%! s = tc(2:3, 'rain');
+%! [s.Time, s.rain.Data]
+%! tc.TimeInfo.Units = 'hours';
+%! tc.temp.TimeInfo.Units

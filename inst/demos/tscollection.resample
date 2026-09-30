@@ -1,0 +1,8 @@
+%!demo
+%! ## Every member is evaluated at the new times by its own method.
+%!
+%! a = timeseries ([0; 10; 20], [0; 1; 2], 'Name', 'a');
+%! b = setinterpmethod (timeseries ([0; 10; 20], [0; 1; 2], 'Name', 'b'), ...
+%!                      'zoh');
+%! s = resample (tscollection ({a, b}), 0:0.5:2);
+%! [s.Time, s.a.Data, s.b.Data]

@@ -1,0 +1,10 @@
+%!demo
+%! ## An event marks a time in a series, by name.  It may be given as a
+%! ## `tsdata.event` object, which can carry data of its own.
+%!
+%! ts = timeseries ((1:10)', 0:9);
+%! ts = addevent (ts, 'start', 2);
+%! e = tsdata.event ('stop', 7);
+%! e.EventData = 'valve closed';
+%! ts = addevent (ts, e);
+%! {ts.Events.Name; ts.Events.Time}

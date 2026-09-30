@@ -1,0 +1,7 @@
+%!demo
+%! ## `addts` adds a series on the collection's times, or data with a name.
+%!
+%! tc = tscollection (timeseries ([1; 2; 3], [0; 1; 2], 'Name', 'a'));
+%! tc = addts (tc, timeseries ([4; 5; 6], [0; 1; 2], 'Name', 'b'));
+%! tc = addts (tc, [7; 8; 9], 'c');
+%! gettimeseriesnames (tc)

@@ -1,0 +1,9 @@
+%!demo
+%! ## `setuniformtime` spaces the samples evenly without moving them: from a
+%! ## start time, by a step, or up to an end time, in any usable pair.
+%!
+%! ts = timeseries ([10; 20; 30; 40], [0; 1; 5; 6]);
+%! s = setuniformtime (ts, 'StartTime', 10, 'Interval', 0.5);
+%! s.Time'
+%! s = setuniformtime (ts, 'StartTime', 0, 'EndTime', 9);
+%! s.Time'

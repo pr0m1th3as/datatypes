@@ -55,6 +55,7 @@ timeseries objects
  istimeseries
  tscollection
  istscollection
+ timeseries2timetable
  tsdata.timemetadata
  tsdata.datametadata
  tsdata.qualmetadata

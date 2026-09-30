@@ -1,0 +1,8 @@
+%!demo
+%! ## `removets` removes members by name; the times stay.
+%!
+%! tc = tscollection ({timeseries([1; 2], [0; 1], 'Name', 'a'), ...
+%!                     timeseries([3; 4], [0; 1], 'Name', 'b')});
+%! tc = removets (tc, 'a');
+%! gettimeseriesnames (tc)
+%! tc.Time'

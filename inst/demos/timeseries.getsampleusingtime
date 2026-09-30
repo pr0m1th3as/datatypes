@@ -1,0 +1,17 @@
+%!demo
+%! ## One time gives the sample at that time; two give every sample between
+%! ## them, both ends included.
+%!
+%! ts = timeseries ([10; 20; 30; 40; 50], [0; 1; 2; 3; 4]);
+%! s = getsampleusingtime (ts, 2);
+%! [s.Time, s.Data]
+%! s = getsampleusingtime (ts, 0.5, 3);
+%! [s.Time, s.Data]
+
+%!demo
+%! ## A dated series takes dates.
+%!
+%! ts = timeseries ([3; 5; 4; 6], {'01-Mar-2024', '02-Mar-2024', ...
+%!                                 '03-Mar-2024', '04-Mar-2024'});
+%! s = getsampleusingtime (ts, '02-Mar-2024', '03-Mar-2024');
+%! getabstime (s)

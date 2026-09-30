@@ -1,0 +1,7 @@
+%!demo
+%! ## The samples between two times, both included, from every member.
+%!
+%! tc = tscollection ({timeseries((1:5)', 0:4, 'Name', 'a'), ...
+%!                     timeseries((10:10:50)', 0:4, 'Name', 'b')});
+%! s = getsampleusingtime (tc, 1, 3);
+%! [s.Time, s.a.Data, s.b.Data]
