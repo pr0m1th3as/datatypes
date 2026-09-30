@@ -1,52 +1,74 @@
-Summary of important user-visible changes for datatypes 1.4.3:
+Summary of important user-visible changes for datatypes 1.5.0:
 --------------------------------------------------------------
 
- This patch release completes assignment into tables and timetables, which
- now create variables and accept `{}`, and makes the table methods refuse
- Name-Value arguments they do not know.
+ This release adds the `timeseries` and `tscollection` classes, with
+ `timeseries2timetable` to carry them onto a timetable, and aligns the
+ conversion and joining of table variables with MATLAB.  It breaks code
+ that relied on the old conversions; see below.
 
- ** `()` assignment into a `table` or `timetable` creates the variables it
-    names anew, by name, by the next index or by a longer logical mask, as
-    MATLAB does.  Rows and variables it adds but does not fill take the
-    default value of their type, with a warning.
+ ** New classes: `timeseries`, samples on a time vector with units, a start
+    date, quality codes and events; `tscollection`, several series sharing
+    one time vector; and their metadata classes `tsdata.timemetadata`,
+    `tsdata.datametadata`, `tsdata.qualmetadata`, `tsdata.interpolation` and
+    `tsdata.event`.
 
- ** `duration` and `calendarDuration` variables are padded with zero when
-    rows are added, as in MATLAB, where they were padded with a missing
-    value.  Cellstr variables are padded with empty text, so that they stay
-    cellstr.
+ ** `timeseries` has every method of MATLAB's but `plot`: selecting and
+    editing samples, dates, the six event queries, `resample` and
+    `synchronize`, nine statistics with quality, missing-data and time
+    weighting, the arithmetic operators sample by sample, `detrend`,
+    `filter` and `idealfilter`.
 
- ** `{}` assignment writes the contents of the variables, as `{}` indexing
-    returns them, and creates variables and rows as `()` does.  It raised on
-    every table.  `{}` does not delete.
+ ** `tscollection` has every method of MATLAB's: adding, removing and
+    renaming members, editing samples, dates, `resample`, and concatenation
+    in time and across members.
 
- ** `()` assignment of a cell array fills multicolumn and nested table
-    variables, unwraps a cell given for a cell variable, and takes a logical
-    row mask, where it raised or stored the wrong value.
+ ** `timeseries2timetable` converts series, or the members of a collection,
+    into a timetable, with their units, continuity and events.
 
- ** A timetable assigned into a timetable with `()` must carry the row times
-    of the rows assigned, and is refused otherwise.  MATLAB pastes it by
-    position and ignores its row times.
+ ** New functions `istimeseries`, `istscollection` and `strings`.
+    `table2array`, `table2cell` and `table2struct` take a timetable.
 
- ** A `table` or `timetable` with neither rows nor variables takes the
-    height of the first variable assigned to it, where it raised.
+ ** Table display shows integers exactly, both parts of complex numbers and
+    the row times of a nested timetable.  `standardizeMissing` takes
+    `duration` and `datetime` indicators.  Unknown Name-Value options are
+    reported in one wording across the package.
 
- ** `addcats`, `convertTo`, `struct2table`, and the `table` and `timetable`
-    methods `addvars`, `movevars`, `mergevars`, `rmmissing`,
-    `standardizeMissing`, `varfun`, `rowfun`, `stack`, `unstack` and
-    `rows2vars` raise an error on an unknown or unpaired Name-Value argument,
-    which they silently ignored.
+ ** The Time Zone Database is updated to release 2026e: Manitoba keeps
+    UTC-5 all year from November 2026.
 
- ** `addvars` refuses a new variable whose rows do not match the table's,
-    where it repeated a scalar down every row, and reads a character vector
-    as the start of the Name-Value arguments, as MATLAB does.
+ ** 33 bug fixes, the largest groups in set operations and joins on rows
+    with missing values, nested table variables, and table display.
 
- ** `retime` and `synchronize` name an unknown option or time base in their
-    error, where a misplaced name was taken for the method or reported as
-    `'<unknown>'`.
+ ** Deliberate deviations from MATLAB are documented in the docstrings of
+    the functions they affect.  The ones most likely to be met: `setabstime`
+    keeps each sample with the date it is given, where MATLAB sorts the
+    dates alone; time weighting gives true time-weighted medians, spreads
+    and extremes, where MATLAB's are right for `mean` and `sum` only;
+    `timeseries2timetable` keeps the events MATLAB drops; `tscollection`
+    member names are unique ignoring case and read exactly.
 
- ** `rmmissing (T, 2)` removes the variables holding missing values, and
-    `'MissingLocations'` may be sized as the whole table when
-    `'DataVariables'` is given, as MATLAB does.
 
- ** `categorical` and `categorical.iscategory` keep the shape of an empty
-    cell array: `categorical (cell (0, 1))` is 0x1, not 0x0.
+Backwards incompatible improvements:
+
+ ** `table2cell` and `table2struct` keep each variable's type, where
+    `categorical`, `datetime`, `duration`, `calendarDuration` and `string`
+    variables gave text.
+
+ ** `table2array`, `{}` indexing and `.Variables` join the variables as
+    MATLAB does, and return a cell array where they cannot form one array,
+    where they raised.
+
+ ** `{}` assignment copies a one-row value down the rows only when it
+    creates a single new variable, as MATLAB does.
+
+ ** Concatenating a `categorical` array takes only text, missing values and
+    empty arrays beside it; `[c; 1]` added a category `'1'`.
+
+ ** `sortrows`, `topkrows` and `issortedrows` refuse a `calendarDuration`
+    sort key, as MATLAB does.
+
+ ** `ismissing`, `rmmissing` and `anymissing` never count a nested table
+    variable as missing, as MATLAB does.
+
+ ** `length` on a table raises an error pointing to `height`, `width` and
+    `size`, as on a timetable.
