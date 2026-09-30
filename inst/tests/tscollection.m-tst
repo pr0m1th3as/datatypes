@@ -1,0 +1,1214 @@
+## Copyright (C) 2026 Andreas Bertsatos <abertsatos@biol.uoa.gr>
+##
+## This file is part of the datatypes package for GNU Octave.
+##
+## This program is free software; you can redistribute it and/or modify it under
+## the terms of the GNU General Public License as published by the Free Software
+## Foundation; either version 3 of the License, or (at your option) any later
+## version.
+##
+## This program is distributed in the hope that it will be useful, but WITHOUT
+## ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+## FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+## details.
+##
+## You should have received a copy of the GNU General Public License along with
+## this program; if not, see <http://www.gnu.org/licenses/>.
+
+## Expected values measured on MATLAB R2024a.
+
+################################################################################
+##                  ** Create and describe 'tscollection' **                  ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'tscollection'     'get'              'set'              'fieldnames'      ##
+## 'properties'       'size'             'length'           'isempty'         ##
+## 'isequal'                                                                  ##
+##                                                                            ##
+################################################################################
+
+%!shared A, B, C, TC, DA
+%! A = timeseries ([1; 2; 3; 4], [0; 1; 2; 3], [1; 2; 3; 4], 'Name', 'a');
+%! A.DataInfo.Units = 'm';
+%! A.Events = tsdata.event ('ev', 1.5);
+%! B = timeseries ([10, 11; 20, 21; 30, 31; 40, 41], [0; 1; 2; 3], 'Name', 'b');
+%! C = timeseries ([5; 6; 7; 8], [0; 1; 2; 3], 'Name', 'c');
+%! TC = tscollection ({A, B});
+%! DA = timeseries ([1; 2; 3], {'01-Jan-2024', '02-Jan-2024', ...
+%!                  '03-Jan-2024'}, 'Name', 'da');
+
+## Test an empty collection
+%!test
+%! t = tscollection ();
+%! assert_equal (size (t), [0, 0]);
+%! assert_equal (t.Length, 0);
+%! assert_equal (t.Time, zeros (0, 1));
+%! assert_equal (t.Name, 'unnamed');
+%! assert_equal (gettimeseriesnames (t), {});
+## Test one series, on its own time vector
+%!test
+%! t = tscollection (A);
+%! assert_equal (gettimeseriesnames (t), {'a'});
+%! assert_equal (t.Name, 'unnamed');
+%! assert_equal (t.Time, [0; 1; 2; 3]);
+%! assert_equal (t.Length, 4);
+## Test a cell array of series, row or column
+%!assert_equal (gettimeseriesnames (tscollection ({A, B})), {'a', 'b'})
+%!assert_equal (gettimeseriesnames (tscollection ({A; B})), {'a', 'b'})
+%!assert_equal (size (tscollection ({A, B})), [4, 2])
+%!assert_equal (size (tscollection ({})), [0, 0])
+## Test the name option, any case, the last one winning
+%!assert_equal (tscollection ({A, B}, 'Name', 'mycol').Name, 'mycol')
+%!assert_equal (tscollection ({A, B}, 'name', 'x', 'NAME', 'y').Name, 'y')
+%!assert_equal (tscollection (A, 'Name', "str").Name, 'str')
+%!assert_equal (tscollection ([0; 1], 'Name', 'tv').Name, 'tv')
+## Test a time vector gives no members, sorted, a row stored as a column
+%!test
+%! t = tscollection ([3; 1; 2]);
+%! assert_equal (t.Time, [1; 2; 3]);
+%! assert_equal (size (t), [3, 0]);
+%! assert_equal (gettimeseriesnames (t), {});
+%!assert_equal (tscollection ([0, 1, 2]).Time, [0; 1; 2])
+%!assert_equal (tscollection ([0; 1; 1; 2]).Time, [0; 1; 1; 2])
+%!assert_equal (tscollection (5).Time, 5)
+%!assert_equal (size (tscollection (5)), [1, 0])
+%!assert_equal (size (tscollection ([])), [0, 0])
+## Test an integer time vector is stored as double; MATLAB keeps the class
+%!assert_equal (class (tscollection (int32 ([0; 1; 2])).Time), 'double')
+%!assert_equal (class (tscollection (single ([0; 1; 2])).Time), 'double')
+## Test member names follow 'matlab.lang.makeValidName'
+%!assert_equal (gettimeseriesnames (tscollection (timeseries ([1; 2]))), ...
+%!              {'unnamed'})
+%!assert_equal (gettimeseriesnames (tscollection (timeseries ([1; 2], ...
+%!              [0; 1], 'Name', 'my data'))), {'myData'})
+%!assert_equal (gettimeseriesnames (tscollection (timeseries ([1; 2], ...
+%!              [0; 1], 'Name', '1abc'))), {'x1abc'})
+%!assert_equal (gettimeseriesnames (tscollection (timeseries ([1; 2], ...
+%!              [0; 1], 'Name', ''))), {'x'})
+%!assert_equal (gettimeseriesnames (tscollection ({timeseries([1; 2], ...
+%!              [0; 1], 'Name', 'x y'), timeseries([1; 2], [0; 1], ...
+%!              'Name', 'x_y')})), {'xY', 'x_y'})
+## Test a member takes its name as its series' name
+%!test
+%! t = tscollection (timeseries ([1; 2], [0; 1], 'Name', 'my data'));
+%! x = t.myData;
+%! assert_equal (x.Name, 'myData');
+## Test a member keeps its data, quality codes, units and events
+%!test
+%! t = tscollection (A);
+%! x = t.a;
+%! assert_equal (x.Data, [1; 2; 3; 4]);
+%! assert_equal (x.Quality, [1; 2; 3; 4]);
+%! assert_equal (x.DataInfo.Units, 'm');
+%! assert_equal (x.Events(1).Name, 'ev');
+%! assert_equal (x.Events(1).Time, 1.5);
+## Test a dated series gives a dated collection
+%!test
+%! t = tscollection (DA);
+%! assert_equal (t.TimeInfo.StartDate, '01-Jan-2024 00:00:00');
+%! assert_equal (t.TimeInfo.Units, 'days');
+%! assert_equal (t.Time, [0; 1; 2]);
+%! assert_equal (getabstime (t), {'01-Jan-2024 00:00:00'; ...
+%!                                '02-Jan-2024 00:00:00'; ...
+%!                                '03-Jan-2024 00:00:00'});
+## Test a member with time along the last dimension
+%!test
+%! t = tscollection (timeseries (reshape (1:8, 1, 2, 4), [0; 1; 2; 3], ...
+%!                               'Name', 'd3'));
+%! assert_equal (size (t), [4, 1]);
+%! x = t.d3;
+%! assert_equal (size (x.Data), [1, 2, 4]);
+%! assert_equal (x.IsTimeFirst, false);
+## Test a series with no samples gives an empty collection, as in MATLAB
+%!test
+%! t = tscollection (timeseries ('nm'));
+%! assert_equal (size (t), [0, 0]);
+%! assert_equal (gettimeseriesnames (t), {});
+%!assert_equal (size (tscollection (timeseries ())), [0, 0])
+%!assert_equal (size (tscollection (timeseries (zeros (0, 1), ...
+%!              zeros (0, 1)))), [0, 0])
+## Test a name differing from a property in case is a member's
+%!test
+%! t = tscollection (timeseries ([1; 2], [0; 1], 'Name', 'name'));
+%! assert_equal (gettimeseriesnames (t), {'name'});
+%! assert_equal (class (t.name), 'timeseries');
+%! assert_equal (t.Name, 'unnamed');
+## Test repeated times are accepted
+%!test
+%! t = tscollection (timeseries ([1; 2; 3; 4], [0; 1; 1; 2], 'Name', 'd'));
+%! assert_equal (t.Time, [0; 1; 1; 2]);
+%! assert_equal (hasduplicatetimes (t), true);
+## Test a dated series joining an undated collection loses its start date
+%!test
+%! X = timeseries ([5; 6; 7; 8], [0; 1; 2; 3], 'Name', 'x');
+%! X.TimeInfo.StartDate = '01-Jan-2024';
+%! warning ('off', 'all', 'local');
+%! t = tscollection ({A, X});
+%! x = t.x;
+%! assert_equal (x.TimeInfo.StartDate, '');
+%! assert_equal (t.TimeInfo.StartDate, '');
+%!warning <tscollection: the start date of 'x' is dropped, since the collection has none.> ...
+%! X = timeseries ([5; 6; 7; 8], [0; 1; 2; 3], 'Name', 'x'); ...
+%! X.TimeInfo.StartDate = '01-Jan-2024'; ...
+%! tscollection ({A, X});
+%!error <tscollection: too many input arguments.> tscollection (A, B)
+%!error <tscollection: too many input arguments.> tscollection ([0; 1; 2; 3], C)
+%!error <tscollection: name-value arguments must be in pairs.> ...
+%! tscollection (A, 'abc')
+%!error <tscollection: name-value arguments must be in pairs.> ...
+%! tscollection ([0; 1], 'Name')
+%!error <tscollection: invalid optional paired argument.> ...
+%! tscollection (A, 'Foo', 1)
+%!error <tscollection: invalid optional paired argument.> ...
+%! tscollection (A, 'Time', [5; 6; 7; 8])
+%!error <tscollection: 'Name' must be a character vector.> ...
+%! tscollection (A, 'Name', 5)
+%!error <tscollection: the first argument must be a time vector, a timeseries or a cell array of timeseries.> ...
+%! tscollection ('abc')
+%!error <tscollection: the first argument must be a time vector, a timeseries or a cell array of timeseries.> ...
+%! tscollection (TC)
+%!error <tscollection: the first argument must be a time vector, a timeseries or a cell array of timeseries.> ...
+%! tscollection (ones (2, 2))
+%!error <tscollection: a cell array must hold one timeseries in each cell.> ...
+%! tscollection ({A, 3})
+%!error <tscollection: TS must be a single timeseries; give several in a cell array.> ...
+%! tscollection ([A, A])
+%!error <tscollection: TIME must be finite.> tscollection ([0; 1; NaN])
+%!error <tscollection: TIME must be finite.> tscollection ([0; 1; Inf])
+%!error <tscollection: the time vector of 'z' must match that of the collection.> ...
+%! tscollection ({A, timeseries([1; 2; 3], [0; 1; 2], 'Name', 'z')})
+%!error <tscollection: the time vector of 'z' must match that of the collection.> ...
+%! tscollection ({A, timeseries([1; 2; 3; 4], [0; 1; 2; 4], 'Name', 'z')})
+%!error <tscollection: the time vector of 'am' must match that of the collection.> ...
+%! AM = timeseries ([1; 2; 3; 4], [0; 1; 2; 3], 'Name', 'am'); ...
+%! AM.TimeInfo.Units = 'minutes'; ...
+%! tscollection ({B, AM})
+%!error <tscollection: the time vector of 'db' must match that of the collection.> ...
+%! DB = timeseries ([4; 5; 6], {'05-Jan-2024', '06-Jan-2024', ...
+%!                  '07-Jan-2024'}, 'Name', 'db'); ...
+%! tscollection ({DA, DB})
+%!error <tscollection: the time vector of 'a' must match that of the collection.> ...
+%! X = timeseries ([5; 6; 7; 8], [0; 1; 2; 3], 'Name', 'x'); ...
+%! X.TimeInfo.StartDate = '01-Jan-2024'; ...
+%! tscollection ({X, A})
+%!error <tscollection: the member name 'a' conflicts with the name of an existing member, ignoring case.> ...
+%! tscollection ({A, A})
+%!error <tscollection: the member name 'A' conflicts with the name of an existing member, ignoring case.> ...
+%! tscollection ({A, timeseries([1; 2; 3; 4], [0; 1; 2; 3], 'Name', 'A')})
+%!error <tscollection: the member name 'unnamed' conflicts with the name of an existing member, ignoring case.> ...
+%! tscollection ({timeseries([1; 2]), timeseries([3; 4])})
+## Test a member cannot take a property's name; MATLAB lets 'Time' hide it
+%!error <tscollection: a member cannot be named 'Time', a property of TC.> ...
+%! tscollection (timeseries ([1; 2], [0; 1], 'Name', 'Time'))
+%!error <tscollection: a member cannot be named 'Length', a property of TC.> ...
+%! tscollection (timeseries ([1; 2], [0; 1], 'Name', 'Length'))
+%!error <tscollection: a timeseries with no samples cannot join a collection in a cell array.> ...
+%! tscollection ({timeseries(), timeseries()})
+%!error <tscollection: a timeseries with no samples cannot join a collection in a cell array.> ...
+%! tscollection ({A, timeseries('e')})
+
+%!test
+%! S = get (TC);
+%! assert_equal (fieldnames (S), {'Name'; 'Time'; 'TimeInfo'; 'Length'; ...
+%!                                'a'; 'b'});
+%! assert_equal (S.Name, 'unnamed');
+%! assert_equal (S.Time, [0; 1; 2; 3]);
+%! assert_equal (S.Length, 4);
+%! assert_equal (class (S.TimeInfo), 'tsdata.timemetadata');
+%! assert_equal (class (S.a), 'timeseries');
+%!assert_equal (get (TC, 'Name'), 'unnamed')
+%!assert_equal (get (TC, 'name'), 'unnamed')
+%!assert_equal (get (TC, "Length"), 4)
+%!assert_equal (get (TC, 'b').Data(1,:), [10, 11])
+%!test
+%! v = get (TC, {'Name', 'Length'});
+%! assert_equal (v, {'unnamed', 4});
+%!error <tscollection.get: too many input arguments.> get (TC, 'Name', 1)
+%!error <tscollection.get: NAME must be a character vector or a cell array of character vectors.> ...
+%! get (TC, 5)
+%!error <tscollection.get: unknown property: 'zz'> get (TC, 'zz')
+
+%!test
+%! t = set (TC, 'Name', 'viaset');
+%! assert_equal (t.Name, 'viaset');
+%! assert_equal (TC.Name, 'unnamed');
+%!test
+%! t = TC;
+%! set (t, 'name', 'z', 'Time', [5; 6; 7; 8]);
+%! assert_equal (t.Name, 'z');
+%! assert_equal (t.Time, [5; 6; 7; 8]);
+%!test
+%! t = set (TC, 'a', timeseries ([9; 8; 7; 6], [0; 1; 2; 3]));
+%! x = t.a;
+%! assert_equal (x.Data, [9; 8; 7; 6]);
+%!assert_equal (fieldnames (set (TC)), fieldnames (get (TC)))
+%!error <tscollection.set: name-value arguments must be in pairs.> ...
+%! set (TC, 'Name')
+%!error <tscollection.set: NAME must be a character vector.> set (TC, 5, 1)
+%!error <tscollection.set: unknown property: 'zz'> set (TC, 'zz', 1)
+%!error <tscollection.subsasgn: 'Name' must be a character vector.> ...
+%! t = set (TC, 'Name', 5);
+%!error <tscollection.set: with no output argument, TC must be a variable.> ...
+%! set (TC(1:2), 'Name', 'x')
+
+%!assert_equal (fieldnames (TC), {'Name'; 'Time'; 'TimeInfo'; 'Length'; ...
+%!                               'a'; 'b'})
+%!assert_equal (fieldnames (tscollection ()), {'Name'; 'Time'; 'TimeInfo'; ...
+%!                                             'Length'})
+
+%!assert_equal (properties (TC), {'Name'; 'Time'; 'TimeInfo'; 'Length'; ...
+%!                               'a'; 'b'})
+
+%!assert_equal (size (TC), [4, 2])
+%!assert_equal (size (TC, 1), 4)
+%!assert_equal (size (TC, 2), 2)
+%!assert_equal (size (TC, 3), 1)
+%!assert_equal (size (TC, [1, 2]), [4, 2])
+%!assert_equal (size (tscollection ([0; 1])), [2, 0])
+%!assert_equal (size (tscollection (C)), [4, 1])
+## Test several outputs; MATLAB refuses them
+%!test
+%! [r, c] = size (TC);
+%! assert_equal ([r, c], [4, 2]);
+%! [r, c, p] = size (TC);
+%! assert_equal ([r, c, p], [4, 2, 1]);
+%!error <tscollection.size: DIM must be positive integers.> size (TC, 0)
+%!error <tscollection.size: DIM must be positive integers.> size (TC, 1.5)
+
+%!assert_equal (length (TC), 4)
+%!assert_equal (length (tscollection ()), 0)
+%!assert_equal (length (tscollection ([0; 1; 2])), 3)
+
+%!assert_equal (isempty (TC), false)
+%!assert_equal (isempty (tscollection ()), true)
+%!assert_equal (isempty (tscollection ([0; 1])), false)
+%!assert_equal (isempty (tscollection (timeseries ())), true)
+%!assert_equal (isempty (tscollection (timeseries ([1; 2]))), false)
+
+%!assert_equal (isequal (TC, TC), true)
+%!assert_equal (isequal (TC, tscollection ({A, B})), true)
+%!assert_equal (isequal (TC, TC, TC), true)
+%!assert_equal (isequal (TC, tscollection ({B, A})), false)
+%!assert_equal (isequal (TC, tscollection ({A, B}, 'Name', 'x')), false)
+%!assert_equal (isequal (TC, tscollection (A)), false)
+%!assert_equal (isequal (TC, 5), false)
+%!error <tscollection.isequal: invalid number of input arguments.> ...
+%! isequal (TC)
+
+################################################################################
+##                              ** Members **                                 ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'addts'            'removets'         'gettimeseriesnames'                 ##
+## 'settimeseriesnames'                  'setTimeseriesName'                  ##
+##                                                                            ##
+################################################################################
+
+%!assert_equal (gettimeseriesnames (addts (TC, C)), {'a', 'b', 'c'})
+%!test
+%! t = addts (TC, [5; 6; 7; 8], 'd');
+%! assert_equal (gettimeseriesnames (t), {'a', 'b', 'd'});
+%! x = t.d;
+%! assert_equal (class (x), 'timeseries');
+%! assert_equal (x.Name, 'd');
+%! assert_equal (x.Data, [5; 6; 7; 8]);
+%! assert_equal (x.Time, [0; 1; 2; 3]);
+%!test
+%! E = timeseries ([1; 1; 1; 1], [0; 1; 2; 3], 'Name', 'e');
+%! t = addts (TC, {C, E});
+%! assert_equal (gettimeseriesnames (t), {'a', 'b', 'c', 'e'});
+%!assert_equal (gettimeseriesnames (addts (TC, [5; 6; 7; 8], "sd")), ...
+%!              {'a', 'b', 'sd'})
+%!assert_equal (gettimeseriesnames (addts (TC, [5; 6; 7; 8], 'my d')), ...
+%!              {'a', 'b', 'myD'})
+%!assert_equal (gettimeseriesnames (addts (TC, timeseries ([1; 2; 3; 4], ...
+%!              [0; 1; 2; 3]))), {'a', 'b', 'unnamed'})
+%!test
+%! t = addts (TC, [5, 6; 7, 8; 9, 10; 11, 12], 'm');
+%! x = t.m;
+%! assert_equal (size (x.Data), [4, 2]);
+%!test
+%! t = addts (TC, [5, 6, 7, 8], 'r');
+%! x = t.r;
+%! assert_equal (size (x.Data), [1, 1, 4]);
+%!test
+%! t = addts (TC, int8 ([1; 2; 3; 4]), 'i');
+%! x = t.i;
+%! assert_equal (class (x.Data), 'int8');
+%!test
+%! t = addts (TC, timeseries (reshape (1:8, 1, 2, 4), [0; 1; 2; 3], ...
+%!                            'Name', 'd3'));
+%! x = t.d3;
+%! assert_equal (size (x.Data), [1, 2, 4]);
+## Test an empty collection takes a series with no samples, as in MATLAB
+%!test
+%! t = addts (tscollection (), timeseries ());
+%! assert_equal (gettimeseriesnames (t), {'x'});
+%! assert_equal (size (t), [0, 1]);
+## Test an empty collection takes the times of the first series
+%!test
+%! t = addts (tscollection (), A);
+%! assert_equal (t.Time, [0; 1; 2; 3]);
+%! assert_equal (size (t), [4, 1]);
+%!assert_equal (gettimeseriesnames (addts (tscollection ([0; 1; 2; 3]), A)), ...
+%!              {'a'})
+%!test
+%! DC = timeseries ([7; 8; 9], {'01-Jan-2024', '02-Jan-2024', ...
+%!                  '03-Jan-2024'}, 'Name', 'dc');
+%! t = addts (tscollection (DA), DC);
+%! assert_equal (gettimeseriesnames (t), {'da', 'dc'});
+## Test the member takes the collection's time metadata
+%!test
+%! t = TC;
+%! t.TimeInfo.Format = 'yyyy';
+%! t = addts (t, C);
+%! x = t.c;
+%! assert_equal (x.TimeInfo.Format, 'yyyy');
+%!error <tscollection.addts: the member name 'a' conflicts with the name of an existing member, ignoring case.> ...
+%! addts (TC, A)
+%!error <tscollection.addts: the member name 'A' conflicts with the name of an existing member, ignoring case.> ...
+%! addts (TC, timeseries ([1; 2; 3; 4], [0; 1; 2; 3], 'Name', 'A'))
+%!error <tscollection.addts: the member name 'c' conflicts with the name of an existing member, ignoring case.> ...
+%! addts (TC, {C, C})
+%!error <tscollection.addts: a member cannot be named 'Time', a property of TC.> ...
+%! addts (TC, [5; 6; 7; 8], 'Time')
+%!error <tscollection.addts: the time vector of 'e' must match that of the collection.> ...
+%! addts (TC, timeseries ([1; 2; 3], [0; 1; 2], 'Name', 'e'))
+%!error <tscollection.addts: the time vector of 'e' must match that of the collection.> ...
+%! addts (TC, timeseries ([1; 2; 3; 4], [0; 1; 2; 4], 'Name', 'e'))
+%!error <tscollection.addts: the time vector of 'dc' must match that of the collection.> ...
+%! addts (tscollection (DA), timeseries ([7; 8; 9], [0; 1; 2], 'Name', 'dc'))
+%!error <tscollection.addts: DATA must have one sample per time of TC.> ...
+%! addts (TC, [1; 2; 3], 'd')
+%!error <tscollection.addts: DATA must be given with a NAME.> ...
+%! addts (TC, [5; 6; 7; 8])
+%!error <tscollection.addts: DATA must be given with a NAME.> addts (TC, 5)
+%!error <tscollection.addts: DATA must be a numeric or logical array.> ...
+%! addts (TC, 'abcd', 'd')
+%!error <tscollection.addts: DATA must be a numeric or logical array.> ...
+%! addts (TC, {1; 2; 3; 4}, 'd')
+%!error <tscollection.addts: NAME must be a character vector.> ...
+%! addts (TC, [5; 6; 7; 8], 5)
+%!error <tscollection.addts: TS must be a timeseries or a cell array of timeseries.> ...
+%! addts (TC, {C, 5})
+%!error <tscollection.addts: TS must be a timeseries or a cell array of timeseries.> ...
+%! addts (TC, 'abc')
+%!error <tscollection.addts: too many input arguments.> ...
+%! addts (TC, [5; 6; 7; 8], 'd', 'extra')
+%!error <tscollection.addts: invalid number of input arguments.> addts (TC)
+%!error <tscollection.addts: TC has no times to add DATA on.> ...
+%! addts (tscollection (), [1; 2], 'd')
+
+%!test
+%! t = removets (TC, 'a');
+%! assert_equal (gettimeseriesnames (t), {'b'});
+%! assert_equal (size (t), [4, 1]);
+## Test the last member out leaves the time vector
+%!test
+%! t = removets (TC, {'a', 'b'});
+%! assert_equal (gettimeseriesnames (t), {});
+%! assert_equal (size (t), [4, 0]);
+%! assert_equal (t.Time, [0; 1; 2; 3]);
+%!assert_equal (gettimeseriesnames (removets (TC, "b")), {'a'})
+%!assert_equal (gettimeseriesnames (removets (TC, string ({'a', 'b'}))), {})
+%!assert_equal (gettimeseriesnames (removets (TC, {'b'; 'a'})), {})
+## Test an unknown name is refused; MATLAB ignores it
+%!error <tscollection.removets: TC has no member named 'zz'.> ...
+%! removets (TC, 'zz')
+%!error <tscollection.removets: TC has no member named 'A'.> ...
+%! removets (TC, 'A')
+%!error <tscollection.removets: TC has no member named 'zz'.> ...
+%! removets (TC, {'a', 'zz'})
+%!error <tscollection.removets: TC has no member named 'a'.> ...
+%! removets (tscollection (), 'a')
+%!error <tscollection.removets: NAMES must be a character vector, a cell array of character vectors or a string array.> ...
+%! removets (TC, 5)
+%!error <tscollection.removets: invalid number of input arguments.> removets (TC)
+
+%!test
+%! n = gettimeseriesnames (TC);
+%! assert_equal (class (n), 'cell');
+%! assert_equal (size (n), [1, 2]);
+%!assert_equal (gettimeseriesnames (addts (tscollection ({B, A}), C)), ...
+%!              {'b', 'a', 'c'})
+%!assert_equal (size (gettimeseriesnames (tscollection ([0; 1]))), [0, 0])
+
+## Test the renamed member moves to the end, as in MATLAB
+%!test
+%! t = settimeseriesnames (TC, 'a', 'z');
+%! assert_equal (gettimeseriesnames (t), {'b', 'z'});
+%! x = t.z;
+%! assert_equal (x.Name, 'z');
+%! assert_equal (x.Data, [1; 2; 3; 4]);
+%!assert_equal (gettimeseriesnames (settimeseriesnames (TC, 'a', "sz")), ...
+%!              {'b', 'sz'})
+%!assert_equal (gettimeseriesnames (settimeseriesnames (TC, "b", 'q')), ...
+%!              {'a', 'q'})
+%!assert_equal (gettimeseriesnames (settimeseriesnames (TC, 'a', 'a')), ...
+%!              {'a', 'b'})
+%!assert_equal (gettimeseriesnames (settimeseriesnames (TC, 'a', 'A')), ...
+%!              {'b', 'A'})
+## Test a name taken by another member is refused; MATLAB drops that member
+%!error <tscollection.settimeseriesnames: the member name 'b' conflicts with the name of an existing member, ignoring case.> ...
+%! settimeseriesnames (TC, 'a', 'b')
+%!error <tscollection.settimeseriesnames: the member name 'a' conflicts with the name of an existing member, ignoring case.> ...
+%! settimeseriesnames (TC, 'b', 'a')
+## Test a name differing only in case is refused; MATLAB then reads 'b'
+%!error <tscollection.settimeseriesnames: the member name 'B' conflicts with the name of an existing member, ignoring case.> ...
+%! settimeseriesnames (TC, 'a', 'B')
+%!error <tscollection.settimeseriesnames: a member cannot be named 'Length', a property of TC.> ...
+%! settimeseriesnames (TC, 'a', 'Length')
+%!error <tscollection.settimeseriesnames: TC has no member named 'zz'.> ...
+%! settimeseriesnames (TC, 'zz', 'y')
+%!error <tscollection.settimeseriesnames: TC has no member named 'A'.> ...
+%! settimeseriesnames (TC, 'A', 'z')
+%!error <tscollection.settimeseriesnames: NEW must be a valid variable name.> ...
+%! settimeseriesnames (TC, 'a', 'my x')
+%!error <tscollection.settimeseriesnames: NEW must be a valid variable name.> ...
+%! settimeseriesnames (TC, 'a', '')
+%!error <tscollection.settimeseriesnames: NEW must be a valid variable name.> ...
+%! settimeseriesnames (TC, 'a', 5)
+%!error <tscollection.settimeseriesnames: OLD must be a character vector.> ...
+%! settimeseriesnames (TC, {'a', 'b'}, {'p', 'q'})
+%!error <tscollection.settimeseriesnames: invalid number of input arguments.> ...
+%! settimeseriesnames (TC, 'a')
+
+%!assert_equal (gettimeseriesnames (setTimeseriesName (TC, 'a', 'z')), ...
+%!              {'b', 'z'})
+%!error <tscollection.setTimeseriesName: TC has no member named 'zz'.> ...
+%! setTimeseriesName (TC, 'zz', 'y')
+%!error <tscollection.setTimeseriesName: the member name 'b' conflicts with the name of an existing member, ignoring case.> ...
+%! setTimeseriesName (TC, 'a', 'b')
+
+################################################################################
+##                          ** Samples and time **                            ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'addsampletocollection'               'delsamplefromcollection'            ##
+## 'getsampleusingtime'                  'hasduplicatetimes'                  ##
+## 'getabstime'       'setabstime'       'resample'                           ##
+##                                                                            ##
+################################################################################
+
+%!shared A, B, TC, DA
+%! A = timeseries ([1; 2; 3; 4], [0; 1; 2; 3], [1; 2; 3; 4], 'Name', 'a');
+%! A.DataInfo.Units = 'm';
+%! A.Events = tsdata.event ('ev', 1.5);
+%! B = timeseries ([10, 11; 20, 21; 30, 31; 40, 41], [0; 1; 2; 3], 'Name', 'b');
+%! TC = tscollection ({A, B});
+%! DA = timeseries ([1; 2; 3], {'01-Jan-2024', '02-Jan-2024', ...
+%!                  '03-Jan-2024'}, 'Name', 'da');
+
+%!test
+%! t = addsampletocollection (TC, 'Time', 1.5, 'a', 99, 'b', [7, 8]);
+%! assert_equal (t.Time, [0; 1; 1.5; 2; 3]);
+%! x = t.a;
+%! assert_equal (x.Data, [1; 2; 99; 3; 4]);
+%! assert_equal (x.Quality, [1; 2; 3; 3; 4]);
+%! y = t.b;
+%! assert_equal (y.Data, [10, 11; 20, 21; 7, 8; 30, 31; 40, 41]);
+## Test a member not named takes NaN
+%!test
+%! t = addsampletocollection (TC, 'Time', 1.5, 'a', 99);
+%! y = t.b;
+%! assert_equal (y.Data, [10, 11; 20, 21; NaN, NaN; 30, 31; 40, 41]);
+%!test
+%! t = addsampletocollection (TC, 'Time', 1.5);
+%! assert_equal (t.Time, [0; 1; 1.5; 2; 3]);
+%! x = t.a;
+%! assert_equal (x.Data, [1; 2; NaN; 3; 4]);
+## Test a new code is the nearest sample's, a tie going to the later
+%!assert_equal (addsampletocollection (TC, 'Time', 1.2, 'a', 9).a.Quality, ...
+%!              [1; 2; 2; 3; 4])
+%!assert_equal (addsampletocollection (TC, 'Time', 1.8, 'a', 9).a.Quality, ...
+%!              [1; 2; 3; 3; 4])
+%!assert_equal (addsampletocollection (TC, 'Time', -1, 'a', 9).a.Quality, ...
+%!              [1; 1; 2; 3; 4])
+%!assert_equal (addsampletocollection (TC, 'Time', 5, 'a', 9).a.Quality, ...
+%!              [1; 2; 3; 4; 4])
+## Test the samples go in time order, after an equal time
+%!assert_equal (addsampletocollection (TC, 'Time', 5, 'a', 99).Time, ...
+%!              [0; 1; 2; 3; 5])
+%!assert_equal (addsampletocollection (TC, 'Time', -1, 'a', 99).a.Data, ...
+%!              [99; 1; 2; 3; 4])
+%!test
+%! t = addsampletocollection (TC, 'Time', 1, 'a', 99);
+%! assert_equal (t.Time, [0; 1; 1; 2; 3]);
+%! x = t.a;
+%! assert_equal (x.Data, [1; 2; 99; 3; 4]);
+%!test
+%! t = addsampletocollection (TC, 'Time', [4; 5], 'a', [98; 99]);
+%! assert_equal (t.Time, [0; 1; 2; 3; 4; 5]);
+%! x = t.a;
+%! assert_equal (x.Data, [1; 2; 3; 4; 98; 99]);
+## Test the fill of integer and logical members
+%!test
+%! I = timeseries (int8 ([1; 2; 3; 4]), [0; 1; 2; 3], 'Name', 'i');
+%! t = addsampletocollection (tscollection ({A, I}), 'Time', 1.5, 'a', 9);
+%! x = t.i;
+%! assert_equal (x.Data, int8 ([1; 2; 0; 3; 4]));
+%!test
+%! L = timeseries (logical ([1; 0; 1; 0]), [0; 1; 2; 3], 'Name', 'l');
+%! t = addsampletocollection (tscollection ({A, L}), 'Time', 1.5, 'a', 9);
+%! x = t.l;
+%! assert_equal (x.Data, logical ([1; 0; 0; 1; 0]));
+## Test the keyword in any case
+%!assert_equal (addsampletocollection (TC, 'time', 1.5, 'a', 99).Time, ...
+%!              [0; 1; 1.5; 2; 3])
+%!assert_equal (addsampletocollection (TC, 'TIME', 1.5, 'a', 99).Time, ...
+%!              [0; 1; 1.5; 2; 3])
+%!assert_equal (addsampletocollection (tscollection ([0; 1; 2]), 'Time', ...
+%!              1.5).Time, [0; 1; 1.5; 2])
+## Test a dated collection takes dates and numbers
+%!test
+%! t = addsampletocollection (tscollection (DA), 'Time', '04-Jan-2024', ...
+%!                            'da', 4);
+%! assert_equal (t.Time, [0; 1; 2; 3]);
+%! assert_equal (getabstime (t){end}, '04-Jan-2024 00:00:00');
+%!assert_equal (addsampletocollection (tscollection (DA), 'Time', 3, ...
+%!              'da', 4).Time, [0; 1; 2; 3])
+## Test events and units are kept
+%!test
+%! t = addsampletocollection (TC, 'Time', 1.5, 'a', 99);
+%! x = t.a;
+%! assert_equal (numel (x.Events), 1);
+%! assert_equal (x.DataInfo.Units, 'm');
+%!error <tscollection.addsampletocollection: 'Time' must not be empty.> ...
+%! addsampletocollection (TC, 'a', 99)
+%!error <tscollection.addsampletocollection: 'Time' must be finite.> ...
+%! addsampletocollection (TC, 'Time', NaN, 'a', 1)
+%!error <tscollection.addsampletocollection: 'Time' must be numeric for a collection without a start date.> ...
+%! addsampletocollection (TC, 'Time', '01-Jan-2024', 'a', 1)
+%!error <tscollection.addsampletocollection: the data of 'a' must hold samples of size 1x1.> ...
+%! addsampletocollection (TC, 'Time', 1.5, 'a', [1, 2, 3])
+%!error <tscollection.addsampletocollection: the data of 'b' must hold samples of size 1x2.> ...
+%! addsampletocollection (TC, 'Time', 1.5, 'b', [7; 8])
+%!error <tscollection.addsampletocollection: the data of 'a' must have one sample per time.> ...
+%! addsampletocollection (TC, 'Time', [4; 5], 'a', [1; 2; 3])
+%!error <tscollection.addsampletocollection: the data of 'a' must be a numeric or logical array.> ...
+%! addsampletocollection (TC, 'Time', 1.5, 'a', {1})
+%!error <tscollection.addsampletocollection: TC has no member named 'zz'.> ...
+%! addsampletocollection (TC, 'Time', 1.5, 'zz', 1)
+%!error <tscollection.addsampletocollection: TC has no member named 'A'.> ...
+%! addsampletocollection (TC, 'Time', 1.5, 'A', 1)
+%!error <tscollection.addsampletocollection: member 'a' is given more than once.> ...
+%! addsampletocollection (TC, 'Time', 1.5, 'a', 99, 'a', 98)
+%!error <tscollection.addsampletocollection: name-value arguments must be in pairs.> ...
+%! addsampletocollection (TC, 'Time')
+%!error <tscollection.addsampletocollection: invalid optional paired argument.> ...
+%! addsampletocollection (TC, 5, 1)
+
+%!test
+%! t = delsamplefromcollection (TC, 'Index', 2);
+%! assert_equal (t.Time, [0; 2; 3]);
+%! x = t.a;
+%! assert_equal (x.Data, [1; 3; 4]);
+%! assert_equal (x.Quality, [1; 3; 4]);
+%! y = t.b;
+%! assert_equal (y.Data, [10, 11; 30, 31; 40, 41]);
+%!assert_equal (delsamplefromcollection (TC, 'Value', 1).Time, [0; 2; 3])
+%!assert_equal (delsamplefromcollection (TC, 'Value', 1.5).Time, [0; 1; 2; 3])
+%!assert_equal (delsamplefromcollection (TC, 'index', 2).Time, [0; 2; 3])
+%!assert_equal (delsamplefromcollection (TC, 'Index', [1, 3]).Time, [1; 3])
+%!assert_equal (delsamplefromcollection (TC, 'Index', [2, 2]).Time, [0; 2; 3])
+%!assert_equal (delsamplefromcollection (TC, 'Value', [0, 3]).Time, [1; 2])
+%!assert_equal (delsamplefromcollection (tscollection ([0; 1; 1; 2]), ...
+%!              'Value', 1).Time, [0; 2])
+%!assert_equal (delsamplefromcollection (tscollection (DA), 'Value', ...
+%!              '02-Jan-2024').Time, [0; 2])
+## Test removing every sample keeps the members
+%!test
+%! t = delsamplefromcollection (TC, 'Index', 1:4);
+%! assert_equal (size (t.Time), [0, 1]);
+%! assert_equal (gettimeseriesnames (t), {'a', 'b'});
+%! x = t.a;
+%! assert_equal (size (x.Data), [0, 1]);
+%!assert_equal (numel (delsamplefromcollection (TC, 'Index', 1).a.Events), 1)
+%!error <tscollection.delsamplefromcollection: 'Index' must be positive integers not exceeding the number of samples.> ...
+%! delsamplefromcollection (TC, 'Index', 9)
+%!error <tscollection.delsamplefromcollection: 'Index' must be positive integers not exceeding the number of samples.> ...
+%! delsamplefromcollection (TC, 'Index', 0)
+%!error <tscollection.delsamplefromcollection: 'Index' must be positive integers not exceeding the number of samples.> ...
+%! delsamplefromcollection (TC, 'Index', 2.5)
+%!error <tscollection.delsamplefromcollection: 'Index' must be positive integers not exceeding the number of samples.> ...
+%! delsamplefromcollection (TC, 'Index', logical ([1, 0, 1, 0]))
+%!error <tscollection.delsamplefromcollection: the option must be 'Index' or 'Value'.> ...
+%! delsamplefromcollection (TC, 'Foo', 1)
+%!error <tscollection.delsamplefromcollection: invalid number of input arguments.> ...
+%! delsamplefromcollection (TC, 'Index')
+
+%!test
+%! t = getsampleusingtime (TC, 1);
+%! assert_equal (t.Time, 1);
+%! x = t.a;
+%! assert_equal (x.Data, 2);
+%! assert_equal (x.Quality, 2);
+## Test the name and the members' metadata are kept; MATLAB names the
+## result 'unnamed'
+%!test
+%! t = getsampleusingtime (tscollection ({A, B}, 'Name', 'nm'), 1, 2);
+%! assert_equal (t.Time, [1; 2]);
+%! assert_equal (t.Name, 'nm');
+%! assert_equal (gettimeseriesnames (t), {'a', 'b'});
+%! x = t.a;
+%! assert_equal (x.Data, [2; 3]);
+%! assert_equal (x.Quality, [2; 3]);
+%! assert_equal (numel (x.Events), 1);
+%!assert_equal (getsampleusingtime (TC, 0.5, 2.5).Time, [1; 2])
+%!assert_equal (getsampleusingtime (TC, 1, 1).Time, 1)
+## Test no sample in range keeps every member; MATLAB drops them
+%!test
+%! t = getsampleusingtime (tscollection ({A, B}, 'Name', 'nm'), 5);
+%! assert_equal (size (t), [0, 2]);
+%! assert_equal (gettimeseriesnames (t), {'a', 'b'});
+%! assert_equal (t.Name, 'nm');
+%!assert_equal (size (getsampleusingtime (TC, 1.5)), [0, 2])
+%!assert_equal (size (getsampleusingtime (TC, 2, 1)), [0, 2])
+%!assert_equal (getsampleusingtime (tscollection (DA), '02-Jan-2024').Time, 1)
+%!assert_equal (getsampleusingtime (tscollection ([0; 1; 1; 2]), 1, ...
+%!              'AllowDuplicateTimes', true).Time, [1; 1])
+%!error <tscollection.getsampleusingtime: several samples share time T; set 'AllowDuplicateTimes' to true to return them all.> ...
+%! getsampleusingtime (tscollection ([0; 1; 1; 2]), 1)
+%!error <tscollection.getsampleusingtime: T must be a single time.> ...
+%! getsampleusingtime (TC, [1, 2])
+%!error <tscollection.getsampleusingtime: invalid number of input arguments.> ...
+%! getsampleusingtime (TC)
+
+%!assert_equal (hasduplicatetimes (TC), false)
+%!assert_equal (hasduplicatetimes (tscollection ([0; 1; 1])), true)
+%!assert_equal (hasduplicatetimes (tscollection ()), false)
+
+%!assert_equal (getabstime (tscollection (DA)), {'01-Jan-2024 00:00:00'; ...
+%!                                              '02-Jan-2024 00:00:00'; ...
+%!                                              '03-Jan-2024 00:00:00'})
+%!test
+%! t = TC;
+%! t.TimeInfo.StartDate = '01-Jan-2024';
+%! assert_equal (getabstime (t), {'01-Jan-2024 00:00:00'; ...
+%!                                '01-Jan-2024 00:00:01'; ...
+%!                                '01-Jan-2024 00:00:02'; ...
+%!                                '01-Jan-2024 00:00:03'});
+%! x = t.a;
+%! assert_equal (x.TimeInfo.StartDate, '01-Jan-2024');
+## Test the format is used; MATLAB writes the default whatever it says
+%!test
+%! t = TC;
+%! t.TimeInfo.StartDate = '01-Jan-2024';
+%! t.TimeInfo.Units = 'days';
+%! t.TimeInfo.Format = 'yyyy-mm-dd';
+%! assert_equal (getabstime (t), {'2024-01-01'; '2024-01-02'; ...
+%!                                '2024-01-03'; '2024-01-04'});
+%!error <tscollection.getabstime: TC has no 'TimeInfo.StartDate'.> ...
+%! getabstime (TC)
+%!error <tscollection.getabstime: TC has no 'TimeInfo.StartDate'.> ...
+%! getabstime (tscollection ())
+
+%!test
+%! t = setabstime (TC, {'01-Jan-2024', '02-Jan-2024', '03-Jan-2024', ...
+%!                      '04-Jan-2024'});
+%! assert_equal (t.Time, [0; 86400; 172800; 259200]);
+%! assert_equal (t.TimeInfo.Units, 'seconds');
+%! assert_equal (t.TimeInfo.StartDate, '01-Jan-2024 00:00:00');
+%! x = t.a;
+%! assert_equal (x.TimeInfo.StartDate, '01-Jan-2024 00:00:00');
+%! assert_equal (x.Time, [0; 86400; 172800; 259200]);
+## Test unsorted dates carry every member's samples; MATLAB leaves them
+%!test
+%! t = setabstime (TC, {'03-Jan-2024', '01-Jan-2024', '02-Jan-2024', ...
+%!                      '04-Jan-2024'});
+%! assert_equal (getabstime (t), {'01-Jan-2024 00:00:00'; ...
+%!                                '02-Jan-2024 00:00:00'; ...
+%!                                '03-Jan-2024 00:00:00'; ...
+%!                                '04-Jan-2024 00:00:00'});
+%! x = t.a;
+%! assert_equal (x.Data, [2; 3; 1; 4]);
+%! assert_equal (x.Quality, [2; 3; 1; 4]);
+%! y = t.b;
+%! assert_equal (y.Data, [20, 21; 30, 31; 10, 11; 40, 41]);
+%!test
+%! t = TC;
+%! t.TimeInfo.Units = 'hours';
+%! t = setabstime (t, {'01-Jan-2024', '02-Jan-2024', '03-Jan-2024', ...
+%!                     '04-Jan-2024'});
+%! assert_equal (t.Time, [0; 24; 48; 72]);
+%!test
+%! t = setabstime (TC, {'2024-01-01', '2024-01-02', '2024-01-03', ...
+%!                      '2024-01-04'}, 'yyyy-mm-dd');
+%! assert_equal (t.TimeInfo.StartDate, '2024-01-01');
+%! assert_equal (t.Time, [0; 86400; 172800; 259200]);
+%!test
+%! t = setabstime (TC, {'01-Jan-2024 06:00:00', '01-Jan-2024 12:00:00', ...
+%!                      '02-Jan-2024 00:00:00', '02-Jan-2024 06:00:00'});
+%! assert_equal (t.Time, [0; 21600; 64800; 86400]);
+%!assert_equal (setabstime (TC, {'01-Jan-2024'; '01-Jan-2024'; ...
+%!              '02-Jan-2024'; '03-Jan-2024'}).Time, [0; 0; 86400; 172800])
+## Test each date is read by its own format; MATLAB reads all by the first's
+%!assert_equal (getabstime (setabstime (TC, {'01-Jan-2024', '2024-01-02', ...
+%!              '03-Jan-2024', '04-Jan-2024'})){2}, '02-Jan-2024 00:00:00')
+## Test a string array, a character matrix and a datetime array
+%!assert_equal (setabstime (TC, string ({'01-Jan-2024', '02-Jan-2024', ...
+%!              '03-Jan-2024', '04-Jan-2024'})).Time, ...
+%!              [0; 86400; 172800; 259200])
+%!assert_equal (setabstime (TC, char ({'01-Jan-2024', '02-Jan-2024', ...
+%!              '03-Jan-2024', '04-Jan-2024'})).Time, ...
+%!              [0; 86400; 172800; 259200])
+%!test
+%! t = setabstime (TC, datetime (2024, 1, 1:4));
+%! assert_equal (t.Time, [0; 86400; 172800; 259200]);
+%! assert_equal (t.TimeInfo.StartDate, '01-Jan-2024 00:00:00');
+%!assert_equal (getabstime (setabstime (tscollection ([0; 1; 2]), ...
+%!              {'01-Jan-2024', '02-Jan-2024', '03-Jan-2024'})), ...
+%!              {'01-Jan-2024 00:00:00'; '02-Jan-2024 00:00:00'; ...
+%!               '03-Jan-2024 00:00:00'})
+## Test events keep their times
+%!assert_equal (setabstime (TC, {'03-Jan-2024', '01-Jan-2024', ...
+%!              '02-Jan-2024', '04-Jan-2024'}).a.Events(1).Time, 1.5)
+## Test numbers are refused; MATLAB takes them as relative times
+%!error <tscollection.setabstime: DATES must be dates, as text or datetime values; convert a datenum X with datetime \(X, 'ConvertFrom', 'datenum'\).> ...
+%! setabstime (TC, datenum (2024, 1, 1:4))
+%!error <tscollection.setabstime: DATES must be dates, as text or datetime values; convert a datenum X with datetime \(X, 'ConvertFrom', 'datenum'\).> ...
+%! setabstime (TC, [0, 1, 2, 3])
+%!error <tscollection.setabstime: DATES must hold one date per sample.> ...
+%! setabstime (TC, {'01-Jan-2024', '02-Jan-2024'})
+%!error <tscollection.setabstime: DATES holds text that is not a date: 'foo'> ...
+%! setabstime (TC, {'foo', 'bar', 'baz', 'qux'})
+## Test a date not written in the format is refused; MATLAB forces it
+%!error <tscollection.setabstime: DATES holds a date not written as 'yyyy-mm-dd': '01-Jan-2024'> ...
+%! setabstime (TC, {'01-Jan-2024', '02-Jan-2024', '03-Jan-2024', ...
+%!                  '04-Jan-2024'}, 'yyyy-mm-dd')
+%!error <tscollection.setabstime: invalid number of input arguments.> ...
+%! setabstime (TC)
+
+%!test
+%! t = resample (TC, [0, 0.5, 1]);
+%! assert_equal (t.Time, [0; 0.5; 1]);
+%! x = t.a;
+%! assert_equal (x.Data, [1; 1.5; 2]);
+%! assert_equal (x.Quality, [1; 2; 2]);
+%! y = t.b;
+%! assert_equal (y.Data, [10, 11; 15, 16; 20, 21]);
+%!test
+%! t = resample (TC, [0, 0.5, 1], 'zoh');
+%! x = t.a;
+%! assert_equal (x.Data, [1; 1; 2]);
+%! y = t.b;
+%! assert_equal (y.Data, [10, 11; 10, 11; 20, 21]);
+## Test each member's own method
+%!test
+%! t = resample (tscollection ({setinterpmethod(A, 'zoh'), B}), [0, 0.5, 1]);
+%! x = t.a;
+%! assert_equal (x.Data, [1; 1; 2]);
+%! y = t.b;
+%! assert_equal (y.Data, [10, 11; 15, 16; 20, 21]);
+## Test outside the range a member with codes gives NaN; MATLAB raises
+%!test
+%! t = resample (TC, [2.5, 3.5, 4]);
+%! x = t.a;
+%! assert_equal (x.Data, [3.5; NaN; NaN]);
+%! assert_equal (x.Quality, [4; 4; 4]);
+%! assert_equal (resample (TC, [-1, 0, 1]).a.Data, [NaN; 1; 2]);
+%!test
+%! Q = A;
+%! Q.QualityInfo.Code = [1, 2, 3, 4, 7];
+%! Q.QualityInfo.Description = {'q1', 'q2', 'q3', 'q4', 'q7'};
+%! t = resample (tscollection ({Q, B}), [0, 0.5, 1, 1.5], 'linear', 7);
+%! x = t.a;
+%! assert_equal (x.Quality, [1; 7; 2; 7]);
+%! y = t.b;
+%! assert_equal (y.Quality, []);
+%!test
+%! I = timeseries (int8 ([1; 2; 3; 4]), [0; 1; 2; 3], 'Name', 'i');
+%! t = resample (tscollection ({A, I}), [0, 0.5, 1]);
+%! x = t.i;
+%! assert_equal (x.Data, int8 ([1; 2; 2]));
+%!test
+%! L = timeseries (logical ([1; 0; 1; 0]), [0; 1; 2; 3], 'Name', 'l');
+%! t = resample (tscollection ({A, L}), [0, 0.5, 1]);
+%! x = t.l;
+%! assert_equal (x.Data, [true; true; false]);
+%!assert_equal (resample (TC, [1, 0.5, 0]).Time, [0; 0.5; 1])
+%!assert_equal (size (resample (TC, [0; 0.5; 1]).Time), [3, 1])
+%!test
+%! t = resample (tscollection (DA), [0, 0.5, 1]);
+%! assert_equal (t.Time, [0; 0.5; 1]);
+%! assert_equal (getabstime (t), {'01-Jan-2024 00:00:00'; ...
+%!                                '01-Jan-2024 12:00:00'; ...
+%!                                '02-Jan-2024 00:00:00'});
+%!test
+%! t = resample (tscollection (DA), {'01-Jan-2024 12:00:00', ...
+%!                                   '02-Jan-2024 00:00:00'});
+%! assert_equal (t.Time, [0.5; 1]);
+%! x = t.da;
+%! assert_equal (x.Data, [1.5; 2]);
+%!test
+%! t = resample (tscollection ({A, B}, 'Name', 'nm'), [0, 0.5, 1]);
+%! assert_equal (t.Name, 'nm');
+%! x = t.a;
+%! assert_equal (numel (x.Events), 1);
+%! assert_equal (x.DataInfo.Units, 'm');
+%!assert_equal (size (resample (tscollection (), [0, 1])), [0, 0])
+%!error <tscollection.resample: TIME must not be NaN.> ...
+%! resample (TC, [0, NaN, 1])
+%!error <tscollection.resample: METHOD must be 'linear' or 'zoh'.> ...
+%! resample (TC, [0, 0.5, 1], 'foo')
+%!error <tscollection.resample: member 'a': CODE 7 is not listed in 'QualityInfo.Code'.> ...
+%! resample (TC, [0, 0.5, 1], 'zoh', 7)
+%!error <tscollection.resample: CODE is given, but no member has quality codes.> ...
+%! resample (tscollection (B), [0, 0.5, 1], 'linear', 7)
+%!error <tscollection.resample: TC must hold at least two samples.> ...
+%! resample (tscollection (timeseries (1, 0, 'Name', 'o')), [0, 1])
+%!error <tscollection.resample: invalid number of input arguments.> ...
+%! resample (TC)
+
+################################################################################
+##                    ** Indexing and concatenation **                        ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'subsref'          'subsasgn'         'end'                                ##
+## 'horzcat'          'vertcat'                                               ##
+##                                                                            ##
+################################################################################
+
+%!shared A, B, C, TC
+%! A = timeseries ([1; 2; 3; 4], [0; 1; 2; 3], [1; 2; 3; 4], 'Name', 'a');
+%! A.DataInfo.Units = 'm';
+%! A.Events = tsdata.event ('ev', 1.5);
+%! B = timeseries ([10, 11; 20, 21; 30, 31; 40, 41], [0; 1; 2; 3], 'Name', 'b');
+%! C = timeseries ([5; 6; 7; 8], [0; 1; 2; 3], 'Name', 'c');
+%! TC = tscollection ({A, B});
+
+%!assert_equal (TC.Name, 'unnamed')
+%!assert_equal (TC.Time, [0; 1; 2; 3])
+%!assert_equal (class (TC.TimeInfo), 'tsdata.timemetadata')
+%!assert_equal (TC.TimeInfo.Units, 'seconds')
+%!assert_equal (TC.Length, 4)
+%!assert_equal (class (TC.a), 'timeseries')
+%!assert_equal (TC.a.Data, [1; 2; 3; 4])
+%!assert_equal (TC.("b").Data(2,:), [20, 21])
+%!test
+%! t = TC(2);
+%! assert_equal (class (t), 'tscollection');
+%! assert_equal (t.Time, 1);
+%! assert_equal (size (t), [1, 2]);
+%!test
+%! t = TC(2:3);
+%! assert_equal (t.Time, [1; 2]);
+%! x = t.a;
+%! assert_equal (x.Data, [2; 3]);
+%! assert_equal (x.Quality, [2; 3]);
+%! assert_equal (numel (x.Events), 1);
+%!assert_equal (TC(end).Time, 3)
+%!assert_equal (TC(end-1:end).Time, [2; 3])
+%!assert_equal (gettimeseriesnames (TC(2, 'a')), {'a'})
+%!assert_equal (TC(2, 'a').Time, 1)
+%!assert_equal (gettimeseriesnames (TC(:, 1)), {'a'})
+%!assert_equal (TC(:, 1).Time, [0; 1; 2; 3])
+%!assert_equal (gettimeseriesnames (TC(1, 2)), {'b'})
+%!assert_equal (gettimeseriesnames (TC(1:2, {'b'})), {'b'})
+%!assert_equal (gettimeseriesnames (TC(:, string ({'b', 'a'}))), {'b', 'a'})
+%!assert_equal (gettimeseriesnames (TC(:, end)), {'b'})
+%!assert_equal (gettimeseriesnames (TC(:, logical ([0, 1]))), {'b'})
+%!assert_equal (TC(2).a.Data, 2)
+## Test a logical mask selects its samples; MATLAB gives sample 2
+%!test
+%! t = TC(logical ([1, 0, 1, 0]));
+%! assert_equal (t.Time, [0; 2]);
+%! x = t.a;
+%! assert_equal (x.Data, [1; 3]);
+%!assert_equal (TC(logical ([0, 1, 1])).Time, [1; 2])
+## Test indices are taken as a set, as in MATLAB
+%!assert_equal (TC([3, 1]).Time, [0; 2])
+%!assert_equal (TC([3, 1]).a.Data, [1; 3])
+%!assert_equal (TC([1, 1]).Time, 0)
+## Test an empty selection keeps the members; MATLAB drops them
+%!assert_equal (size (TC([])), [0, 2])
+%!test
+%! t = tscollection ({A, B}, 'Name', 'nm');
+%! t = t(2);
+%! assert_equal (t.Name, 'nm');
+%!test
+%! t = TC;
+%! t.TimeInfo.StartDate = '01-Jan-2024';
+%! t = t(2:3);
+%! assert_equal (getabstime (t), {'01-Jan-2024 00:00:01'; ...
+%!                                '01-Jan-2024 00:00:02'});
+%!error <tscollection.subsref: sample indices must be positive integers not exceeding the number of samples.> ...
+%! TC(5)
+%!error <tscollection.subsref: sample indices must be positive integers not exceeding the number of samples.> ...
+%! TC(0)
+%!error <tscollection.subsref: sample indices must be positive integers not exceeding the number of samples.> ...
+%! TC(1.5)
+%!error <tscollection.subsref: a logical sample index must not be longer than TC.> ...
+%! TC(true (1, 5))
+%!error <tscollection.subsref: sample indices must be positive integers, a logical mask or ':'.> ...
+%! TC({1})
+%!error <tscollection.subsref: member indices must be positive integers not exceeding the number of members.> ...
+%! TC(2, 3)
+%!error <tscollection.subsref: a logical member index must not be longer than the number of members.> ...
+%! TC(2, true (1, 3))
+%!error <tscollection.subsref: TC has no member named 'zz'.> TC(:, 'zz')
+%!error <tscollection.subsref: members must be given by position, by name or as ':'.> ...
+%! TC(:, {1})
+%!error <tscollection.subsref: '\(\)' indexing takes one or two subscripts.> ...
+%! TC(1, 2, 3)
+%!error <tscollection.subsref: '{}' indexing is not supported.> TC{1}
+%!error <tscollection.subsref: TC has no property or member named 'nonexist'.> ...
+%! TC.nonexist
+## Test member names are read exactly; MATLAB reads TC.A as TC.a
+%!error <tscollection.subsref: TC has no property or member named 'A'.> TC.A
+
+%!test
+%! t = TC;
+%! t.Name = 'q';
+%! assert_equal (t.Name, 'q');
+%! t.Name = "sn";
+%! assert_equal (t.Name, 'sn');
+%! t.Name = '';
+%! assert_equal (t.Name, '');
+%!test
+%! t = TC;
+%! t.Time = [10, 11, 12, 13];
+%! assert_equal (t.Time, [10; 11; 12; 13]);
+%! x = t.b;
+%! assert_equal (x.Time, [10; 11; 12; 13]);
+%! assert_equal (t.TimeInfo.Start, 10);
+%!test
+%! t = TC;
+%! t.Time = [0; 1; 1; 3];
+%! x = t.a;
+%! assert_equal (x.Time, [0; 1; 1; 3]);
+%!test
+%! t = TC;
+%! t.Time(4) = 5;
+%! assert_equal (t.Time, [0; 1; 2; 5]);
+## Test an integer time vector is stored as double; MATLAB keeps the class
+%!test
+%! t = TC;
+%! t.Time = int8 ([0; 1; 2; 3]);
+%! assert_equal (class (t.Time), 'double');
+%! x = t.a;
+%! assert_equal (class (x.Time), 'double');
+## Test units relabel the times without converting them
+%!test
+%! t = TC;
+%! t.TimeInfo.Units = 'minutes';
+%! assert_equal (t.Time, [0; 1; 2; 3]);
+%! x = t.a;
+%! assert_equal (x.TimeInfo.Units, 'minutes');
+%! assert_equal (x.Time, [0; 1; 2; 3]);
+%!test
+%! t = TC;
+%! t.TimeInfo.Format = 'yyyy';
+%! assert_equal (t.TimeInfo.Format, 'yyyy');
+%! x = t.b;
+%! assert_equal (x.TimeInfo.Format, 'yyyy');
+%!test
+%! t = TC;
+%! ti = tsdata.timemetadata ();
+%! ti.Units = 'hours';
+%! t.TimeInfo = ti;
+%! assert_equal (t.TimeInfo.Units, 'hours');
+%! assert_equal (t.TimeInfo.Length, 4);
+%! assert_equal (t.a.TimeInfo.Units, 'hours');
+## Test a member replaced by dot keeps its key and takes it as its name
+%!test
+%! t = TC;
+%! t.a = timeseries ([9; 8; 7; 6], [0; 1; 2; 3], 'Name', 'zz');
+%! assert_equal (gettimeseriesnames (t), {'a', 'b'});
+%! x = t.a;
+%! assert_equal (x.Name, 'a');
+%! assert_equal (x.Data, [9; 8; 7; 6]);
+%!test
+%! t = TC;
+%! t.a.Data(2) = 99;
+%! assert_equal (t.a.Data, [1; 99; 3; 4]);
+%!test
+%! t = TC;
+%! t.a.DataInfo.Units = 'km';
+%! assert_equal (t.a.DataInfo.Units, 'km');
+%!test
+%! t = TC;
+%! t.c = C;
+%! assert_equal (gettimeseriesnames (t), {'a', 'b', 'c'});
+%!test
+%! t = TC;
+%! t.C = C;
+%! assert_equal (gettimeseriesnames (t), {'a', 'b', 'C'});
+%!error <tscollection.subsasgn: 'Time' must be non-decreasing.> ...
+%! t = TC; t.Time = [0; 2; 1; 3];
+%!error <tscollection.subsasgn: 'Time' must have one time per sample.> ...
+%! t = TC; t.Time = [0; 1; 2];
+%!error <tscollection.subsasgn: 'Time' must have one time per sample.> ...
+%! t = tscollection ([0; 1; 2]); t.Time = [0; 1; 2; 3; 4];
+%!error <tscollection.subsasgn: 'Time' must be finite.> ...
+%! t = TC; t.Time = [0; 1; NaN; 3];
+%!error <tscollection.subsasgn: 'Time' must be a numeric vector.> ...
+%! t = TC; t.Time = 'abcd';
+## Test a name that is not text is refused; MATLAB takes it
+%!error <tscollection.subsasgn: 'Name' must be a character vector.> ...
+%! t = TC; t.Name = 5;
+%!error <tscollection.subsasgn: 'Name' must be a character vector.> ...
+%! t = TC; t.Name = {'x'};
+## Test the time units are validated; MATLAB takes any text
+%!error <tsdata.timemetadata: 'Units' must be 'weeks', 'days', 'hours', 'minutes', 'seconds', 'milliseconds', 'microseconds' or 'nanoseconds'.> ...
+%! t = TC; t.TimeInfo.Units = 'foo';
+## Test the derived time properties are read-only; MATLAB warns and ignores
+%!error <tsdata.timemetadata: 'Start' is read-only; use 'setuniformtime' to give a series a uniform time vector.> ...
+%! t = TC; t.TimeInfo.Start = 5;
+%!error <tscollection.subsasgn: 'TimeInfo' must be a tsdata.timemetadata object.> ...
+%! t = TC; t.TimeInfo = 5;
+%!error <tscollection.subsasgn: 'Length' is read-only.> ...
+%! t = TC; t.Length = 5;
+## Test a member of other times is refused; MATLAB moves its samples
+%!error <tscollection.subsasgn: the time vector of 'a' must match that of TC.> ...
+%! t = TC; t.a = timeseries ([1; 2; 3], [0; 1; 2], 'Name', 'a');
+%!error <tscollection.subsasgn: the time vector of 'a' must match that of TC.> ...
+%! t = TC; t.a = timeseries ([9; 8; 7; 6], [0; 1; 2; 4]);
+%!error <tscollection.subsasgn: set the time of every member with TC.Time.> ...
+%! t = TC; t.a.Time = [0; 1; 2; 4];
+%!error <tscollection.subsasgn: set the time of every member with TC.TimeInfo.> ...
+%! t = TC; t.a.TimeInfo.Units = 'minutes';
+%!error <tscollection.subsasgn: rename a member with settimeseriesnames.> ...
+%! t = TC; t.a.Name = 'renamed';
+%!error <timeseries: 'Data' must have one sample per time.> ...
+%! t = TC; t.a.Data = [1; 2; 3];
+%!error <tscollection.subsasgn: a member must be a timeseries; remove one with removets.> ...
+%! t = TC; t.a = [];
+%!error <tscollection.subsasgn: a member must be a timeseries; remove one with removets.> ...
+%! t = TC; t.c = 5;
+%!error <tscollection.subsasgn: TC has no member named 'zz'.> ...
+%! t = TC; t.zz.Data = 1;
+%!error <tscollection.subsasgn: the member name 'A' conflicts with the name of an existing member, ignoring case.> ...
+%! t = TC; t.A = C;
+%!error <tscollection.subsasgn: the time vector of 'c' must match that of the collection.> ...
+%! t = TC; t.c = timeseries ([1; 2; 3], [0; 1; 2]);
+%!error <tscollection.subsasgn: only '.' assignment is supported; select samples and members with '\(\)' and assign the result.> ...
+%! t = TC; t(2) = TC(3);
+%!error <tscollection.subsasgn: only '.' assignment is supported; select samples and members with '\(\)' and assign the result.> ...
+%! t = TC; t{1} = 1;
+
+%!test
+%! P1 = tscollection ({B, C}, 'Name', 'first');
+%! P2 = tscollection ({timeseries([50, 51; 60, 61], [4; 5], 'Name', 'b'), ...
+%!                     timeseries([9; 9], [4; 5], 'Name', 'c')}, ...
+%!                    'Name', 'second');
+%! t = [P1; P2];
+%! assert_equal (t.Time, [0; 1; 2; 3; 4; 5]);
+%! assert_equal (t.Name, 'first');
+%! y = t.c;
+%! assert_equal (y.Data, [5; 6; 7; 8; 9; 9]);
+%! x = t.b;
+%! assert_equal (x.Data(5:6,:), [50, 51; 60, 61]);
+%!test
+%! Q = timeseries ([5; 6], [4; 5], [7; 8], 'Name', 'a');
+%! t = [tscollection(A); tscollection(Q)];
+%! x = t.a;
+%! assert_equal (x.Quality, [1; 2; 3; 4; 7; 8]);
+%! assert_equal (x.Data, [1; 2; 3; 4; 5; 6]);
+%! assert_equal (numel (x.Events), 1);
+%! assert_equal (x.DataInfo.Units, '');
+## Test collections may touch at a time
+%!test
+%! P2 = tscollection ({timeseries([5; 6], [3; 4], 'Name', 'a'), ...
+%!                     timeseries([50, 51; 60, 61], [3; 4], 'Name', 'b')});
+%! A0 = timeseries ([1; 2; 3; 4], [0; 1; 2; 3], 'Name', 'a');
+%! t = [tscollection({A0, B}); P2];
+%! assert_equal (t.Time, [0; 1; 2; 3; 3; 4]);
+%!test
+%! P1 = tscollection ({B, C});
+%! P2 = tscollection ({timeseries([9; 9], [4; 5], 'Name', 'c'), ...
+%!                     timeseries([50, 51; 60, 61], [4; 5], 'Name', 'b')});
+%! warning ('off', 'all', 'local');
+%! t = [P1; P2];
+%! assert_equal (gettimeseriesnames (t), {'b', 'c'});
+%! x = t.b;
+%! assert_equal (x.Data(5:6,:), [50, 51; 60, 61]);
+%!warning <tscollection.vertcat: the members are taken in the order of the first collection.> ...
+%! P1 = tscollection ({B, C}); ...
+%! P2 = tscollection ({timeseries([9; 9], [4; 5], 'Name', 'c'), ...
+%!                     timeseries([50, 51; 60, 61], [4; 5], 'Name', 'b')}); ...
+%! [P1; P2];
+%!test
+%! DA = timeseries ([1; 2; 3], {'01-Jan-2024', '02-Jan-2024', ...
+%!                  '03-Jan-2024'}, 'Name', 'da');
+%! DB = timeseries ([7; 8], {'04-Jan-2024', '05-Jan-2024'}, 'Name', 'da');
+%! t = [tscollection(DA); tscollection(DB)];
+%! assert_equal (t.Time, [0; 1; 2; 3; 4]);
+%! assert_equal (getabstime (t){5}, '05-Jan-2024 00:00:00');
+%!assert_equal (isequal (vertcat (TC), TC), true)
+%!error <tscollection.vertcat: each collection must start at or after the end of the one before.> ...
+%! P2 = tscollection ({timeseries([5; 6], [2.5; 4], 'Name', 'a'), ...
+%!                     timeseries([50, 51; 60, 61], [2.5; 4], ...
+%!                                'Name', 'b')}); ...
+%! vertcat (TC, P2)
+%!error <tscollection.vertcat: each collection must start at or after the end of the one before.> ...
+%! vertcat (TC, TC)
+%!error <tscollection.vertcat: every collection must have the same members.> ...
+%! vertcat (TC, tscollection (timeseries ([5; 6], [4; 5], 'Name', 'a')))
+%!error <tscollection.vertcat: every collection must have the same members.> ...
+%! vertcat (TC, tscollection ({timeseries([5; 6], [4; 5], 'Name', 'a'), ...
+%!                             timeseries([5; 6], [4; 5], 'Name', 'c')}))
+%!error <tscollection.vertcat: every collection must have the same members.> ...
+%! vertcat (TC, tscollection ())
+%!error <tscollection.vertcat: every argument must be a tscollection.> ...
+%! vertcat (TC, 5)
+%!error <tscollection.vertcat: the samples of 'a' must be of one size throughout.> ...
+%! vertcat (TC, tscollection ({timeseries([5, 6; 7, 8], [4; 5], ...
+%!                                        'Name', 'a'), ...
+%!                             timeseries([50, 51; 60, 61], [4; 5], ...
+%!                                        'Name', 'b')}))
+## Test quality codes on only some members are refused; MATLAB gives a
+## member it cannot read, or drops them
+%!error <tscollection.vertcat: 'a' must have quality codes in every collection or in none.> ...
+%! vertcat (tscollection (A), tscollection (timeseries ([5; 6], [4; 5], ...
+%!                                                     'Name', 'a')))
+%!error <tscollection.vertcat: 'a' must have quality codes in every collection or in none.> ...
+%! vertcat (tscollection (timeseries ([1; 2], [-2; -1], 'Name', 'a')), ...
+%!          tscollection (A))
+%!error <tscollection.vertcat: collections with and without a start date cannot be concatenated.> ...
+%! DA = timeseries ([1; 2; 3], {'01-Jan-2024', '02-Jan-2024', ...
+%!                  '03-Jan-2024'}, 'Name', 'c'); ...
+%! vertcat (tscollection (C), tscollection (DA))
+
+%!assert_equal (gettimeseriesnames ([TC, tscollection(C)]), {'a', 'b', 'c'})
+## Test the members are sorted by name, as in MATLAB
+%!assert_equal (gettimeseriesnames ([tscollection(C), TC]), {'a', 'b', 'c'})
+%!assert_equal (gettimeseriesnames ([tscollection({timeseries([1; 2], ...
+%!              [0; 1], 'Name', 'z'), timeseries([1; 2], [0; 1], ...
+%!              'Name', 'm')}), tscollection(timeseries ([3; 4], [0; 1], ...
+%!              'Name', 'a'))]), {'a', 'm', 'z'})
+%!assert_equal (gettimeseriesnames ([TC, tscollection([0; 1; 2; 3])]), ...
+%!              {'a', 'b'})
+%!assert_equal (gettimeseriesnames (horzcat (TC, tscollection (C), ...
+%!              tscollection (timeseries ([1; 2; 3; 4], [0; 1; 2; 3], ...
+%!              'Name', 'e')))), {'a', 'b', 'c', 'e'})
+## Test an equal shared member is taken once, as in MATLAB
+%!assert_equal (gettimeseriesnames ([TC, TC]), {'a', 'b'})
+%!test
+%! N = timeseries ([1; NaN; 3; 4], [0; 1; 2; 3], 'Name', 'n');
+%! assert_equal (gettimeseriesnames ([tscollection(N), tscollection(N)]), ...
+%!               {'n'});
+## Test the name of the first; MATLAB names the result 'unnamed'
+%!assert_equal ([tscollection({A, B}, 'Name', 'first'), ...
+%!               tscollection(C, 'Name', 'second')].Name, 'first')
+%!error <tscollection.horzcat: the member 'c' shared by the collections must be the same in each.> ...
+%! horzcat (tscollection (C), tscollection (timeseries ([0; 0; 0; 0], ...
+%!                                                     [0; 1; 2; 3], ...
+%!                                                     'Name', 'c')))
+%!error <tscollection.horzcat: the member name 'A' conflicts with the name of an existing member, ignoring case.> ...
+%! horzcat (TC, tscollection (timeseries ([0; 0; 0; 0], [0; 1; 2; 3], ...
+%!                                        'Name', 'A')))
+%!error <tscollection.horzcat: every collection must have the same time vector.> ...
+%! horzcat (TC, tscollection (timeseries ([1; 2; 3], [0; 1; 2], 'Name', 'c')))
+%!error <tscollection.horzcat: every collection must have the same time vector.> ...
+%! horzcat (TC, tscollection (timeseries ([1; 2; 3; 4], [0; 1; 2; 4], ...
+%!                                        'Name', 'c')))
+%!error <tscollection.horzcat: every collection must have the same time vector.> ...
+%! CM = C; CM.TimeInfo.Units = 'minutes'; ...
+%! horzcat (TC, tscollection (CM))
+%!error <tscollection.horzcat: every argument must be a tscollection.> ...
+%! horzcat (TC, C)

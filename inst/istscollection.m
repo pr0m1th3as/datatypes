@@ -31,6 +31,8 @@ function TF = istscollection (x)
   TF = isa (x, 'tscollection');
 endfunction
 
+%!assert_equal (istscollection (tscollection ()), true)
+%!assert_equal (istscollection (tscollection ([0; 1])), true)
 %!assert_equal (istscollection (timeseries ([1; 2; 3])), false)
 %!assert_equal (istscollection ([1, 2, 3]), false)
 %!assert_equal (istscollection ({1}), false)

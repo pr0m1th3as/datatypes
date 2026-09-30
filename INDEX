@@ -53,6 +53,7 @@ timetable arrays
 timeseries objects
  timeseries
  istimeseries
+ tscollection
  istscollection
  tsdata.timemetadata
  tsdata.datametadata
