@@ -101,6 +101,10 @@ classdef datametadata
     endfunction
 
     function this = set.Interpolation (this, val)
+      if (isa (val, 'tsdata.interpolation') && ! isscalar (val))
+        error (strcat ("tsdata.datametadata: 'Interpolation' must be a", ...
+                       " single tsdata.interpolation object."));
+      endif
       if (! isa (val, 'tsdata.interpolation'))
         if (! (isa (val, 'function_handle')
                || (ischar (val) && isrow (val))
@@ -136,7 +140,8 @@ classdef datametadata
     ## string scalar matched in any case, and @code{@var{values} = get
     ## (@var{di}, @var{names})} a row cell array of the properties named in
     ## the cell array @var{names}.  For an array, one @var{name} gives a cell
-    ## array of its size.
+    ## array of its size, and no name, or several, a cell array with a row
+    ## per object and a column per property.
     ##
     ## @seealso{tsdata.datametadata.set, timeseries.get}
     ## @end deftypefn
@@ -315,6 +320,9 @@ endfunction
 %! setfield (tsdata.datametadata (), 'Units', 5)
 %!error <tsdata.datametadata: 'Units' must be a character vector.> ...
 %! setfield (tsdata.datametadata (), 'Units', ['ab'; 'cd'])
+%!error <tsdata.datametadata: 'Interpolation' must be a single tsdata.interpolation object.> ...
+%! setfield (tsdata.datametadata (), 'Interpolation', ...
+%!           [tsdata.interpolation('linear'), tsdata.interpolation('zoh')])
 %!error <tsdata.datametadata: 'Interpolation' must be a tsdata.interpolation object, a method name or a function handle.> ...
 %! setfield (tsdata.datametadata (), 'Interpolation', 5)
 %!error <tsdata.interpolation: 'Name' must be 'linear', 'zoh' or 'myFuncHandle'.> ...

@@ -125,7 +125,8 @@ classdef qualmetadata
     ## string scalar matched in any case, and @code{@var{values} = get
     ## (@var{qi}, @var{names})} a row cell array of the properties named in
     ## the cell array @var{names}.  For an array, one @var{name} gives a cell
-    ## array of its size.
+    ## array of its size, and no name, or several, a cell array with a row
+    ## per object and a column per property.
     ##
     ## @seealso{tsdata.qualmetadata.set, timeseries.get}
     ## @end deftypefn

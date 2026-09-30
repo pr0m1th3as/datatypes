@@ -502,10 +502,16 @@ classdef timeseries
       endif
       nSamples = numel (time);
 
-      ## Quality
+      ## Quality, which may have the size of DATA as given
       quality = [];
       if (nPos == 2)
-        [quality, errmsg] = qualityValue (args{2}, data, nSamples, td);
+        quality = args{2};
+        if ((isnumeric (quality) || islogical (quality))
+            && isequal (size (quality), size (arg1))
+            && ! isequal (size (arg1), size (data)))
+          quality = reshape (quality, size (data));
+        endif
+        [quality, errmsg] = qualityValue (quality, data, nSamples, td);
         if (! isempty (errmsg))
           error ("timeseries: QUALITY %s", errmsg);
         endif
@@ -854,14 +860,24 @@ classdef timeseries
       if (! isempty (errmsg))
         error ("%s: 'Time' %s", scope, errmsg);
       endif
+      if (! all (isfinite (time)))
+        error ("%s: 'Time' must be finite.", scope);
+      endif
       if (! ((islogical (overwrite) || isnumeric (overwrite))
              && isscalar (overwrite) && any (overwrite == [0, 1])))
         error ("%s: 'OverwriteFlag' must be a logical scalar.", scope);
       endif
       k = numel (time);
-      [data, td, errmsg] = orientData (data, k);
-      if (! isempty (errmsg))
-        error ("%s: 'Data' must have one sample per time.", scope);
+      tdS = this.timeDim_;
+      if (k == 1 && tdS > 1 && ! isempty (this.data_)
+          && isequal (size (data), size (takeSamples (this.data_, 1, tdS))))
+        ## One sample shaped as the series' own, whatever its dimensions
+        td = tdS;
+      else
+        [data, td, errmsg] = orientData (data, k);
+        if (! isempty (errmsg))
+          error ("%s: 'Data' must have one sample per time.", scope);
+        endif
       endif
 
       ## A series with no samples takes them as the constructor would
@@ -1101,8 +1117,9 @@ classdef timeseries
         x = full{i};
         ns = x.time_ * nsPerUnit (x.timeInfo_.Units);
         if (all (absolute))
-          ns = ns + (datenum (x.timeInfo_.StartDate) ...
-                     - datenum (first.timeInfo_.StartDate)) * 864e11;
+          dvX = tsdata.timemetadata.dateVector (x.timeInfo_.StartDate);
+          dv1 = tsdata.timemetadata.dateVector (first.timeInfo_.StartDate);
+          ns = ns + tsdata.timemetadata.dateOffset (dvX, dv1);
         endif
         times{i} = ns / nsPerUnit (unit);
         n = x.Length;
@@ -1238,8 +1255,10 @@ classdef timeseries
       if (isempty (fmt))
         fmt = 'dd-mmm-yyyy HH:MM:SS';
       endif
-      dn = datenum (startDate) ...
-           + this.time_ * nsPerUnit (this.timeInfo_.Units) / 864e11;
+      dv0 = tsdata.timemetadata.dateVector (startDate);
+      dn = datenum (dv0(1), dv0(2), dv0(3)) ...
+           + ((dv0(4) * 3600 + dv0(5) * 60 + dv0(6)) * 1e9 ...
+              + this.time_ * nsPerUnit (this.timeInfo_.Units)) / 864e11;
       dates = cellstr (datestr (dn, fmt));
     endfunction
 
@@ -1254,7 +1273,8 @@ classdef timeseries
     ## a cell array of character vectors, a string array, a character matrix
     ## of one date per row, a character vector for a single sample, or a
     ## @code{datetime} array.  The earliest date becomes
-    ## @qcode{TimeInfo.StartDate}, written @qcode{'dd-mmm-yyyy HH:MM:SS'}, and
+    ## @qcode{TimeInfo.StartDate}, stored as @qcode{'dd-mmm-yyyy HH:MM:SS'},
+    ## and
     ## @qcode{Time} holds each date's offset from it in the series' own
     ## @qcode{TimeInfo.Units}, which are kept: a series in seconds given one
     ## date a day gets times @code{[0 86400 172800 @dots{}]}.  Each date is read
@@ -1263,9 +1283,11 @@ classdef timeseries
     ## MATLAB.
     ##
     ## @code{@var{ts} = setabstime (@var{ts}, @var{dates}, @var{format})} reads
-    ## every date strictly in the @code{datestr} format @var{format}, and
-    ## writes the start date in it.  A date not written in @var{format} is
-    ## refused.
+    ## every date strictly in the @code{datestr} format @var{format}.  A date
+    ## not written in @var{format} is refused.  The start date is stored as
+    ## above whatever the format, where MATLAB writes it in @var{format}, from
+    ## which every later reading has to guess it again: @qcode{'dd/mm/yyyy'}
+    ## then comes back as a date of another month.
     ##
     ## The dates need not be sorted: the samples, with their quality codes,
     ## are sorted with them, keeping the order of samples at equal dates, as
@@ -1331,11 +1353,7 @@ classdef timeseries
         startDate = '';
       else
         [ns, dv0] = dateOffsets (dv);
-        if (isempty (format))
-          startDate = datestr (dv0, 'dd-mmm-yyyy HH:MM:SS');
-        else
-          startDate = datestr (dv0, format);
-        endif
+        startDate = tsdata.timemetadata.dateText (dv0);
       endif
       time = ns / nsPerUnit (this.timeInfo_.Units);
 
@@ -2058,7 +2076,10 @@ classdef timeseries
       if (nargin < 3)
         error ("%s: invalid number of input arguments.", scope);
       endif
-      if (! (isa (ts2, 'timeseries')))
+      if (! isa (ts1, 'timeseries'))
+        error ("%s: TS1 must be a timeseries.", scope);
+      endif
+      if (! isa (ts2, 'timeseries'))
         error ("%s: TS2 must be a timeseries.", scope);
       endif
       mustBeScalar (ts1, 'synchronize');
@@ -2121,7 +2142,8 @@ classdef timeseries
       off2 = 0;
       refDate = '';
       if (! isempty (sd1))
-        [off, ~] = dateOffsets ([datevec(sd1); datevec(sd2)]);
+        [off, ~] = dateOffsets ([tsdata.timemetadata.dateVector(sd1);
+                                  tsdata.timemetadata.dateVector(sd2)]);
         off1 = off(1);
         off2 = off(2);
         if (off1 == 0)
@@ -2163,22 +2185,39 @@ classdef timeseries
         grid = unique (grid);
       endif
 
-      ## Each series resampled in its own frame, then counted from the
-      ## earlier start date unless its own is kept
-      [ts1, errmsg] = resampleAt (ts1, (grid - off1) / ns1, method, code);
-      if (! isempty (errmsg))
-        error ("%s: %s", scope, errmsg);
+      ## Series that do not overlap become series with no samples
+      if (isempty (grid))
+        ts1 = subset (ts1, []);
+        ts2 = subset (ts2, []);
+        return;
       endif
-      [ts2, errmsg] = resampleAt (ts2, (grid - off2) / ns2, method, code);
-      if (! isempty (errmsg))
-        error ("%s: %s", scope, errmsg);
-      endif
+
+      ## Each series evaluated in its own frame: at its own time where the
+      ## grid holds that time, or matches it within the tolerance.  The
+      ## results are labelled with the grid times, counted from the earlier
+      ## start date unless each keeps its own.
+      label1 = off1;
+      label2 = off2;
       if (! isempty (refDate) && ! keep)
-        ts1.time_ = grid / ns1;
-        ts1.timeInfo_.TimeVector = ts1.time_;
+        label1 = 0;
+        label2 = 0;
+      endif
+      [at1, lab1] = frameTimes (grid, t1, ts1.time_, off1, ns1, tolNs, label1);
+      [at2, lab2] = frameTimes (grid, t2, ts2.time_, off2, ns2, tolNs, label2);
+      [ts1, errmsg] = resampleAt (ts1, at1, method, code);
+      if (! isempty (errmsg))
+        error ("%s: %s", scope, regexprep (errmsg, '^TS ', 'TS1 '));
+      endif
+      [ts2, errmsg] = resampleAt (ts2, at2, method, code);
+      if (! isempty (errmsg))
+        error ("%s: %s", scope, regexprep (errmsg, '^TS ', 'TS2 '));
+      endif
+      ts1.time_ = lab1;
+      ts2.time_ = lab2;
+      ts1.timeInfo_.TimeVector = lab1;
+      ts2.timeInfo_.TimeVector = lab2;
+      if (! isempty (refDate) && ! keep)
         ts1.timeInfo_.StartDate = refDate;
-        ts2.time_ = grid / ns2;
-        ts2.timeInfo_.TimeVector = ts2.time_;
         ts2.timeInfo_.StartDate = refDate;
       endif
     endfunction
@@ -2261,6 +2300,8 @@ classdef timeseries
     ## element over time, so @var{v} has the size of one sample; with
     ## @qcode{'time'} weighting it is the time-weighted median.  @var{v} keeps
     ## the class of the data, and is @code{[]} for a series with no samples.
+    ## Where a value is left without samples it is @code{NaN}, and @var{v} is
+    ## then @code{double}, as integer and logical classes hold no @code{NaN}.
     ##
     ## The options, and where MATLAB differs, are given under
     ## @code{timeseries.mean}.
@@ -2282,7 +2323,9 @@ classdef timeseries
     ## data element over time, the smallest on a tie, so @var{v} has the size
     ## of one sample; with @qcode{'time'} weighting it is the value of most
     ## total weight.  @var{v} keeps the class of the data, and is @code{[]} for
-    ## a series with no samples.
+    ## a series with no samples.  Where a value is left without samples it is
+    ## @code{NaN}, and @var{v} is then @code{double}, as integer and logical
+    ## classes hold no @code{NaN}.
     ##
     ## The options, and where MATLAB differs, are given under
     ## @code{timeseries.mean}.
@@ -2369,7 +2412,9 @@ classdef timeseries
     ## @code{@var{v} = min (@var{ts})} returns the smallest value of each data
     ## element over time, so @var{v} has the size of one sample; weighting
     ## leaves it unchanged.  @var{v} keeps the class of the data, and is
-    ## @code{[]} for a series with no samples.
+    ## @code{[]} for a series with no samples.  Where a value is left without
+    ## samples it is @code{NaN}, and @var{v} is then @code{double}, as integer
+    ## and logical classes hold no @code{NaN}.
     ##
     ## The options, and where MATLAB differs, are given under
     ## @code{timeseries.mean}.
@@ -2390,7 +2435,9 @@ classdef timeseries
     ## @code{@var{v} = max (@var{ts})} returns the largest value of each data
     ## element over time, so @var{v} has the size of one sample; weighting
     ## leaves it unchanged.  @var{v} keeps the class of the data, and is
-    ## @code{[]} for a series with no samples.
+    ## @code{[]} for a series with no samples.  Where a value is left without
+    ## samples it is @code{NaN}, and @var{v} is then @code{double}, as integer
+    ## and logical classes hold no @code{NaN}.
     ##
     ## The options, and where MATLAB differs, are given under
     ## @code{timeseries.mean}.
@@ -2800,6 +2847,9 @@ classdef timeseries
       if (! (isnumeric (b) && isvector (b) && isnumeric (a) && isvector (a)))
         error ("timeseries.filter: B and A must be numeric vectors.");
       endif
+      if (a(1) == 0)
+        error ("timeseries.filter: the first element of A must not be zero.");
+      endif
       if (nargin < 4)
         [X, cols] = signalData (this, 'filter', false);
       else
@@ -2954,13 +3004,21 @@ classdef timeseries
       if (isempty (eUnits))
         eUnits = this.timeInfo_.Units;
       endif
+      ## The event's own time where it counts as the series does, since a
+      ## round trip through nanoseconds need not return the same number
+      if (strcmp (eUnits, this.timeInfo_.Units)
+          && (isempty (e.StartDate) || strcmp (e.StartDate, startDate)))
+        t = e.Time;
+        return;
+      endif
       ns = e.Time * nsPerUnit (eUnits);
       if (! isempty (e.StartDate))
         if (isempty (startDate))
           error (strcat ("%s: TS has no start date to place the dated", ...
                          " event '%s' on."), scope, e.Name);
         endif
-        [off, ~] = dateOffsets ([datevec(startDate); datevec(e.StartDate)]);
+        [off, ~] = dateOffsets ([tsdata.timemetadata.dateVector(startDate);
+                                  tsdata.timemetadata.dateVector(e.StartDate)]);
         ## 'dateOffsets' counts from the earlier of the two
         if (off(1) == 0)
           ns += off(2);
@@ -3036,10 +3094,12 @@ classdef timeseries
       if (hasQ)
         src = zeros (numel (t), 1);
         isZoh = strcmp (ip.Name, 'zoh');
+        ## A sample that is NaN throughout holds no value
+        held = ! all (isnan (reshape (double (od), numel (this.time_), [])), 2);
         for i = 1:numel (t)
           k = [];
           if (isZoh)
-            k = find (this.time_ <= t(i), 1, 'last');
+            k = find (this.time_ <= t(i) & held, 1, 'last');
           endif
           if (isempty (k))
             d = abs (this.time_ - t(i));
@@ -3125,6 +3185,14 @@ classdef timeseries
         if (isempty (q) || ! any (ismember (codes, q(:))))
           warning ("%s: no sample has the quality codes given.", scope);
         else
+          absent = unique (codes(! ismember (codes, q(:))));
+          if (numel (absent) == 1)
+            warning ("%s: no sample has the quality code %d.", scope, absent);
+          elseif (! isempty (absent))
+            warning ("%s: no sample has the quality codes %s.", scope, ...
+                     strjoin (arrayfun (@num2str, absent', ...
+                                        'UniformOutput', false), ', '));
+          endif
           if (td > 1)
             q = permute (q, [td, 1:td-1]);
           endif
@@ -3173,7 +3241,11 @@ classdef timeseries
       if (numel (ss) == 2 && ss(1) == 1)
         v = reshape (v, ss);
       endif
-      if (any (strcmp (fn, {'median', 'mode', 'min', 'max'})))
+      ## A value left without samples is NaN, so the class of integer or
+      ## logical data is kept only when every value has samples
+      if (any (strcmp (fn, {'median', 'mode', 'min', 'max'}))
+          && ! ((isinteger (this.data_) || islogical (this.data_))
+                && any (isnan (v(:)))))
         if (strcmp (cls, 'logical'))
           v = v != 0 & ! isnan (v);
         else
@@ -3185,7 +3257,6 @@ classdef timeseries
     ## The arithmetic OP of A and B, either or both a series.
     function ts = arithmetic (a, b, op)
       scope = ['timeseries.', op];
-      matrixOp = any (strcmp (op, {'mtimes', 'mrdivide', 'mldivide'}));
       f = str2func (op);
       aIs = isa (a, 'timeseries');
       bIs = isa (b, 'timeseries');
@@ -3211,19 +3282,22 @@ classdef timeseries
                          " neither."), scope);
         endif
         if (! isempty (sdA))
-          [off, ~] = dateOffsets ([datevec(sdA); datevec(sdB)]);
+          [off, ~] = dateOffsets ([tsdata.timemetadata.dateVector(sdA);
+                                    tsdata.timemetadata.dateVector(sdB)]);
           nsu = nsPerUnit (a.timeInfo_.Units);
-          if (! isequal (a.time_ * nsu + off(1), b.time_ * nsu + off(2)))
+          ## Instants a microsecond apart, rounding aside, are the same
+          if (any (abs ((a.time_ * nsu + off(1)) - (b.time_ * nsu + off(2)))
+                   > 1e3))
             error ("%s: A and B must be dated at the same instants.", scope);
           endif
-        else
+        elseif (n > 0)
           d = b.time_ - a.time_;
           tol = 1e-12 * max ([1; abs(a.time_)]);
           if (any (abs (d - d(1)) > tol))
             error (strcat ("%s: the times of A and B must be equal or", ...
                            " differ by a constant offset."), scope);
           endif
-          if (n > 0 && d(1) != 0)
+          if (d(1) != 0)
             warning (strcat ("%s: the times of A and B differ by a", ...
                              " constant offset; the result takes", ...
                              " the times of A."), scope);
@@ -3232,8 +3306,9 @@ classdef timeseries
         if (a.timeDim_ != b.timeDim_)
           error ("%s: A and B must hold samples of the same shape.", scope);
         endif
-        [data, errmsg] = sampleOp (f, double (a.data_), double (b.data_), ...
-                                   a.timeDim_, n, matrixOp, true);
+        [data, td, errmsg] = sampleOp (f, double (a.data_), ...
+                                       double (b.data_), a.timeDim_, n, ...
+                                       op, true);
         ts = a;
         ts.name_ = 'unnamed';
         units = '';
@@ -3264,20 +3339,27 @@ classdef timeseries
           error ("%s: the other operand must be a series or a number.", scope);
         endif
         n = numel (ts.time_);
-        td = ts.timeDim_;
         num = double (num);
         if (left)
-          [data, errmsg] = sampleOp (f, double (ts.data_), num, td, n, ...
-                                     matrixOp, false);
+          [data, td, errmsg] = sampleOp (f, double (ts.data_), num, ...
+                                         ts.timeDim_, n, op, false);
         else
-          [data, errmsg] = sampleOp (@(x, y) f (y, x), double (ts.data_), ...
-                                     num, td, n, matrixOp, false);
+          [data, td, errmsg] = sampleOp (@(x, y) f (y, x), ...
+                                         double (ts.data_), num, ...
+                                         ts.timeDim_, n, op, false);
         endif
       endif
       if (! isempty (errmsg))
         error ("%s: %s", scope, errmsg);
       endif
+      q = ts.quality_;
+      if (! isempty (q) && numel (q) != n && ! isequal (size (data), size (q)))
+        error (strcat ("%s: the result changes the size of the samples, so", ...
+                       " the quality codes held per data element cannot", ...
+                       " follow it."), scope);
+      endif
       ts.data_ = data;
+      ts.timeDim_ = td;
     endfunction
 
     ## The data of the series as a double matrix, time first and one column
@@ -3364,7 +3446,13 @@ classdef timeseries
           errmsg = "the data must not begin or end with NaN.";
           return;
         endif
-        X(gap,j) = ip.Fhandle (t(gap), t(! gap), X(! gap,j));
+        v = ip.Fhandle (t(gap), t(! gap), X(! gap,j));
+        if (! (isnumeric (v) || islogical (v)) || numel (v) != sum (gap))
+          errmsg = strcat ("the interpolation function must return one", ...
+                           " sample per time.");
+          return;
+        endif
+        X(gap,j) = v(:);
       endfor
     endfunction
 
@@ -3389,24 +3477,23 @@ classdef timeseries
       elseif (isnumeric (x) && isreal (x) && ! numIsDatenum)
         t = double (x(:));
       else
-        try
-          if (isa (x, 'datetime'))
-            dn = datenum (x(:));
-          elseif (isnumeric (x) && isreal (x))
-            dn = double (x(:));
-          else
-            dn = datenum (cellstr (x));
-            dn = dn(:);
-          endif
-        catch
-          t = [];
-          errmsg = "must be dates, as text, datenum or datetime values.";
-          return;
-        end_try_catch
+        dv0 = tsdata.timemetadata.dateVector (startDate);
         nsu = nsPerUnit (this.timeInfo_.Units);
-        t = (dn - datenum (startDate)) * 864e11 / nsu;
-        ## Dates reach a series only to the precision of a datenum
-        tol = 1e-9 * 864e11 / nsu;
+        if (isnumeric (x) && isreal (x))
+          ## A datenum reaches a series only to its own precision
+          t = (double (x(:)) - datenum (dv0)) * 864e11 / nsu;
+          tol = 1e-9 * 864e11 / nsu;
+        else
+          [dv, dverr] = dateVectors (x, '');
+          if (! isempty (dverr))
+            t = [];
+            errmsg = "must be dates, as text, datenum or datetime values.";
+            return;
+          endif
+          ## Dates are exact to the microsecond, rounding apart
+          t = tsdata.timemetadata.dateOffset (dv, dv0) / nsu;
+          tol = 1e3 / nsu;
+        endif
       endif
       if (any (isnan (t)) && numel (t) > 1)
         errmsg = "must not be NaN.";
@@ -3426,7 +3513,7 @@ classdef timeseries
       if (isnumeric (val) && isempty (val))
         this.events_ = [];
       elseif (isa (val, 'tsdata.event') && (isvector (val) || isempty (val)))
-        this.events_ = val;
+        this.events_ = val(:).';
       else
         error (strcat ("timeseries: 'Events' must be a vector of", ...
                        " tsdata.event objects."));
@@ -3468,7 +3555,15 @@ classdef timeseries
         error ("timeseries: 'Data' must be a numeric or logical array.");
       endif
       n = numel (this.time_);
-      if (n > 0 && ! isempty (val))
+      q = this.quality_;
+      if (! isempty (q) && numel (q) != n && ! isequal (size (val), size (q)))
+        error (strcat ("timeseries: 'Data' must keep the size of the", ...
+                       " quality codes held per data element; clear", ...
+                       " 'Quality' first."));
+      endif
+      if (n > 0 && isequal (size (val), size (this.data_)))
+        td = this.timeDim_;
+      elseif (n > 0 && ! isempty (val))
         [val, td, errmsg] = orientData (val, n);
         if (! isempty (errmsg))
           error ("timeseries: 'Data' must have one sample per time.");
@@ -3513,7 +3608,8 @@ classdef timeseries
       if (! isempty (this.quality_) && numel (val) != numel (this.time_))
         error ("timeseries: 'Time' must have one time per quality code.");
       endif
-      if (! isempty (this.data_) && ! isempty (val))
+      if (! isempty (this.data_) && ! isempty (val)
+          && numel (val) != numel (this.time_))
         [data, td, errmsg] = orientData (this.data_, numel (val));
         if (! isempty (errmsg))
           error ("timeseries: 'Time' must have one time per sample.");
@@ -3536,6 +3632,27 @@ classdef timeseries
       endif
       ## The derived properties always follow this series' own time vector
       val.TimeVector = this.time_;
+      ## Events dated on their own count from the start date being removed,
+      ## since a series without one cannot place a date
+      old = this.timeInfo_.StartDate;
+      if (! isempty (old) && isempty (val.StartDate))
+        dv0 = tsdata.timemetadata.dateVector (old);
+        for k = 1:numel (this.events_)
+          e = this.events_(k);
+          if (isempty (e.StartDate))
+            continue;
+          endif
+          eUnits = e.Units;
+          if (isempty (eUnits))
+            eUnits = val.Units;
+          endif
+          ns = e.Time * nsPerUnit (eUnits) + tsdata.timemetadata.dateOffset ...
+                 (tsdata.timemetadata.dateVector (e.StartDate), dv0);
+          e.StartDate = '';
+          e.Time = ns / nsPerUnit (eUnits);
+          this.events_(k) = e;
+        endfor
+      endif
       this.timeInfo_ = val;
     endfunction
 
@@ -3755,9 +3872,10 @@ endfunction
 ## size.  Element-wise operators broadcast; matrix operators run per sample.
 ## Returns the data and an empty ERRMSG, or the body of the message the caller
 ## raises.
-function [data, errmsg] = sampleOp (f, x, y, td, n, matrixOp, bothSeries)
+function [data, td, errmsg] = sampleOp (f, x, y, td, n, op, bothSeries)
   data = [];
   errmsg = '';
+  matrixOp = any (strcmp (op, {'mtimes', 'mrdivide', 'mldivide'}));
   ss = sampleSize (x, td);
   if (! matrixOp)
     if (bothSeries)
@@ -3779,10 +3897,9 @@ function [data, errmsg] = sampleOp (f, x, y, td, n, matrixOp, bothSeries)
   endif
   ## A scalar sample is multiplied only by a number, as MATLAB applies matrix
   ## rules there; a division keeps the size of the sample
-  opName = func2str (f);
-  isDivision = ! isempty (strfind (opName, 'divide'));
+  isDivision = ! strcmp (op, 'mtimes');
   if (isequal (ss, [1, 1]) && ! bothSeries && ! isscalar (y)
-      && ! isempty (strfind (opName, 'mtimes')))
+      && strcmp (op, 'mtimes'))
     errmsg = "the sizes of the samples do not fit the operator.";
     return;
   endif
@@ -3807,14 +3924,17 @@ function [data, errmsg] = sampleOp (f, x, y, td, n, matrixOp, bothSeries)
     endif
     parts{k} = r;
   endfor
+  ## The results laid as the series lays its samples: rows where time runs
+  ## first and a sample is a row, slices along a new last dimension otherwise
   rs = size (parts{1});
-  if (td == 1 && rs(1) == 1)
+  if (isequal (rs, [1, 1]))
+    data = vertcat (parts{:});
+    td = 1;
+  elseif (td == 1 && rs(1) == 1)
     data = vertcat (parts{:});
   else
     data = cat (numel (rs) + 1, parts{:});
-    if (isequal (rs, [1, 1]))
-      data = data(:);
-    endif
+    td = numel (rs) + 1;
   endif
 endfunction
 
@@ -3878,6 +3998,28 @@ function tf = sameSeries (a, b, equalNans)
 endfunction
 
 ## Raise unless OBJ is a single series.
+## The times at which 'synchronize' evaluates a series, and the times it
+## labels the result with, for the GRID of times in nanoseconds on a common
+## scale.  TNS are the series' own times on that scale, OWN the same times in
+## its units, OFF its offset on the scale and NS its nanoseconds per unit.  A
+## grid time the series holds is its own time exactly, and one within TOLNS
+## of a time it holds is evaluated there.  Labels count from OFFLABEL.
+function [evalT, labelT] = frameTimes (grid, tNs, own, off, ns, tolNs, offLabel)
+  [isOwn, k] = ismember (grid, tNs);
+  evalT = (grid - off) / ns;
+  evalT(isOwn) = own(k(isOwn));
+  for i = find (! isOwn)'
+    [d, j] = min (abs (tNs - grid(i)));
+    if (d <= tolNs)
+      evalT(i) = own(j);
+    endif
+  endfor
+  labelT = (grid - offLabel) / ns;
+  if (offLabel == off)
+    labelT(isOwn) = own(k(isOwn));
+  endif
+endfunction
+
 ## True when the times T are uniformly spaced: a single step, positive, up to
 ## rounding.  No time or one time counts as uniform.
 function tf = isUniform (t)
@@ -4055,6 +4197,11 @@ function [time, startDate, units, errmsg] = parseTime (time)
       && all (cellfun (@(x) isnumeric (x) && isscalar (x), time(:))))
     time = cell2mat (time(:));
   endif
+  if ((iscellstr (time) || isa (time, 'string') || isa (time, 'datetime'))
+      && isempty (time))
+    time = [];
+    return;
+  endif
   if (iscellstr (time) || isa (time, 'string') || isa (time, 'datetime'))
     [dv, errmsg] = dateVectors (time, '');
     if (! isempty (errmsg))
@@ -4063,7 +4210,7 @@ function [time, startDate, units, errmsg] = parseTime (time)
     endif
     [ns, dv0] = dateOffsets (dv);
     time = ns / 864e11;
-    startDate = datestr (dv0, 'dd-mmm-yyyy HH:MM:SS');
+    startDate = tsdata.timemetadata.dateText (dv0);
     units = 'days';
     return;
   endif

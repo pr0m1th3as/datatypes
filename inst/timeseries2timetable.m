@@ -41,7 +41,8 @@
 ## or @qcode{'dd-MMM-uuuu HH:mm:ss'} when it is empty.  MATLAB copies
 ## @qcode{TimeInfo.Format}, a @code{datestr} format, as it is and fails;
 ## here it is translated to the @code{datetime} format that writes the same
-## text.
+## text, but for an hour on a 12-hour clock, which @code{datestr} pads with
+## a space and a @code{datetime} writes without padding.
 ##
 ## Each variable is named after its series, @qcode{Data} for a series with
 ## no name, made unique with the suffixes @qcode{_1}, @qcode{_2}, @dots{} in
@@ -197,6 +198,10 @@ function TT = timeseries2timetable (varargin)
       start = e.StartDate;
       if (isempty (start))
         start = ti.StartDate;
+      elseif (isempty (ti.StartDate))
+        error (strcat ("timeseries2timetable: the event '%s' is dated,", ...
+                       " but its series has no start date to place it", ...
+                       " on."), e.Name);
       endif
       eti = ti;
       eti.Units = eUnits;
@@ -265,7 +270,7 @@ function rt = timesOf (t, ti)
     rt.Format = fmt;
     return;
   endif
-  rt = datetime (datevec (ti.StartDate)) + rt;
+  rt = datetime (tsdata.timemetadata.dateVector (ti.StartDate)) + rt;
   if (isempty (ti.Format))
     rt.Format = 'dd-MMM-uuuu HH:mm:ss';
   else
@@ -276,12 +281,14 @@ endfunction
 ## The datetime format that writes what the datestr format FMT writes.
 function out = datetimeFormat (fmt)
   hasAmPm = ! isempty (regexp (fmt, 'AM|PM', 'once'));
-  tokens = {'yyyy', 'uuuu'; 'yy', 'uu'; 'mmmm', 'MMMM'; 'mmm', 'MMM'; ...
+  tokens = {'yyyy', 'uuuu'; 'yy', 'uu'; 'QQ', 'QQQ'; ...
+            'mmmm', 'MMMM'; 'mmm', 'MMM'; ...
             'mm', 'MM'; 'm', 'MMMMM'; 'dddd', 'eeee'; 'ddd', 'eee'; ...
             'dd', 'dd'; 'd', 'eeeee'; 'HH', 'HH'; 'MM', 'mm'; ...
             'SS', 'ss'; 'FFF', 'SSS'; 'AM', 'a'; 'PM', 'a'};
+  ## datestr pads a 12-hour clock with a space, which datetime cannot
   if (hasAmPm)
-    tokens{strcmp (tokens(:,1), 'HH'), 2} = 'hh';
+    tokens{strcmp (tokens(:,1), 'HH'), 2} = 'h';
   endif
   out = '';
   i = 1;
@@ -499,8 +506,14 @@ endfunction
 %! m = DA;
 %! m.TimeInfo.Format = 'dd/mm/yyyy HH:MM PM';
 %! tt = timeseries2timetable (m);
-%! assert_equal (tt.Properties.RowTimes.Format, 'dd/MM/uuuu hh:mm a');
-%! assert_equal (char (tt.Properties.RowTimes(1)), '01/01/2024 06:00 AM');
+%! assert_equal (tt.Properties.RowTimes.Format, 'dd/MM/uuuu h:mm a');
+%! assert_equal (char (tt.Properties.RowTimes(1)), '01/01/2024 6:00 AM');
+%!test
+%! m = DA;
+%! m.TimeInfo.Format = 'QQ-yyyy';
+%! tt = timeseries2timetable (m);
+%! assert_equal (tt.Properties.RowTimes.Format, 'QQQ-uuuu');
+%! assert_equal (char (tt.Properties.RowTimes(1)), 'Q1-2024');
 %!test
 %! m = DA;
 %! m.TimeInfo.Format = 'mmm dd, yyyy';
@@ -606,6 +619,10 @@ endfunction
 %!error <timeseries2timetable: the samples of 'd3' are not rows, and a timetable holds two-dimensional variables only.> ...
 %! timeseries2timetable (timeseries (reshape (1:24, 2, 3, 4), ...
 %!                                   [0; 1; 2; 3], 'Name', 'd3'))
+%!error <timeseries2timetable: the event 'dd' is dated, but its series has no start date to place it on.> ...
+%! x = timeseries ([1; 2; 3], [0; 1; 2], 'Name', 'x'); ...
+%! x.Events = tsdata.event ('dd', '02-Jan-2024'); ...
+%! timeseries2timetable (x)
 %!error <timeseries2timetable: the interpolation function of 'fh' has no timetable continuity; set its method to 'linear' or 'zoh'.> ...
 %! m = setinterpmethod (U, @(nt, ot, od) interp1 (ot, od, nt, 'nearest')); ...
 %! m.Name = 'fh'; ...

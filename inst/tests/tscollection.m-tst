@@ -188,6 +188,18 @@
 %! DB = timeseries ([4; 5; 6], {'05-Jan-2024', '06-Jan-2024', ...
 %!                  '07-Jan-2024'}, 'Name', 'db'); ...
 %! tscollection ({DA, DB})
+## Test a dated member's events stay placed when its start date is dropped
+%!test
+%! d = timeseries ([4; 5; 6], [0; 1; 2], 'Name', 'd');
+%! d.TimeInfo.StartDate = '01-Jan-2024';
+%! d = addevent (d, 'ev', 1);
+%! warning ('off', 'all', 'local');
+%! t = tscollection ({timeseries([1; 2; 3], [0; 1; 2], 'Name', 'u'), d});
+%! x = t.d;
+%! assert_equal (x.Events(1).StartDate, '');
+%! assert_equal (gettsatevent (x, 'ev').Data, 5);
+%! assert_equal (class (timeseries2timetable (t).Properties.Events), ...
+%!               'eventtable');
 %!error <tscollection: the time vector of 'a' must match that of the collection.> ...
 %! X = timeseries ([5; 6; 7; 8], [0; 1; 2; 3], 'Name', 'x'); ...
 %! X.TimeInfo.StartDate = '01-Jan-2024'; ...
@@ -224,6 +236,14 @@
 %!test
 %! v = get (TC, {'Name', 'Length'});
 %! assert_equal (v, {'unnamed', 4});
+## Test an exact name comes first, so a member differing from a property
+## in case is reached
+%!test
+%! t = addts (tscollection ([0; 1; 2; 3]), [1; 2; 3; 4], 'time');
+%! assert_equal (class (get (t, 'time')), 'timeseries');
+%! assert_equal (class (get (t, 'Time')), 'double');
+%! t = set (t, 'time', timeseries ([9; 9; 9; 9], [0; 1; 2; 3]));
+%! assert_equal (t.time.Data, [9; 9; 9; 9]);
 %!error <tscollection.get: too many input arguments.> get (TC, 'Name', 1)
 %!error <tscollection.get: NAME must be a character vector or a cell array of character vectors.> ...
 %! get (TC, 5)
@@ -293,6 +313,11 @@
 %!assert_equal (isequal (TC, tscollection ({A, B}, 'Name', 'x')), false)
 %!assert_equal (isequal (TC, tscollection (A)), false)
 %!assert_equal (isequal (TC, 5), false)
+%!test
+%! x = tscollection ([0; 1]);
+%! y = x;
+%! y.TimeInfo.UserData = 5;
+%! assert_equal (isequal (x, y), false);
 %!error <tscollection.isequal: invalid number of input arguments.> ...
 %! isequal (TC)
 
@@ -692,7 +717,7 @@
 %!                                '01-Jan-2024 00:00:02'; ...
 %!                                '01-Jan-2024 00:00:03'});
 %! x = t.a;
-%! assert_equal (x.TimeInfo.StartDate, '01-Jan-2024');
+%! assert_equal (x.TimeInfo.StartDate, '01-Jan-2024 00:00:00');
 ## Test the format is used; MATLAB writes the default whatever it says
 %!test
 %! t = TC;
@@ -737,7 +762,7 @@
 %!test
 %! t = setabstime (TC, {'2024-01-01', '2024-01-02', '2024-01-03', ...
 %!                      '2024-01-04'}, 'yyyy-mm-dd');
-%! assert_equal (t.TimeInfo.StartDate, '2024-01-01');
+%! assert_equal (t.TimeInfo.StartDate, '01-Jan-2024 00:00:00');
 %! assert_equal (t.Time, [0; 86400; 172800; 259200]);
 %!test
 %! t = setabstime (TC, {'01-Jan-2024 06:00:00', '01-Jan-2024 12:00:00', ...
@@ -1074,8 +1099,10 @@
 %! t = TC; t.a.TimeInfo.Units = 'minutes';
 %!error <tscollection.subsasgn: rename a member with settimeseriesnames.> ...
 %! t = TC; t.a.Name = 'renamed';
-%!error <timeseries: 'Data' must have one sample per time.> ...
+%!error <tscollection.subsasgn: member 'a': 'Data' must have one sample per time.> ...
 %! t = TC; t.a.Data = [1; 2; 3];
+%!error <tscollection.subsasgn: a member name must be a valid variable name: 'my x'> ...
+%! t = TC; t.('my x') = timeseries ([1; 2; 3; 4], [0; 1; 2; 3]);
 %!error <tscollection.subsasgn: a member must be a timeseries; remove one with removets.> ...
 %! t = TC; t.a = [];
 %!error <tscollection.subsasgn: a member must be a timeseries; remove one with removets.> ...
@@ -1169,6 +1196,9 @@
 %!error <tscollection.vertcat: 'a' must have quality codes in every collection or in none.> ...
 %! vertcat (tscollection (timeseries ([1; 2], [-2; -1], 'Name', 'a')), ...
 %!          tscollection (A))
+%!error <tscollection.vertcat: the data of 'c' must be of one class throughout.> ...
+%! vertcat (tscollection (timeseries (int8 ([5; 6]), [0; 1], 'Name', 'c')), ...
+%!          tscollection (timeseries ([1.4; 300], [2; 3], 'Name', 'c')))
 %!error <tscollection.vertcat: collections with and without a start date cannot be concatenated.> ...
 %! DA = timeseries ([1; 2; 3], {'01-Jan-2024', '02-Jan-2024', ...
 %!                  '03-Jan-2024'}, 'Name', 'c'); ...
@@ -1195,6 +1225,15 @@
 ## Test the name of the first; MATLAB names the result 'unnamed'
 %!assert_equal ([tscollection({A, B}, 'Name', 'first'), ...
 %!               tscollection(C, 'Name', 'second')].Name, 'first')
+## Test the members joined take the first collection's time metadata
+%!test
+%! t1 = tscollection (timeseries ([1; 2], [0; 1], 'Name', 'a'));
+%! t1.TimeInfo.StartDate = '01-Jan-2024';
+%! z = tscollection (timeseries ([1; 2], [0; 1], 'Name', 'z'));
+%! z.TimeInfo.StartDate = '01-Jan-2024';
+%! z.TimeInfo.Format = 'yyyy-mm-dd';
+%! h = [t1, z];
+%! assert_equal (getabstime (h.z), getabstime (h));
 %!error <tscollection.horzcat: the member 'c' shared by the collections must be the same in each.> ...
 %! horzcat (tscollection (C), tscollection (timeseries ([0; 0; 0; 0], ...
 %!                                                     [0; 1; 2; 3], ...

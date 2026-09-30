@@ -320,7 +320,10 @@ classdef tscollection
       endif
       out = cell (1, numel (names));
       for i = 1:numel (names)
-        k = find (strcmpi (names{i}, allNames), 1);
+        k = find (strcmp (names{i}, allNames), 1);
+        if (isempty (k))
+          k = find (strcmpi (names{i}, allNames), 1);
+        endif
         if (isempty (k))
           error ("%s: unknown property: '%s'", scope, names{i});
         endif
@@ -367,7 +370,10 @@ classdef tscollection
         if (! isText (name))
           error ("%s: NAME must be a character vector.", scope);
         endif
-        k = find (strcmpi (char (name), allNames), 1);
+        k = find (strcmp (char (name), allNames), 1);
+        if (isempty (k))
+          k = find (strcmpi (char (name), allNames), 1);
+        endif
         if (isempty (k))
           error ("%s: unknown property: '%s'", scope, char (name));
         endif
@@ -1092,7 +1098,8 @@ classdef tscollection
     ## start at or after the end of the one before, so equal times where two
     ## meet give a repeated time.  Each member is joined as
     ## @code{timeseries.append} joins series: times in the coarsest units among
-    ## them, dates counted from the first start date, and samples of one size.
+    ## them, dates counted from the first start date, and samples of one size
+    ## and one class, as in MATLAB.
     ##
     ## A member's quality codes are joined when it has them in every
     ## collection, and refused when only some do; MATLAB then gives a member
@@ -1141,6 +1148,11 @@ classdef tscollection
         sizes = cellfun (@getdatasamplesize, full, 'UniformOutput', false);
         if (! all (cellfun (@(s) isequal (s, sizes{1}), sizes)))
           error ("%s: the samples of '%s' must be of one size throughout.", ...
+                 scope, names{k});
+        endif
+        classes = cellfun (@(m) class (m.Data), full, 'UniformOutput', false);
+        if (! all (strcmp (classes, classes{1})))
+          error ("%s: the data of '%s' must be of one class throughout.", ...
                  scope, names{k});
         endif
         hasQ = cellfun (@(m) ! isempty (m.Quality), full);
@@ -1201,8 +1213,10 @@ classdef tscollection
           if (! isempty (errmsg))
             error ("%s: %s", scope, errmsg);
           endif
+          m = c.members_{k};
+          m.TimeInfo = out.timeInfo_;
           out.names_{end+1} = name;
-          out.members_{end+1} = c.members_{k};
+          out.members_{end+1} = m;
         endfor
       endfor
       ## MATLAB sorts the members of the result by name
@@ -1295,6 +1309,10 @@ classdef tscollection
               error (strcat ("%s: a member must be a timeseries; remove", ...
                              " one with removets."), scope);
             endif
+            if (! isvarname (name))
+              error (strcat ("%s: a member name must be a valid variable", ...
+                             " name: '%s'"), scope, name);
+            endif
             val.Name = name;
             try
               this = addts (this, val);
@@ -1315,7 +1333,11 @@ classdef tscollection
                          scope);
               endswitch
             endif
-            val = subsasgn (m, chain, val);
+            try
+              val = subsasgn (m, chain, val);
+            catch err
+              error ("%s: member '%s': %s", scope, name, bareMessage (err));
+            end_try_catch
           endif
           if (! (isa (val, 'timeseries') && isscalar (val)))
             error (strcat ("%s: a member must be a timeseries; remove one", ...
@@ -1574,11 +1596,11 @@ function errmsg = nameClash (name, others)
 endfunction
 
 ## True when the time metadata A and B agree in units and start date, and,
-## where FORMAT is true, in format.
+## where FORMAT is true, in format and user data.
 function tf = sameTimeInfo (a, b, format)
   tf = strcmp (a.Units, b.Units) && strcmp (a.StartDate, b.StartDate);
   if (format)
-    tf = tf && strcmp (a.Format, b.Format);
+    tf = tf && strcmp (a.Format, b.Format) && isequal (a.UserData, b.UserData);
   endif
 endfunction
 

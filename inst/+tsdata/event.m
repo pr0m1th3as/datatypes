@@ -120,9 +120,6 @@ classdef event
         if (! isempty (errmsg))
           error ("tsdata.event: %s", errmsg);
         endif
-        if (! isa (time, 'datetime'))
-          startDate = datestr (datenum (startDate), 'dd-mmm-yyyy HH:MM:SS');
-        endif
         this.StartDate = startDate;
         this.Units = 'days';
       else
@@ -181,7 +178,8 @@ classdef event
     ## string scalar matched in any case, and @code{@var{values} = get
     ## (@var{e}, @var{names})} a row cell array of the properties named in
     ## the cell array @var{names}.  For an array, one @var{name} gives a cell
-    ## array of its size.
+    ## array of its size, and no name, or several, a cell array with a row
+    ## per object and a column per property.
     ##
     ## MATLAB refuses an output argument to @code{set} on an event and, given
     ## an array of events and one name, returns the first event's value only;
@@ -340,7 +338,7 @@ endfunction
 %!test
 %! e = tsdata.event ('x', 5);
 %! e.StartDate = '01-Jan-2024';
-%! assert_equal (e.StartDate, '01-Jan-2024');
+%! assert_equal (e.StartDate, '01-Jan-2024 00:00:00');
 %!test
 %! e = tsdata.event ('x', 5);
 %! e.EventData = {1, 'a'};

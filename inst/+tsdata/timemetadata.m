@@ -75,9 +75,12 @@ classdef timemetadata
     ## The absolute date the time vector counts from.
     ##
     ## A date as a character vector, or @qcode{''} for a relative time vector,
-    ## by default.  A string scalar or a scalar @code{datetime} is converted to
-    ## a character vector; text that is not a date is refused, where MATLAB
-    ## accepts any value.
+    ## by default.  Text, a string scalar or a scalar @code{datetime} is
+    ## stored in one form, @qcode{'dd-mmm-yyyy HH:MM:SS'}, with milliseconds
+    ## as @qcode{'.FFF'} when the seconds are not whole, so a date is read
+    ## once, when it is assigned, and never guessed at again.  Text that is not
+    ## a whole date (a year, a time of day) is refused, where MATLAB accepts
+    ## any value and keeps the text as given.
     ##
     ## @end deftp
     StartDate = ''
@@ -285,7 +288,8 @@ classdef timemetadata
     ## string scalar matched in any case, and @code{@var{values} = get
     ## (@var{ti}, @var{names})} a row cell array of the properties named in
     ## the cell array @var{names}.  For an array, one @var{name} gives a cell
-    ## array of its size.
+    ## array of its size, and no name, or several, a cell array with a row
+    ## per object and a column per property.
     ##
     ## @seealso{tsdata.timemetadata.set, timeseries.get}
     ## @end deftypefn
@@ -365,8 +369,8 @@ classdef timemetadata
 
     ## Validate a date given as text or as a scalar datetime.  LABEL names
     ## it in a message as printed: a quoted property or a bare argument.
-    ## Returns it as a character vector, '' for an empty one, and an empty
-    ## ERRMSG, or the body of the message the caller raises.
+    ## Returns it in the stored form of 'dateText', '' for an empty one, and
+    ## an empty ERRMSG, or the body of the message the caller raises.
     function [val, errmsg] = dateValue (val, label)
       errmsg = '';
       if (isa (val, 'datetime') && isscalar (val))
@@ -374,7 +378,7 @@ classdef timemetadata
           errmsg = sprintf ("%s must not be NaT.", label);
           return;
         endif
-        val = datestr (datenum (val), 'dd-mmm-yyyy HH:MM:SS');
+        val = tsdata.timemetadata.dateText (datevec (val));
         return;
       elseif (isstring (val) && isscalar (val))
         val = char (val);
@@ -387,11 +391,71 @@ classdef timemetadata
         val = '';
         return;
       endif
-      try
-        datevec (val);
-      catch
+      [dv, ok] = tsdata.timemetadata.dateVector (val);
+      if (! ok)
         errmsg = sprintf ("%s is not a date: '%s'", label, val);
+        return;
+      endif
+      val = tsdata.timemetadata.dateText (dv);
+    endfunction
+
+    ## Read the date TXT into a date vector: the stored form of 'dateText'
+    ## exactly, any other text as 'datevec' reads it.  OK is false for text
+    ## that is not a whole date, since 'datevec' reads '2024' as 31 December
+    ## 2023 and a time of day alone on the current date.
+    function [dv, ok] = dateVector (txt)
+      dv = [];
+      ok = false;
+      months = {'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', ...
+                'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'};
+      tok = regexp (txt, ['^(\d{2})-([A-Za-z]{3})-(\d{4}) ', ...
+                          '(\d{2}):(\d{2}):(\d{2}(?:\.\d+)?)$'], ...
+                    'tokens', 'once');
+      if (! isempty (tok))
+        m = find (strcmpi (tok{2}, months));
+        if (! isempty (m))
+          dv = [str2double(tok{3}), m, str2double(tok{1}), ...
+                str2double(tok{4}), str2double(tok{5}), str2double(tok{6})];
+          ok = true;
+          return;
+        endif
+      endif
+      if (! isempty (regexp (txt, '^\s*\d{1,2}:\d{2}', 'once')))
+        return;
+      endif
+      try
+        dv = datevec (txt);
+      catch
+        return;
       end_try_catch
+      ok = dv(2) >= 1 && dv(3) >= 1;
+    endfunction
+
+    ## The date vector DV in the stored form, 'dd-mmm-yyyy HH:MM:SS', with
+    ## the milliseconds as '.FFF' when the seconds are not whole.
+    function txt = dateText (dv)
+      dv = dv(1,:);
+      day = datenum (dv(1), dv(2), dv(3));
+      ms = round ((dv(4) * 3600 + dv(5) * 60 + dv(6)) * 1000);
+      day += floor (ms / 864e5);
+      ms = mod (ms, 864e5);
+      txt = sprintf ("%s %02d:%02d:%02d", datestr (day, 'dd-mmm-yyyy'), ...
+                     floor (ms / 36e5), floor (mod (ms, 36e5) / 6e4), ...
+                     floor (mod (ms, 6e4) / 1e3));
+      if (mod (ms, 1e3) != 0)
+        txt = sprintf ("%s.%03d", txt, mod (ms, 1e3));
+      endif
+    endfunction
+
+    ## The time from the date vector DV0 to each row of DV, in nanoseconds:
+    ## whole days and the seconds of the day apart, so a whole number of
+    ## seconds is exact.
+    function ns = dateOffset (dv, dv0)
+      days = datenum (dv(:,1), dv(:,2), dv(:,3)) ...
+             - datenum (dv0(1), dv0(2), dv0(3));
+      secs = (dv(:,4) - dv0(4)) * 3600 + (dv(:,5) - dv0(5)) * 60 ...
+             + (dv(:,6) - dv0(6));
+      ns = days * 864e11 + secs * 1e9;
     endfunction
 
   endmethods
@@ -532,7 +596,7 @@ endclassdef
 %!test
 %! ti = tsdata.timemetadata ();
 %! ti.StartDate = '01-Jan-2024';
-%! assert_equal (ti.StartDate, '01-Jan-2024');
+%! assert_equal (ti.StartDate, '01-Jan-2024 00:00:00');
 %!test
 %! ti = tsdata.timemetadata ();
 %! ti.StartDate = string ('01-Jan-2024 06:00:00');
@@ -541,6 +605,17 @@ endclassdef
 %! ti = tsdata.timemetadata ();
 %! ti.StartDate = datetime (2024, 1, 1, 6, 0, 0);
 %! assert_equal (ti.StartDate, '01-Jan-2024 06:00:00');
+## Test a start date is stored in one form, milliseconds kept
+%!test
+%! ti = tsdata.timemetadata ();
+%! ti.StartDate = datetime (2024, 1, 1, 6, 0, 0.25);
+%! assert_equal (ti.StartDate, '01-Jan-2024 06:00:00.250');
+%! ti.StartDate = '01-Jan-2024 06:00:00.250';
+%! assert_equal (ti.StartDate, '01-Jan-2024 06:00:00.250');
+%! ti.StartDate = '2024-03-05';
+%! assert_equal (ti.StartDate, '05-Mar-2024 00:00:00');
+%! ti.StartDate = '31-Dec-2024 23:59:59.9996';
+%! assert_equal (ti.StartDate, '01-Jan-2025 00:00:00');
 %!test
 %! ti = tsdata.timemetadata ();
 %! ti.StartDate = '01-Jan-2024';
@@ -612,6 +687,12 @@ endclassdef
 %! setfield (tsdata.timemetadata (), 'StartDate', 5)
 %!error <tsdata.timemetadata: 'StartDate' is not a date: 'bogus'> ...
 %! setfield (tsdata.timemetadata (), 'StartDate', 'bogus')
+%!error <tsdata.timemetadata: 'StartDate' is not a date: '2024'> ...
+%! setfield (tsdata.timemetadata (), 'StartDate', '2024')
+%!error <tsdata.timemetadata: 'StartDate' is not a date: '1'> ...
+%! setfield (tsdata.timemetadata (), 'StartDate', '1')
+%!error <tsdata.timemetadata: 'StartDate' is not a date: '13:00'> ...
+%! setfield (tsdata.timemetadata (), 'StartDate', '13:00')
 %!error <tsdata.timemetadata: 'StartDate' must not be NaT.> ...
 %! setfield (tsdata.timemetadata (), 'StartDate', NaT)
 %!error <tsdata.timemetadata: 'Length' is read-only.> ...
