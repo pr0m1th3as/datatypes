@@ -9,7 +9,7 @@
 %! G = findgroups (T(:, 'Species'));
 %! splitapply (@mean, T(:, 'Petal'), G)
 %!
-%! ## The applied function may return several outputs — one column each — and
-%! ## can read several variables at once.
+%! ## The applied function may return several outputs, one column each, and can
+%! ## read several variables at once.
 %! [lo, hi] = splitapply (@(x) deal (min (x), max (x)), T(:, 'Petal'), G);
 %! [lo, hi]

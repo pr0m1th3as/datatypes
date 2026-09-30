@@ -1,5 +1,5 @@
 %!demo
-%! ## `strcmp` compares strings for exact equality — the same idea as `==`, kept
+%! ## `strcmp` compares strings for exact equality, the same idea as `==`, kept
 %! ## for compatibility with the classic string functions.
 %!
 %! a = string ({'cat'; 'dog'})

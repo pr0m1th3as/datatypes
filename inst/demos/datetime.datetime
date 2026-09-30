@@ -13,7 +13,7 @@
 
 %!demo
 %! ## A single numeric row is read as a date vector `[Y M D h m s]`, and a range
-%! ## of datetimes is built with the colon operator and a step — here one
+%! ## of datetimes is built with the colon operator and a step, here one
 %! ## calendar day with `caldays`.
 %!
 %! datetime ([2024, 3, 9, 14, 30, 15])
@@ -31,7 +31,7 @@
 %!demo
 %! ## The `'Format'` property controls display only, never the stored value.
 %! ## Here the SAME instant is shown several ways by setting different Unicode
-%! ## (LDML) field patterns — `y` year, `M` month, `d` day, `H` hour, `e`
+%! ## (LDML) field patterns: `y` year, `M` month, `d` day, `H` hour, `e`
 %! ## weekday.
 %!
 %! datetime (2024, 3, 9, 14, 30, 15, 'Format', 'yyyy-MM-dd HH:mm:ss')
@@ -39,7 +39,7 @@
 %! datetime (2024, 3, 9, 14, 30, 15, 'Format', 'eeee')
 
 %!demo
-%! ## By default the display omits sub-seconds even though they are stored — ask
+%! ## By default the display omits sub-seconds even though they are stored; ask
 %! ## for them explicitly with fractional-second (`S`) codes.
 %!
 %! datetime (2024, 3, 9, 14, 30, 15.5)

@@ -6,7 +6,7 @@
 %! fillmissing (T, 'constant', 0)
 
 %!demo
-%! ## Interpolation rules fill from neighbouring rows and work across types —
+%! ## Interpolation rules fill from neighbouring rows and work across types:
 %! ## `'previous'` carries the last value forward (here through both a
 %! ## `datetime` and a numeric column), while `'linear'` interpolates numeric
 %! ## gaps.

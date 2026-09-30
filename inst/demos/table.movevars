@@ -1,6 +1,6 @@
 %!demo
 %! ## `movevars` reorders variables, placing one (or several) `'Before'` or
-%! ## `'After'` another — the data is unchanged, only the column order shifts.
+%! ## `'After'` another.  The data is unchanged; only the column order shifts.
 %!
 %! Name = string ({'Sanchez'; 'Johnson'; 'Li'});
 %! Age = [38; 43; 40];

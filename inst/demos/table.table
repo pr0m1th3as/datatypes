@@ -61,7 +61,7 @@
 %! ## Dot indexing extracts one variable as its own native type.
 %! T.Visit
 %!
-%! ## Parenthesis indexing selects a sub-table — the result is still a table.
+%! ## Parenthesis indexing selects a sub-table; the result is still a table.
 %! T(1:2, {'Name', 'Age'})
 %!
 %! ## Brace indexing pulls the raw contents out of the selected variables.
@@ -88,8 +88,8 @@
 %! T.Age'
 
 %!demo
-%! ## This implementation fully supports **chained** referencing and assignment
-%! ## — indexing that reaches through several levels in a single expression.
+%! ## This implementation fully supports **chained** referencing and assignment:
+%! ## indexing that reaches through several levels in a single expression.
 %! ## (Octave extension: MATLAB permits chained *reference* but not chained
 %! ## *assignment*.)
 %!
@@ -106,7 +106,7 @@
 
 %!demo
 %! ## Chaining is most useful with nested tables, reaching an inner variable
-%! ## directly — again both for reading and, unlike MATLAB, for writing.
+%! ## directly, again both for reading and, unlike MATLAB, for writing.
 %!
 %! Inner = table ([1; 2; 3], [4; 5; 6], 'VariableNames', {'p', 'q'})
 %! NT = table ([10; 20; 30], Inner, 'VariableNames', {'id', 'inner'})

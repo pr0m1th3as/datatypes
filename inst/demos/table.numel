@@ -1,6 +1,6 @@
 %!demo
-%! ## For a table `numel` returns rows times variables — the number of table
-%! ## *cells* — not the count of underlying data elements.  This 3-by-2 table
+%! ## For a table `numel` returns rows times variables, the number of table
+%! ## *cells*, not the count of underlying data elements.  This 3-by-2 table
 %! ## therefore has 6 cells even though `BloodPressure` holds two columns.
 %!
 %! Age = [38; 43; 40];

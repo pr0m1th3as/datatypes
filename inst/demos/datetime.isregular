@@ -6,9 +6,9 @@
 %! isregular (datetime (2024, 1, [1, 2, 5]))
 
 %!demo
-%! ## A monthly series is *not* equally spaced in absolute time — months differ
-%! ## in length — but it IS regular with respect to the `'months'` unit, and the
-%! ## second output returns the common step.
+%! ## A monthly series is *not* equally spaced in absolute time, since months
+%! ## differ in length, but it IS regular with respect to the `'months'` unit,
+%! ## and the second output returns the common step.
 %!
 %! m = datetime (2024, 1, 1) : calmonths (1) : datetime (2024, 5, 1)
 %! isregular (m)

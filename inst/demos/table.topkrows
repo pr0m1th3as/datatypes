@@ -1,6 +1,6 @@
 %!demo
 %! ## `topkrows` returns the top `k` rows by a sort key without sorting the
-%! ## whole table — like `sortrows` followed by `head`, but stated in one call.
+%! ## whole table, like `sortrows` followed by `head`, but stated in one call.
 %! ## The default direction is descending, so the largest values come first.
 %!
 %! LastName = {'Sanchez'; 'Johnson'; 'Li'; 'Diaz'; 'Brown'};

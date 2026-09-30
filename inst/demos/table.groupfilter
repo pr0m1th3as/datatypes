@@ -1,6 +1,6 @@
 %!demo
-%! ## `groupfilter` keeps the rows belonging to groups that satisfy a predicate
-%! ## — it filters *whole groups*, not individual rows.  Here only species with
+%! ## `groupfilter` keeps the rows belonging to groups that satisfy a predicate;
+%! ## it filters *whole groups*, not individual rows.  Here only species with
 %! ## more than two observations are retained.
 %!
 %! Species = {'setosa'; 'virginica'; 'setosa'; 'virginica'; 'setosa'};

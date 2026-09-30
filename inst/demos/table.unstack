@@ -1,5 +1,5 @@
 %!demo
-%! ## `unstack` reshapes tall data to wide — the inverse of `stack`.  It spreads
+%! ## `unstack` reshapes tall data to wide, the inverse of `stack`.  It spreads
 %! ## the values of one data variable across new columns, one per level of an
 %! ## indicator variable, grouping by the remaining variables.
 %!

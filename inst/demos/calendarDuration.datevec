@@ -7,7 +7,7 @@
 
 %!demo
 %! ## An element that is not finite has no components to divide between, so all
-%! ## six take that same infinity — the same answer `split` gives for it.
+%! ## six take that same infinity, the same answer `split` gives for it.
 %!
 %! d = calendarDuration ([1, Inf, NaN], 2, 3)
 %! datevec (d)

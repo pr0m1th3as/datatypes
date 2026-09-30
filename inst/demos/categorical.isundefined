@@ -1,5 +1,5 @@
 %!demo
-%! ## `isundefined` flags the elements that belong to no category — the
+%! ## `isundefined` flags the elements that belong to no category, the
 %! ## `<undefined>` values that stand in for missing data.  Empty labels become
 %! ## undefined at construction time.
 %!

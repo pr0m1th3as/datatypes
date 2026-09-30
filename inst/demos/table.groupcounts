@@ -1,5 +1,5 @@
 %!demo
-%! ## `groupcounts` tallies how many rows fall in each group — a frequency
+%! ## `groupcounts` tallies how many rows fall in each group, as a frequency
 %! ## table.  It also reports each group's share as a percentage of the total.
 %!
 %! Species = {'setosa'; 'virginica'; 'setosa'; 'virginica'; 'setosa'};

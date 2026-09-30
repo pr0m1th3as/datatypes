@@ -42,8 +42,8 @@ function out = seconds (x)
 endfunction
 
 %!demo
-%! ## `seconds` builds a fixed-length duration from a number of seconds — one of
-%! ## the builders (`seconds`, `minutes`, `hours`, `days`, `years`,
+%! ## `seconds` builds a fixed-length duration from a number of seconds.  It is
+%! ## one of the builders (`seconds`, `minutes`, `hours`, `days`, `years`,
 %! ## `milliseconds`) you add together to make longer spans.
 %!
 %! seconds (90)

@@ -1,7 +1,8 @@
 %!demo
 %! ## `anymissing` is a fast scalar check: `true` as soon as *any* element of
-%! ## the table is missing, across every variable and type — `NaN` for numeric,
-%! ## `NaT` for datetime, `<missing>` for string, `<undefined>` for categorical.
+%! ## the table is missing, across every variable and type (`NaN` for numeric,
+%! ## `NaT` for datetime, `<missing>` for string, `<undefined>` for
+%! ## categorical).
 %!
 %! Name = string ({'Li'; 'Diaz'; 'Brown'});
 %! Age = [38; 43; 40];

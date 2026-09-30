@@ -121,7 +121,7 @@ endfunction
 
 %!demo
 %! ## Supply `'VariableNames'` (and optionally `'RowNames'`) to label the result
-%! ## as you convert — the columns of the matrix keep their order.
+%! ## as you convert; the columns of the matrix keep their order.
 %!
 %! A = [38, 71; 43, 69; 40, 67];
 %! array2table (A, 'VariableNames', {'Age', 'Height'}, ...

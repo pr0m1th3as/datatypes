@@ -1,12 +1,12 @@
 %!demo
-%! ## `duration` represents a *fixed-length* elapsed time — unlike
+%! ## `duration` represents a *fixed-length* elapsed time.  Unlike
 %! ## `calendarDuration`, here a day is always 24 hours and a year a fixed
 %! ## number of days.  Give hours, minutes and seconds:
 %!
 %! duration (1, 30, 15)
 
 %!demo
-%! ## Values need not lie in the usual ranges — 25 hours is fine and stays 25
+%! ## Values need not lie in the usual ranges: 25 hours is fine and stays 25
 %! ## hours in the default `hh:mm:ss` display.  A fourth argument adds
 %! ## milliseconds.
 %!
@@ -32,7 +32,7 @@
 %! duration (30, 15, 0, 'Format', 'd')
 
 %!demo
-%! ## A numeric matrix builds a column of durations, one per row — columns are
-%! ## hours, minutes and seconds.
+%! ## A numeric matrix builds a column of durations, one per row; its columns
+%! ## are hours, minutes and seconds.
 %!
 %! duration ([1, 30, 0; 0, 45, 30])

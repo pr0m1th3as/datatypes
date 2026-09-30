@@ -43,7 +43,7 @@ function out = years (x)
 endfunction
 
 %!demo
-%! ## `years` builds a *fixed-length* year of 365.2425 days — a constant span,
+%! ## `years` builds a *fixed-length* year of 365.2425 days: a constant span,
 %! ## not a calendar year.
 %!
 %! years (1)

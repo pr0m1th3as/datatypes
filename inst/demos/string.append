@@ -1,5 +1,5 @@
 %!demo
-%! ## `append` joins its arguments end to end, element-wise — like `strcat`, but
+%! ## `append` joins its arguments end to end, element-wise, like `strcat`, but
 %! ## it keeps trailing whitespace.
 %!
 %! first = string ({'Ann'; 'Bob'})

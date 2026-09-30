@@ -11,7 +11,7 @@
 
 %!demo
 %! ## Writing to a named `'Sheet'` of an existing workbook adds or replaces just
-%! ## that sheet, leaving the others intact — so several tables can share one
+%! ## that sheet, leaving the others intact, so several tables can share one
 %! ## file.
 %!
 %! filename = fullfile (tempdir (), 'workbook.ods');

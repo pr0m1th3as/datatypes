@@ -1,5 +1,5 @@
 %!demo
-%! ## A table is a *vector* when it is a single row **or** a single variable —
+%! ## A table is a *vector* when it is a single row **or** a single variable,
 %! ## the table analogue of a 1-by-N or N-by-1 array.
 %!
 %! ## One variable, several rows: a column, hence a vector.

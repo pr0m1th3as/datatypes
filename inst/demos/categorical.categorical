@@ -5,7 +5,7 @@
 %!
 %! sizes = {'M'; 'S'; 'L'; 'M'; 'S'; 'L'; 'M'}
 %!
-%! ## ... the categories are detected automatically — the sorted unique values.
+%! ## ... the categories are detected automatically: the sorted unique values.
 %! C = categorical (sizes)
 %! categories (C)
 

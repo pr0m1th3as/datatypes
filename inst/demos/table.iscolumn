@@ -1,5 +1,5 @@
 %!demo
-%! ## A table is a *column* when it has a single variable — regardless of how
+%! ## A table is a *column* when it has a single variable, regardless of how
 %! ## many columns that variable spans internally.
 %!
 %! T1 = table ([1; 2; 3], 'VariableNames', {'x'})

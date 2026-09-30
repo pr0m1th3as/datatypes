@@ -1,6 +1,6 @@
 %!demo
-%! ## `innerjoin` keeps only rows whose key exists in *both* tables — unmatched
-%! ## rows are dropped — and, unlike `join`, the right key need not be unique.
+%! ## `innerjoin` keeps only rows whose key exists in *both* tables, dropping
+%! ## unmatched rows, and, unlike `join`, the right key need not be unique.
 %! ## Pass `'Keys'` to match on several variables at once; here a row must agree
 %! ## on both `Name` and `Year` to match.
 %!

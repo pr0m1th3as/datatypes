@@ -1,7 +1,7 @@
 %!demo
 %! ## A `string` is MATLAB's string-array type.  There is a crucial Octave
 %! ## difference to keep in mind: in core Octave BOTH `'text'` and `"text"`
-%! ## produce ordinary **character vectors** (class `char`) — unlike MATLAB, the
+%! ## produce ordinary **character vectors** (class `char`).  Unlike MATLAB, the
 %! ## double quote does *not* make a string.  Only the `string` constructor
 %! ## produces a string array.
 %!
@@ -10,7 +10,7 @@
 %! class (string ('text'))    % the constructor -> string
 
 %!demo
-%! ## Build a string array from a cell array of character vectors — one element
+%! ## Build a string array from a cell array of character vectors, one element
 %! ## per cell.  A string array prints its elements in double quotes.
 %!
 %! string ({'apple'; 'banana'; 'cherry'})

@@ -1,6 +1,6 @@
 %!demo
-%! ## `dateshift` snaps a datetime to a calendar boundary — the start or end of
-%! ## a unit such as the month.
+%! ## `dateshift` snaps a datetime to a calendar boundary, the start or end of a
+%! ## unit such as the month.
 %!
 %! t = datetime (2024, 3, 15, 10, 30, 0)
 %! dateshift (t, 'start', 'month')

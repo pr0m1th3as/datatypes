@@ -1,7 +1,7 @@
 %!demo
 %! ## `issortedrows` tests whether the rows are already in sorted order, using
-%! ## the same key/direction syntax as `sortrows` — handy to skip a needless
-%! ## sort.
+%! ## the same key/direction syntax as `sortrows`, which is handy to skip a
+%! ## needless sort.
 %!
 %! T = table ([1; 3; 2], [10; 20; 30], 'VariableNames', {'Age', 'Height'})
 %! issortedrows (T, 'Age')

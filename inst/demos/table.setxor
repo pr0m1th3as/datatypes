@@ -10,5 +10,5 @@
 %!            'VariableNames', {'Name', 'Age', 'State'})
 %! setxor (A, B)
 %!
-%! ## Diaz and Brown, shared by both, drop out — leaving Li (from `A`) and Lee
+%! ## Diaz and Brown, shared by both, drop out, leaving Li (from `A`) and Lee
 %! ## (from `B`).

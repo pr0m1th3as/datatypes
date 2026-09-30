@@ -1,5 +1,5 @@
 %!demo
-%! ## `calendarDuration` represents a span in *calendar* units — years, months,
+%! ## `calendarDuration` represents a span in *calendar* units: years, months,
 %! ## days, and a time-of-day.  A calendar month or year is a real calendar
 %! ## step, not a fixed number of days, which is what sets it apart from
 %! ## `duration`.  Give years, months and days:
@@ -31,8 +31,8 @@
 %! calendarDuration (1, 14, 40, 'Format', 'ymwdt')
 
 %!demo
-%! ## A numeric matrix with three (or six) columns builds a whole array at once
-%! ## — one calendar duration per row.
+%! ## A numeric matrix with three (or six) columns builds a whole array at once,
+%! ## one calendar duration per row.
 %!
 %! calendarDuration ([1, 2, 15; 0, 6, 3])
 

@@ -1,5 +1,5 @@
 %!demo
-%! ## `size` reports `[height, width]` — rows by *variables*.  A variable that
+%! ## `size` reports `[height, width]`, rows by *variables*.  A variable that
 %! ## spans several columns still counts as one, so the second element matches
 %! ## `width`, not the total number of underlying columns.
 %!

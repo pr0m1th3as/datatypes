@@ -424,8 +424,8 @@ endfunction
 %! readtable (filename)
 
 %!demo
-%! ## Options let you override the defaults — for example read a specific
-%! ## spreadsheet `'Sheet'`, or turn the first column into row names.
+%! ## Options let you override the defaults, for example to read a specific
+%! ## spreadsheet `'Sheet'`, or to turn the first column into row names.
 %!
 %! filename = fullfile (tempdir (), 'patients.ods');
 %! T = table ([38; 43], 'VariableNames', {'Age'}, 'RowNames', {'Li', 'Diaz'});

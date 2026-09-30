@@ -1,5 +1,5 @@
 %!demo
-%! ## `juliandate` returns the Julian date — days since noon UTC on 1 January
+%! ## `juliandate` returns the Julian date, the days since noon UTC on 1 January
 %! ## 4713 BCE.  Unlike `datenum`, it is based on the absolute UTC instant.
 %! ## Pass `'modifiedjuliandate'` for the modified form.
 %!

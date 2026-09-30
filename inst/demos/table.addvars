@@ -1,7 +1,7 @@
 %!demo
 %! ## `addvars` inserts one or more variables into a table.  Appended at the end
 %! ## by default, the new columns can be named with `'NewVariableNames'` and may
-%! ## be of any type — here a `datetime` is added to a table of mixed variables.
+%! ## be of any type; here a `datetime` is added to a table of mixed variables.
 %!
 %! Name = string ({'Sanchez'; 'Johnson'; 'Li'});
 %! Age = [38; 43; 40];

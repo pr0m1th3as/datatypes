@@ -1,6 +1,6 @@
 %!demo
-%! ## `rmmissing` drops every row that has a missing value in any variable —
-%! ## listwise deletion — counting gaps of every type (`NaN`, `NaT`,
+%! ## `rmmissing` drops every row that has a missing value in any variable
+%! ## (listwise deletion), counting gaps of every type (`NaN`, `NaT`,
 %! ## `<undefined>`, `<missing>`).  Here the rows with a missing age, grade, or
 %! ## visit all go.
 %!

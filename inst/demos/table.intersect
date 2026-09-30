@@ -1,5 +1,5 @@
 %!demo
-%! ## `intersect` returns the rows common to both tables — the set intersection.
+%! ## `intersect` returns the rows common to both tables, the set intersection.
 %! ## A row matches only when *every* variable agrees, so mixed-type rows are
 %! ## compared field by field.
 %!

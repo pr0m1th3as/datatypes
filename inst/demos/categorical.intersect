@@ -1,5 +1,5 @@
 %!demo
-%! ## `intersect` returns the categories common to the values of two arrays —
+%! ## `intersect` returns the categories common to the values of two arrays, as
 %! ## set arithmetic over categorical data.
 %!
 %! A = categorical ({'S'; 'M'; 'L'})

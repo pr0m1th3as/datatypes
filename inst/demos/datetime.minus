@@ -7,7 +7,7 @@
 
 %!demo
 %! ## Subtracting a `duration` shifts by a fixed amount, while subtracting a
-%! ## `calendarDuration` is calendar-aware — one month before 31 March clamps to
+%! ## `calendarDuration` is calendar-aware: one month before 31 March clamps to
 %! ## the last day of February.
 %!
 %! datetime (2024, 3, 9) - days (3)

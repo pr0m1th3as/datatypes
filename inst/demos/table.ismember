@@ -1,6 +1,6 @@
 %!demo
 %! ## `ismember` tests, row by row, whether each row of the first table also
-%! ## occurs in the second — returning a logical column, not a new table.  A row
+%! ## occurs in the second, returning a logical column, not a new table.  A row
 %! ## counts as a member only when all of its variables match a row of `B`.
 %!
 %! A = table ({'Li'; 'Diaz'; 'Brown'}, [38; 40; 49], ...

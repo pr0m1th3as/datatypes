@@ -1,6 +1,6 @@
 %!demo
-%! ## `isnan` flags the elements built from a NaN component — a Not-a-Number
-%! ## span.
+%! ## `isnan` flags the elements built from a NaN component, that is,
+%! ## Not-a-Number spans.
 %!
 %! d = calmonths ([1, NaN, 3])
 %! isnan (d)

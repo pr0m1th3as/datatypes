@@ -1,6 +1,6 @@
 %!demo
 %! ## `mergecats` collapses several categories into one, relabelling every
-%! ## element that used them — a quick way to coarsen a classification.
+%! ## element that used them, which is a quick way to coarsen a classification.
 %!
 %! C = categorical ({'S'; 'M'; 'L'; 'S'; 'M'}, {'S', 'M', 'L'})
 %!

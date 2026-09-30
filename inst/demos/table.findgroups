@@ -1,6 +1,6 @@
 %!demo
 %! ## `findgroups` assigns each row an integer group number based on its
-%! ## grouping variable(s) — the setup step for a `splitapply` computation.  A
+%! ## grouping variable(s), the setup step for a `splitapply` computation.  A
 %! ## second output returns a table naming each group.
 %!
 %! Species = {'setosa'; 'virginica'; 'setosa'; 'virginica'; 'setosa'};

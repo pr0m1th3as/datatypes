@@ -1,5 +1,5 @@
 %!demo
-%! ## `rmse` returns the root-mean-square error between two duration arrays — a
+%! ## `rmse` returns the root-mean-square error between two duration arrays, a
 %! ## duration measuring their typical difference.
 %!
 %! predicted = hours ([1, 2, 3])

@@ -1,6 +1,6 @@
 %!demo
 %! ## By default `table2struct` returns a **struct array**, one element per row,
-%! ## with one field per variable — handy for row-wise iteration.
+%! ## with one field per variable, which is handy for row-wise iteration.
 %!
 %! LastName = {'Sanchez'; 'Johnson'; 'Li'};
 %! Age = [38; 43; 38];
@@ -12,7 +12,7 @@
 
 %!demo
 %! ## Pass `'ToScalar', true` to instead get a **scalar struct** whose fields
-%! ## are whole columns — the layout used by `struct2table` with
+%! ## are whole columns, the layout used by `struct2table` with
 %! ## `'AsArray', true`.
 %!
 %! LastName = {'Sanchez'; 'Johnson'; 'Li'};

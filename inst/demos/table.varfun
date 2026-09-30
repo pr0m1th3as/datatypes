@@ -1,5 +1,5 @@
 %!demo
-%! ## `varfun` applies a function to each variable of a table — a column-wise
+%! ## `varfun` applies a function to each variable of a table, as a column-wise
 %! ## map.  The result is itself a table, its variable names prefixed by the
 %! ## function.
 %!

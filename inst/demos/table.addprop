@@ -17,7 +17,7 @@
 %! T.Properties.CustomProperties.Instrument = {'form', 'stadiometer', 'form'};
 %! T.Properties.CustomProperties
 %!
-%! ## Because it is variable-scoped, `Instrument` follows column operations —
+%! ## Because it is variable-scoped, `Instrument` follows column operations:
 %! ## after removing `Height` its entry drops out too, staying aligned with the
 %! ## columns.
 %! T2 = removevars (T, 'Height');

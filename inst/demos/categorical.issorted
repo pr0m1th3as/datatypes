@@ -1,6 +1,6 @@
 %!demo
 %! ## `issorted` checks whether an ordinal array is already in non-decreasing
-%! ## category order — a cheap test to skip a needless `sort`.
+%! ## category order, a cheap test to skip a needless `sort`.
 %!
 %! C = categorical ({'S'; 'M'; 'L'}, {'S', 'M', 'L'}, 'Ordinal', true)
 %! issorted (C)
