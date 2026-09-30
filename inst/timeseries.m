@@ -1273,8 +1273,8 @@ classdef timeseries
     ## a cell array of character vectors, a string array, a character matrix
     ## of one date per row, a character vector for a single sample, or a
     ## @code{datetime} array.  The earliest date becomes
-    ## @qcode{TimeInfo.StartDate}, stored as @qcode{'dd-mmm-yyyy HH:MM:SS'},
-    ## and
+    ## @qcode{TimeInfo.StartDate}, stored as @qcode{'dd-mmm-yyyy HH:MM:SS'}
+    ## with milliseconds as @qcode{'.FFF'} when the seconds are not whole, and
     ## @qcode{Time} holds each date's offset from it in the series' own
     ## @qcode{TimeInfo.Units}, which are kept: a series in seconds given one
     ## date a day gets times @code{[0 86400 172800 @dots{}]}.  Each date is read
@@ -1328,6 +1328,9 @@ classdef timeseries
       if (! isempty (errmsg))
         error ("%s: DATES %s", scope, errmsg);
       endif
+      if (any (dv(:,1) < 0 | dv(:,1) > 9999))
+        error ("%s: DATES must fall in the years 0 to 9999.", scope);
+      endif
       n = numel (this.time_);
       if (rows (dv) != n)
         error ("%s: DATES must hold one date per sample.", scope);
@@ -1352,8 +1355,11 @@ classdef timeseries
         ns = (dv(:,4) * 3600 + dv(:,5) * 60 + dv(:,6)) * 1e9;
         startDate = '';
       else
-        [ns, dv0] = dateOffsets (dv);
+        [~, dv0] = dateOffsets (dv);
         startDate = tsdata.timemetadata.dateText (dv0);
+        ## Counted from the start date as stored, to the millisecond
+        ns = tsdata.timemetadata.dateOffset ( ...
+               dv, tsdata.timemetadata.dateVector (startDate));
       endif
       time = ns / nsPerUnit (this.timeInfo_.Units);
 
@@ -2189,6 +2195,10 @@ classdef timeseries
       if (isempty (grid))
         ts1 = subset (ts1, []);
         ts2 = subset (ts2, []);
+        if (! isempty (refDate) && ! keep)
+          ts1.timeInfo_.StartDate = refDate;
+          ts2.timeInfo_.StartDate = refDate;
+        endif
         return;
       endif
 
@@ -3027,6 +3037,13 @@ classdef timeseries
         endif
       endif
       t = ns / nsPerUnit (this.timeInfo_.Units);
+      ## A time converted from other units or another date lands on a sample
+      ## it names only up to rounding; it is that sample's time
+      d = abs (this.time_ - t);
+      k = find (d == min (d), 1);
+      if (! isempty (k) && d(k) <= 1e-12 * max (1, abs (t)))
+        t = this.time_(k);
+      endif
     endfunction
 
     ## The series evaluated at the sorted times T, in its own units, by the
@@ -3358,6 +3375,14 @@ classdef timeseries
                        " the quality codes held per data element cannot", ...
                        " follow it."), scope);
       endif
+      ## Codes held per sample lie along the time dimension of the result
+      if (! isempty (q) && numel (q) == n)
+        if (td == 1)
+          ts.quality_ = q(:);
+        else
+          ts.quality_ = reshape (q, [ones(1, td - 1), n]);
+        endif
+      endif
       ts.data_ = data;
       ts.timeDim_ = td;
     endfunction
@@ -3555,12 +3580,6 @@ classdef timeseries
         error ("timeseries: 'Data' must be a numeric or logical array.");
       endif
       n = numel (this.time_);
-      q = this.quality_;
-      if (! isempty (q) && numel (q) != n && ! isequal (size (val), size (q)))
-        error (strcat ("timeseries: 'Data' must keep the size of the", ...
-                       " quality codes held per data element; clear", ...
-                       " 'Quality' first."));
-      endif
       if (n > 0 && isequal (size (val), size (this.data_)))
         td = this.timeDim_;
       elseif (n > 0 && ! isempty (val))
@@ -3572,6 +3591,12 @@ classdef timeseries
         td = 1;
       else
         td = ndims (val);
+      endif
+      q = this.quality_;
+      if (! isempty (q) && numel (q) != n && ! isequal (size (val), size (q)))
+        error (strcat ("timeseries: 'Data' must keep the size of the", ...
+                       " quality codes held per data element; clear", ...
+                       " 'Quality' first."));
       endif
       this.data_ = val;
       this.timeDim_ = td;
@@ -3869,9 +3894,9 @@ endfunction
 
 ## Apply F to the data X, N samples along dimension TD, and Y: another
 ## series' data when BOTHSERIES, else a number, a scalar or one sample's
-## size.  Element-wise operators broadcast; matrix operators run per sample.
-## Returns the data and an empty ERRMSG, or the body of the message the caller
-## raises.
+## size.  Element-wise operators broadcast; matrix operators run per sample,
+## named by OP.  Returns the data, the dimension its time runs along, and an
+## empty ERRMSG, or the body of the message the caller raises.
 function [data, td, errmsg] = sampleOp (f, x, y, td, n, op, bothSeries)
   data = [];
   errmsg = '';
@@ -3997,7 +4022,6 @@ function tf = sameSeries (a, b, equalNans)
   tf = true;
 endfunction
 
-## Raise unless OBJ is a single series.
 ## The times at which 'synchronize' evaluates a series, and the times it
 ## labels the result with, for the GRID of times in nanoseconds on a common
 ## scale.  TNS are the series' own times on that scale, OWN the same times in
@@ -4027,6 +4051,7 @@ function tf = isUniform (t)
   tf = isempty (d) || (all (d > 0) && max (d) - min (d) <= 1e-10 * max (d));
 endfunction
 
+## Raise unless OBJ is a single series.
 function mustBeScalar (obj, method)
   if (! isscalar (obj))
     error ("timeseries.%s: TS must be a single series.", method);
@@ -4208,9 +4233,16 @@ function [time, startDate, units, errmsg] = parseTime (time)
       errmsg = ["TIME ", errmsg];
       return;
     endif
-    [ns, dv0] = dateOffsets (dv);
-    time = ns / 864e11;
+    if (any (dv(:,1) < 0 | dv(:,1) > 9999))
+      errmsg = "TIME must fall in the years 0 to 9999.";
+      return;
+    endif
+    [~, dv0] = dateOffsets (dv);
     startDate = tsdata.timemetadata.dateText (dv0);
+    ## Counted from the start date as stored, to the millisecond
+    ns = tsdata.timemetadata.dateOffset ( ...
+           dv, tsdata.timemetadata.dateVector (startDate));
+    time = ns / 864e11;
     units = 'days';
     return;
   endif
@@ -4254,7 +4286,10 @@ function [dv, errmsg] = dateVectors (x, fmt)
   dv = zeros (numel (x), 6);
   for i = 1:numel (x)
     try
-      if (isempty (fmt))
+      [dvi, ok] = tsdata.timemetadata.dateVector (x{i});
+      if (isempty (fmt) && ok)
+        dv(i,:) = dvi;
+      elseif (isempty (fmt))
         dv(i,:) = datevec (x{i});
       else
         dv(i,:) = datevec (x{i}, fmt);

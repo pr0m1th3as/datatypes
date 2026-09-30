@@ -95,7 +95,8 @@ classdef event
     ## @var{time}.  A real scalar is a relative time in seconds.  A date, as
     ## text or as a scalar @code{datetime}, is an absolute time: the event is
     ## then at @qcode{Time} 0 in @qcode{'days'} from a @qcode{StartDate} of
-    ## that date, written @qcode{'dd-mmm-yyyy HH:MM:SS'}.
+    ## that date, stored as @qcode{'dd-mmm-yyyy HH:MM:SS'}, with milliseconds
+    ## as @qcode{'.FFF'} when the seconds are not whole.
     ##
     ## MATLAB ignores a third argument and refuses a @code{datetime}.
     ##

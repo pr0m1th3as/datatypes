@@ -1151,7 +1151,7 @@ classdef tscollection
                  scope, names{k});
         endif
         classes = cellfun (@(m) class (m.Data), full, 'UniformOutput', false);
-        if (! all (strcmp (classes, classes{1})))
+        if (! isempty (classes) && ! all (strcmp (classes, classes{1})))
           error ("%s: the data of '%s' must be of one class throughout.", ...
                  scope, names{k});
         endif

@@ -378,7 +378,13 @@ classdef timemetadata
           errmsg = sprintf ("%s must not be NaT.", label);
           return;
         endif
-        val = tsdata.timemetadata.dateText (datevec (val));
+        dv = datevec (val);
+        if (dv(1) < 0 || dv(1) > 9999)
+          errmsg = sprintf ("%s must be a date from the year 0 to 9999.", ...
+                            label);
+          return;
+        endif
+        val = tsdata.timemetadata.dateText (dv);
         return;
       elseif (isstring (val) && isscalar (val))
         val = char (val);
@@ -401,8 +407,11 @@ classdef timemetadata
 
     ## Read the date TXT into a date vector: the stored form of 'dateText'
     ## exactly, any other text as 'datevec' reads it.  OK is false for text
-    ## that is not a whole date, since 'datevec' reads '2024' as 31 December
-    ## 2023 and a time of day alone on the current date.
+    ## that is not a whole date read as written: 'datevec' reads '2024' as
+    ## 31 December 2023, a time of day alone on the current date, '05-Mar-24'
+    ## in the year 24 and '29-Feb-2023' as 1 March, so the year must be
+    ## written in four digits and the day, month and time read must be those
+    ## the text holds.
     function [dv, ok] = dateVector (txt)
       dv = [];
       ok = false;
@@ -416,7 +425,7 @@ classdef timemetadata
         if (! isempty (m))
           dv = [str2double(tok{3}), m, str2double(tok{1}), ...
                 str2double(tok{4}), str2double(tok{5}), str2double(tok{6})];
-          ok = true;
+          ok = inRange (dv);
           return;
         endif
       endif
@@ -428,7 +437,16 @@ classdef timemetadata
       catch
         return;
       end_try_catch
-      ok = dv(2) >= 1 && dv(3) >= 1;
+      words = regexp (txt, '\d+|[A-Za-z]+', 'match');
+      isNum = cellfun (@(w) isdigit (w(1)), words);
+      nums = str2double (words(isNum));
+      years = str2double (words(isNum & cellfun (@numel, words) == 4));
+      names = lower (words(! isNum));
+      month = any (nums == dv(2)) ...
+              || any (strncmp (names, lower (months{max (1, dv(2))}), 3));
+      hour = dv(4) == 0 || any (nums == dv(4)) || any (nums == dv(4) - 12);
+      ok = any (years == dv(1)) && any (nums == dv(3)) && month && hour ...
+           && (dv(5) == 0 || any (nums == dv(5))) && inRange (dv);
     endfunction
 
     ## The date vector DV in the stored form, 'dd-mmm-yyyy HH:MM:SS', with
@@ -510,6 +528,15 @@ classdef timemetadata
   endmethods
 
 endclassdef
+
+## True when every field of the date vector DV is in its range, the day
+## within its month, so that nothing rolls over into the next.
+function tf = inRange (dv)
+  tf = dv(1) >= 0 && dv(1) <= 9999 && dv(2) >= 1 && dv(2) <= 12 ...
+       && dv(3) >= 1 && dv(3) <= eomday (dv(1), dv(2)) ...
+       && dv(4) >= 0 && dv(4) < 24 && dv(5) >= 0 && dv(5) < 60 ...
+       && dv(6) >= 0 && dv(6) < 60;
+endfunction
 
 ## Test the defaults
 %!test
@@ -693,6 +720,16 @@ endclassdef
 %! setfield (tsdata.timemetadata (), 'StartDate', '1')
 %!error <tsdata.timemetadata: 'StartDate' is not a date: '13:00'> ...
 %! setfield (tsdata.timemetadata (), 'StartDate', '13:00')
+%!error <tsdata.timemetadata: 'StartDate' is not a date: 'March 2024'> ...
+%! setfield (tsdata.timemetadata (), 'StartDate', 'March 2024')
+%!error <tsdata.timemetadata: 'StartDate' is not a date: '05-Mar-24'> ...
+%! setfield (tsdata.timemetadata (), 'StartDate', '05-Mar-24')
+%!error <tsdata.timemetadata: 'StartDate' is not a date: '29-Feb-2023'> ...
+%! setfield (tsdata.timemetadata (), 'StartDate', '29-Feb-2023')
+%!error <tsdata.timemetadata: 'StartDate' is not a date: '05-Mar-2024 25:00:00'> ...
+%! setfield (tsdata.timemetadata (), 'StartDate', '05-Mar-2024 25:00:00')
+%!error <tsdata.timemetadata: 'StartDate' must be a date from the year 0 to 9999.> ...
+%! setfield (tsdata.timemetadata (), 'StartDate', datetime (12000, 1, 1))
 %!error <tsdata.timemetadata: 'StartDate' must not be NaT.> ...
 %! setfield (tsdata.timemetadata (), 'StartDate', NaT)
 %!error <tsdata.timemetadata: 'Length' is read-only.> ...

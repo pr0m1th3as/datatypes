@@ -430,6 +430,8 @@
 %! ts = timeseries ([1; 2; 3], {});
 %! assert_equal (ts.Time, [0; 1; 2]);
 %! assert_equal (ts.TimeInfo.Units, 'seconds');
+%!error <timeseries: TIME must fall in the years 0 to 9999.> ...
+%! timeseries ([1; 2], datetime (12000, 1, 1:2))
 %!error <timeseries: DATA and TIME must have the same number of samples.> ...
 %! timeseries ([1; 2; 3], [1; 2])
 %!error <timeseries: DATA and TIME must have the same number of samples.> ...
@@ -1351,6 +1353,19 @@
 %! assert_equal (ts.TimeInfo.StartDate, '01-Jan-2024 00:00:00');
 %! assert_equal (ts.TimeInfo.Format, '');
 %! assert_equal (getabstime (ts){2}, '02-Jan-2024 00:00:00');
+## Test a start date as stored is read back as a date anywhere, and dates
+## finer than a millisecond find their samples
+%!test
+%! ts = timeseries ((1:2)', [0, 1]);
+%! ts.TimeInfo.StartDate = datetime (2024, 1, 1, 0, 0, 0.5);
+%! assert_equal (getsampleusingtime (ts, ts.TimeInfo.StartDate).Data, 1);
+%! assert_equal (addsample (ts, 'Data', 3, 'Time', ...
+%!                          '01-Jan-2024 00:00:00.250').Time, [-0.25; 0; 1]);
+%!test
+%! d = datetime (2024, 1, 1, 0, 0, 0.0004) + seconds (0:2);
+%! ts = timeseries ((1:3)', d);
+%! assert_equal (getsampleusingtime (ts, d(2)).Data, 2);
+%! assert_equal (resample (ts, d(2:3)).Data, [2; 3]);
 ## Test a day-first format; stored in its own format the start date read
 ## back as another month
 %!test
@@ -1388,6 +1403,8 @@
 %! setabstime (R, {1, 2, 3})
 %!error <timeseries.setabstime: DATES must not hold NaT.> ...
 %! setabstime (R, [datetime(2024, 1, 1), NaT, datetime(2024, 1, 3)])
+%!error <timeseries.setabstime: DATES must fall in the years 0 to 9999.> ...
+%! setabstime (timeseries ([1; 2]), datetime (12000, 1, 1:2))
 %!error <timeseries.setabstime: DATES must hold one date per sample.> ...
 %! setabstime (R, {'01-Jan-2024', '02-Jan-2024'})
 %!error <timeseries.setabstime: DATES must hold one date per sample.> ...
@@ -1706,6 +1723,14 @@
 %!assert_equal (gettsatevent (addevent (AbE, 'x', 1), 'x').Data, 2)
 %!assert_equal (gettsatevent (addevent (AbE, 'x', ...
 %!                                     '02-Jan-2024 12:00:00'), 'x').Length, 0)
+## Test an event in other units finds the sample it names, as in MATLAB
+%!test
+%! ts = timeseries ((1:101)', 0:0.001:0.1);
+%! ts.TimeInfo.Units = 'minutes';
+%! e = tsdata.event ('e', 2.58);
+%! e.Units = 'seconds';
+%! assert_equal (gettsatevent (addevent (ts, e), 'e').Data, 44);
+%! assert_equal (gettsafteratevent (addevent (ts, e), 'e').Length, 58);
 ## Test a sample at exactly the event's time is found, whatever rounding a
 ## round trip through another unit gives
 %!test
@@ -2075,6 +2100,16 @@
 %! [x, y] = synchronize (timeseries (5, 10), timeseries ([1; 2; 3], ...
 %!                       [0; 1; 2]), 'union');
 %! assert_equal ([x.Length, y.Length], [0, 0]);
+## Test dated series that do not overlap still count from the earlier date
+%!test
+%! a = timeseries ([1; 2], [0; 1]);
+%! a.TimeInfo.Units = 'days';
+%! a.TimeInfo.StartDate = '01-Jan-2024';
+%! b = a;
+%! b.TimeInfo.StartDate = '10-Jan-2024';
+%! [x, y] = synchronize (a, b, 'union');
+%! assert_equal ({x.TimeInfo.StartDate, y.TimeInfo.StartDate}, ...
+%!               {'01-Jan-2024 00:00:00', '01-Jan-2024 00:00:00'});
 ## Test times in different units are converted exactly, where MATLAB is not
 %!test
 %! m = timeseries ([7; 8; 9], [0; 1; 2]);
@@ -2476,6 +2511,12 @@
 %! assert_equal (r.Data, [3; 7; 11]);
 %! assert_equal (r.IsTimeFirst, true);
 ## Test a scalar sample is multiplied only by a number, on either side
+## Test codes held per sample follow the samples when their shape changes
+%!test
+%! ts = timeseries (reshape (1:8, 4, 2), (0:3)', [0; 1; 0; 1]);
+%! r = [1; 2; 3] * ts;
+%! assert_equal (size (r.Quality), [1, 1, 4]);
+%! assert_equal (squeeze (getsamples (r, [2, 3]).Quality), [1; 0]);
 %!error <timeseries.mtimes: the sizes of the samples do not fit the operator.> ...
 %! [1; 2] * timeseries ([1; 2; 3], [0; 1; 2])
 %!error <timeseries.mtimes: the sizes of the samples do not fit the operator.> ...
@@ -2989,6 +3030,11 @@
 %! ts = getsamples (timeseries (reshape (1:12, 1, 3, 4), 0:3), 2);
 %! ts.Time = 5;
 %! assert_equal (ts.IsTimeFirst, false);
+## Test data given as the constructor takes it, codes held per element
+%!test
+%! ts = timeseries ([1, 2, 3; 4, 5, 6], (0:2)', [0, 1, 0; 1, 0, 1]);
+%! ts.Data = [7, 8, 9; 10, 11, 12];
+%! assert_equal (size (ts.Data), [2, 1, 3]);
 %!error <timeseries: 'Data' must keep the size of the quality codes held per data element; clear 'Quality' first.> ...
 %! setfield (timeseries (ones (3, 2), [0, 1, 2], [1, 2; 3, 4; 5, 6]), ...
 %!           'Data', ones (3, 4))
