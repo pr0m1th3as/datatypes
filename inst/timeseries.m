@@ -414,8 +414,10 @@ classdef timeseries
     ##
     ## @code{@var{ts} = timeseries (@var{data}, @var{time}, @var{quality})}
     ## also sets a quality code per sample: integers from -128 to 127, as a
-    ## vector of one per sample or an array the size of @var{data}, or
-    ## @code{[]} for none.
+    ## vector of one per sample or an array the size of @var{data} as stored,
+    ## or @code{[]} for none.  A matrix stored a sample per column, as an
+    ## @code{Rx1xN} array, takes codes per element in that shape too; MATLAB
+    ## refuses them in the matrix's own @code{RxN} shape, as here.
     ##
     ## @code{@var{ts} = timeseries (@dots{}, @qcode{'Name'}, @var{name})} names
     ## the series; the option name is matched in any case, and a later
@@ -502,16 +504,10 @@ classdef timeseries
       endif
       nSamples = numel (time);
 
-      ## Quality, which may have the size of DATA as given
+      ## Quality
       quality = [];
       if (nPos == 2)
-        quality = args{2};
-        if ((isnumeric (quality) || islogical (quality))
-            && isequal (size (quality), size (arg1))
-            && ! isequal (size (arg1), size (data)))
-          quality = reshape (quality, size (data));
-        endif
-        [quality, errmsg] = qualityValue (quality, data, nSamples, td);
+        [quality, errmsg] = qualityValue (args{2}, data, nSamples, td);
         if (! isempty (errmsg))
           error ("timeseries: QUALITY %s", errmsg);
         endif
@@ -1627,7 +1623,8 @@ classdef timeseries
         if (isempty (held))
           held = events(i);
         else
-          held = [held, events(i)];
+          ## Appended along the list as it lies, a row or a column
+          held(end+1) = events(i);
         endif
       endfor
       this.events_ = held;
@@ -2214,11 +2211,11 @@ classdef timeseries
       endif
       [at1, lab1] = frameTimes (grid, t1, ts1.time_, off1, ns1, tolNs, label1);
       [at2, lab2] = frameTimes (grid, t2, ts2.time_, off2, ns2, tolNs, label2);
-      [ts1, errmsg] = resampleAt (ts1, at1, method, code);
+      [ts1, errmsg] = resampleAt (ts1, at1, method, code, true);
       if (! isempty (errmsg))
         error ("%s: %s", scope, regexprep (errmsg, '^TS ', 'TS1 '));
       endif
-      [ts2, errmsg] = resampleAt (ts2, at2, method, code);
+      [ts2, errmsg] = resampleAt (ts2, at2, method, code, true);
       if (! isempty (errmsg))
         error ("%s: %s", scope, regexprep (errmsg, '^TS ', 'TS2 '));
       endif
@@ -3048,13 +3045,15 @@ classdef timeseries
 
     ## The series evaluated at the sorted times T, in its own units, by the
     ## method METHOD ('' for its own), the times it did not hold given the
-    ## quality code CODE.  Returns an empty ERRMSG, or the body of the message
-    ## the caller raises.
-    function [this, errmsg] = resampleAt (this, t, method, code)
+    ## quality code CODE.  A series of one sample is refused unless ALLOWONE.
+    ## Returns an empty ERRMSG, or the body of the message the caller raises.
+    function [this, errmsg] = resampleAt (this, t, method, code, allowOne)
       errmsg = '';
       t = t(:);
       n = numel (this.time_);
-      if (n < 2)
+      ## 'synchronize' evaluates a single sample at its own time, as MATLAB
+      ## does; 'resample' needs two
+      if (n < 1 || (n < 2 && ! (nargin > 4 && allowOne)))
         errmsg = "TS must hold at least two samples.";
         return;
       endif
@@ -3538,7 +3537,7 @@ classdef timeseries
       if (isnumeric (val) && isempty (val))
         this.events_ = [];
       elseif (isa (val, 'tsdata.event') && (isvector (val) || isempty (val)))
-        this.events_ = val(:).';
+        this.events_ = val;
       else
         error (strcat ("timeseries: 'Events' must be a vector of", ...
                        " tsdata.event objects."));
