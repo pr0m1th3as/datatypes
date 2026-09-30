@@ -1163,13 +1163,14 @@ classdef tscollection
     ##
     ## @code{@var{tc} = [@var{tc1}, @var{tc2}, @dots{}]} returns one collection
     ## holding the members of every argument, sorted by name, as in MATLAB,
-    ## capitals before lower case letters.  The collections must
-    ## have the same time vector, in the same units, and the same
+    ## capitals before lower case letters.  The collections must have the
+    ## same time vector, in the same units, and the same
     ## @qcode{TimeInfo.StartDate}.  A member name present in more than one is
     ## taken once when the members are equal in every property, @code{NaN}
     ## equal to itself, and refused otherwise; MATLAB compares their data
-    ## alone.  Names differing only in case are refused.  The result keeps the name of the first collection, where
-    ## MATLAB names it @qcode{'unnamed'}.
+    ## alone.  Names differing only in case are refused.  The result keeps
+    ## the name of the first collection, where MATLAB names it
+    ## @qcode{'unnamed'}.
     ##
     ## @seealso{tscollection.vertcat, tscollection.addts}
     ## @end deftypefn
