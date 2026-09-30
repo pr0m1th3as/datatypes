@@ -4173,3 +4173,9 @@ function [q, errmsg] = qualityValue (q, data, n, td)
   endif
   errmsg = "must have one code per sample or the size of the data.";
 endfunction
+
+## 'pkg test' reads the BISTs from the file it is testing, so a class
+## whose suite lives in inst/tests/ reads as carrying none.  This block
+## answers for it and checks nothing itself.
+%!test
+%! ## The suite for this class is inst/tests/timeseries.m-tst.
