@@ -243,6 +243,25 @@
 
 %!assert_equal (properties (U), cell (0, 1))
 %!assert_equal (properties (C), cell (0, 1))
+%!assert_equal (fieldnames (C), cell (0, 1))
+
+%!test
+%! s = struct ('d', C);
+%! assert_equal (isdictionary (s.d), true);
+%!test
+%! s = struct ('a', {C, 5});
+%! assert_equal (size (s), [1, 2]);
+%! assert_equal (isdictionary (s(1).a), true);
+%!error<dictionary.struct: cannot convert a dictionary to a structure.> ...
+%! struct (C)
+%!error<dictionary.jsonencode: cannot encode a dictionary as JSON text.> ...
+%! jsonencode (C)
+%!error<dictionary.jsonencode: cannot encode a dictionary as JSON text.> ...
+%! jsonencode (U, 'PrettyPrint', true)
+%!error<dictionary.empty: a dictionary cannot be an empty array.> ...
+%! dictionary.empty ()
+%!error<dictionary.empty: a dictionary cannot be an empty array.> ...
+%! dictionary.empty (0, 0)
 
 ################################################################################
 ##                          ** Keys and values **                             ##

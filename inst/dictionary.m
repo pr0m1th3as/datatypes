@@ -123,6 +123,21 @@ classdef dictionary
       endif
     endfunction
 
+    ## Refused, as in MATLAB, rather than exposing the private storage.  A
+    ## dictionary among the arguments also brings 'struct' here, as in
+    ## struct ('d', d), which the built-in function answers.
+    function s = struct (varargin)
+      if (nargin == 1)
+        error (strcat ("dictionary.struct: cannot convert a dictionary", ...
+                       " to a structure."));
+      endif
+      s = builtin ('struct', varargin{:});
+    endfunction
+
+    function json = jsonencode (this, varargin)
+      error ("dictionary.jsonencode: cannot encode a dictionary as JSON text.");
+    endfunction
+
   endmethods
 
 ################################################################################
@@ -1243,6 +1258,11 @@ classdef dictionary
                                 'uint32', 'uint64', 'logical', 'char', ...
                                 'cell', 'struct', 'function_handle'}))
             || any (strcmp (methods (type), 'keyHash')));
+    endfunction
+
+    ## A dictionary is a scalar object, so there is no empty one
+    function d = empty (varargin)
+      error ("dictionary.empty: a dictionary cannot be an empty array.");
     endfunction
 
   endmethods
