@@ -10,7 +10,7 @@ versioned with the package and may change between releases. It is published so
 that a reader in another language can be written against it, and so that a
 file can be understood by someone holding only the file.
 
-Written for `datatypes` 1.4.0.
+Written for `datatypes` 1.6.0.
 
 ## Why a spreadsheet
 
@@ -194,6 +194,34 @@ A sheet asked for by number indexes every data sheet, event sheets included,
 so that one number means one sheet whichever reader is used and matches what a
 spreadsheet application shows. Only the default does the excluding. An event
 sheet asked for by name comes back as an event table, which is what it is.
+
+## Workbooks of several tables
+
+A file may hold any number of tables and timetables, each on its own data
+sheet with its own section. Nothing in the file marks it as a workbook rather
+than a single table: the sheets, their names and their order are the whole of
+it. The package writes and reads such a file in two forms.
+
+* **A scalar structure**, through `struct2ods` and `ods2struct`: one field per
+  sheet, in sheet order. A sheet name that is not a valid field name, such as
+  `Sales 2024`, is held on the field's table as the custom property
+  `ActualSheetName`, which `struct2ods` writes as the sheet name. The property
+  itself is not stored in the file.
+* **A `dictionary`**, through `writedictionary` and `readdictionary` with
+  `'FileType', 'ods'` or a `.ods` or `.fods` extension: one entry per sheet,
+  the key the sheet name exactly as written and the value its table or
+  timetable, in sheet order. The keys must be text and every value a table or
+  a timetable. A file of tables alone, or of timetables alone, reads back with
+  that value type; a mix of the two reads back as `cell` values.
+
+Both forms go through the same writer and reader, so everything above holds
+for each sheet: it keeps its types, formats, units and descriptions, and a
+timetable's event table goes on a sheet of its own, named `<sheet>_Events`,
+which is consumed on reading and becomes no field or key of its own.
+
+A sheet name must be non-empty, unique, and free of the characters
+`[ ] * ? : \ /`. A field or key that breaks this is refused with
+`struct2ods`'s error, before anything is written.
 
 ## Why the preamble is at the top
 
