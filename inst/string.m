@@ -463,7 +463,7 @@ classdef string
     ##
     ## Convert string array to a double array.
     ##
-    ## @code{@var{X} = char (@var{str})} returns a double array, @var{X}, which
+    ## @code{@var{X} = double (@var{str})} returns a double array, @var{X}, which
     ## has the same size as the input string @var{str}.  All elements in
     ## @var{str} that represent real or complex numbers are converted to
     ## equivalent double values.  Otherwise, @qcode{NaN} is returned.
