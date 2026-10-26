@@ -100,3 +100,5 @@ compiled functions
  __table2ods__
  __xlsx2table__
  __table2xlsx__
+ __json2dictionary__
+ __dictionary2json__
