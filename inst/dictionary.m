@@ -1521,6 +1521,9 @@ function t = cellText (x)
     t = oneLine (["'", x, "'"]);
   elseif (is_function_handle (x))
     t = handleText (x);
+  elseif (isa (x, 'dictionary'))
+    ## A dictionary is one object; indexing it would look up a key
+    t = ['[', dispstrings(x){1}, ']'];
   elseif (! isempty (x) && isrow (x)
           && (isnumeric (x) || islogical (x) || hasText (x)))
     t = cell (1, columns (x));
