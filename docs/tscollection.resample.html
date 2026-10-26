@@ -308,7 +308,9 @@
  interpolation method, as <code>timeseries.resample</code> evaluates a series:
  at a time outside the collection the data is <code>NaN</code>, and a member
  with quality codes gives each new time the code of the nearest sample.
- MATLAB raises there for a member with quality codes.
+ MATLAB raises there for a member with quality codes.  <var>time</var> is
+ taken in any order and sorted, as <code>timeseries.resample</code> takes it;
+ MATLAB refuses descending times for a collection.
 </p>
 <p> <code><var>tc</var> = resample (<var>tc</var>, <var>time</var>, <var>method</var>)</code> uses
  <var>method</var>, <code>'linear'</code> or <code>'zoh'</code>, for every member;
@@ -324,7 +326,7 @@
   <a href="timeseries.resample.html">timeseries.resample</a>
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/cde9efc/inst/tscollection.m#L985">tscollection</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/d9d79ec/inst/tscollection.m#L999">tscollection</a>
 </p>
 </div>
         <div class="card rounded my-4">

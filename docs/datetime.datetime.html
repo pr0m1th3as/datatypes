@@ -499,12 +499,21 @@
  <code>'TimeZone'</code>.  MATLAB detects no text carrying an offset.</td></tr>
 <tr><td width="34%"><code>'dd-MMM-uuuu'</code></td><td width="66%">month named in full or abbreviated,
  optionally followed by a time as above.</td></tr>
-<tr><td width="34%"><code>'MMMM d, uuuu'</code></td><td width="66%">as in <code>'March 15, 2024'</code>.</td></tr>
-<tr><td width="34%"><code>'MM/dd/uuuu'</code></td><td width="66%">or <code>'dd/MM/uuuu'</code>; see below.</td></tr>
+<tr><td width="34%"><code>'MMMM d, uuuu'</code></td><td width="66%">as in <code>'March 15, 2024'</code>, in
+ English only, optionally followed by a time.</td></tr>
+<tr><td width="34%"><code>'MM/dd/uuuu'</code></td><td width="66%">or <code>'dd/MM/uuuu'</code>, the year in two
+ digits or four, optionally followed by a time; see below.</td></tr>
+<tr><td width="34%"><code>'dd.MM.uuuu'</code></td><td width="66%">day first in every locale, optionally
+ followed by a time, or <code>'dd.MM.yy'</code> with all three fields in two
+ digits, so that a version number such as <code>'1.5.10'</code> stays text.</td></tr>
 <tr><td width="34%"><code>'HH:mm:ss'</code></td><td width="66%">a time alone, taking today&rsquo;s date.</td></tr>
 </table>
 </div>
 
+<p> A two-digit year is read against the pivot year, as with an
+ <code>'InputFormat'</code>, where MATLAB reads <code>'05.03.24'</code> as the year
+ 24.
+</p>
 <p> Three further shapes are read that MATLAB does not detect, and are
  Octave extensions: <code>'uuuu/MM/dd'</code> with an optional time,
  <code>'dd MMMM uuuu'</code> as in <code>'15 March 2024'</code>, and a year alone.
@@ -514,9 +523,26 @@
 <p> A date written with slashes is ambiguous: <code>'03/09/2024'</code> is the 3rd
  of September to some readers and the 9th of March to others.  The whole
  array decides, since one entry naming a day past the twelfth settles the
- order for all of them; where nothing settles it the American reading is
- taken and a warning
- (<code>'Octave:datetime:ambiguous-format'</code>) is raised.
+ order for all of them; where nothing settles it the reading of the
+ <code>'Locale'</code> is taken, month first in English but for
+ <code>'en_GB'</code> and day first in every other language, and a warning
+ (<code>'Octave:datetime:ambiguous-format'</code>) is raised, but for
+ <code>'pt_PT'</code>.  Under a German locale, which writes dates with dots,
+ slashes are not read, as in MATLAB.
+</p>
+<p> <code><var>T</var> = datetime (<var>DateStrings</var>, <code>'Locale'</code>,
+ <var>LOCALE</var>)</code> detects the format in the language of <var>LOCALE</var>: the
+ month names above are its own, abbreviated or full, matched in any case
+ and with or without the point after an abbreviation, and English names
+ are not read under another language.  Each language adds its long form,
+ optionally followed by a time: <code>'d. MMMM uuuu'</code> in German
+ (<code>'1. Januar 2024'</code>, <code>'Jänner'</code> under <code>'de_AT'</code>),
+ <code>'d 'de' MMMM 'de' uuuu'</code> in Spanish and Portuguese
+ (<code>'5 de marzo de 2024'</code>), and <code>'dd MMMM uuuu'</code> in the other
+ languages but Portuguese (<code>'15 mars 2024'</code>, <code>'15 Μαρτίου
+ 2024'</code>).  MATLAB reads the Spanish and Portuguese long form under
+ <code>'pt_BR'</code> alone, refuses a point after a Spanish abbreviation, and
+ refuses Greek written in capitals; all of these are read here.
 </p>
 <p> <code><var>T</var> = datetime (<var>DateStrings</var>, <code>'MixedFormats'</code>,
  <code>true</code>)</code> detects a format for each piece of text separately instead,
@@ -576,19 +602,19 @@
  the current year minus 50.
 </p>
 <p> <code><var>T</var> = datetime (<var>DateStrings</var>, <code>'InputFormat'</code>,
- <var>INFMT</var>, <code>'Locale'</code>, <var>LOCALE</var>)</code> interprets the month names,
- weekday names, and day-period markers in <var>DateStrings</var> according to
- <var>LOCALE</var>, given as an <code>'xx_YY'</code> identifier whose language part
- selects the names.  The supported languages are <code>'en'</code> (the
- default), <code>'fr'</code>, <code>'de'</code>, <code>'es'</code>, <code>'it'</code>,
- <code>'pt'</code>, and <code>'el'</code>; <code>'system'</code> is treated as
- <code>'en'</code>.  Both full (<code>'MMMM'</code>/<code>'eeee'</code>) and abbreviated
- (<code>'MMM'</code>/<code>'eee'</code>) month and weekday names are recognized
- case-insensitively; for Greek, matching is also accent-insensitive, so
- the accentless all-caps spelling is accepted, and the genitive month
- forms (<code>'Μαρτίου'</code>) are used.  A weekday name is validated but does
- not otherwise affect the result.  A hyphen may stand for the underscore,
- as in <code>'fr-FR'</code>.
+ <var>INFMT</var>, <code>'Locale'</code>, <var>LOCALE</var>)</code> also interprets the month
+ names, weekday names, and day-period markers in <var>DateStrings</var>
+ according to <var>LOCALE</var>, given as an <code>'xx_YY'</code> identifier whose
+ language part selects the names.  The supported languages are
+ <code>'en'</code> (the default), <code>'fr'</code>, <code>'de'</code>, <code>'es'</code>,
+ <code>'it'</code>, <code>'pt'</code>, and <code>'el'</code>; <code>'system'</code> is treated
+ as <code>'en'</code>.  Both full (<code>'MMMM'</code>/<code>'eeee'</code>) and
+ abbreviated (<code>'MMM'</code>/<code>'eee'</code>) month and weekday names are
+ recognized case-insensitively; for Greek, matching is also
+ accent-insensitive, so the accentless all-caps spelling is accepted, and
+ the genitive month forms (<code>'Μαρτίου'</code>) are used.  A weekday name is
+ validated but does not otherwise affect the result.  A hyphen may stand
+ for the underscore, as in <code>'fr-FR'</code>.
 </p>
 <p> <code><var>T</var> = datetime (<var>DateVectors</var>)</code> creates a column vector of
  datetime values from the date vectors in <var>DateVectors</var>.
@@ -814,7 +840,7 @@
   <a href="duration.html">duration</a>
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/cde9efc/inst/datetime.m#L741">datetime</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/d9d79ec/inst/datetime.m#L772">datetime</a>
 </p>
 </div>
         <div class="card rounded my-4">

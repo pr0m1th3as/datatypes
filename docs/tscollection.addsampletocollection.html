@@ -310,6 +310,9 @@
  data against times and each of the size of the member&rsquo;s samples.  A
  member not named takes <code>NaN</code>, or 0 for integer data and
  <code>false</code> for logical data.  <code>'Time'</code> is matched in any case.
+ A row of data for a column of times is accepted, as the
+ <code>timeseries</code> constructor accepts it; MATLAB refuses it for a
+ collection.
 </p>
 <p> For a collection with no <code>TimeInfo.StartDate</code> <var>time</var> is
  numbers in its units; for one with a start date it may also be dates as
@@ -322,7 +325,7 @@
   <a href="timeseries.addsample.html">timeseries.addsample</a>
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/cde9efc/inst/tscollection.m#L750">tscollection</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/d9d79ec/inst/tscollection.m#L762">tscollection</a>
 </p>
 </div>
         <div class="card rounded my-4">

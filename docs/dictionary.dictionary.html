@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Data Types for GNU Octave: dictionary.dictionary</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj" crossorigin="anonymous"></script>
+    <script type="text/javascript" async
+      src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS_CHTML">
+    </script>
+    <script type="text/javascript">
+      window.addEventListener("load", () => {
+        for (let i of document.querySelectorAll(".collapse ul")) {
+          let tog = document.createElement("div");
+          tog.innerHTML = i.previousSibling.textContent;
+          tog.className = "toggle";
+          tog.onclick = () => tog.classList.toggle("show");
+          i.parentElement.removeChild(i.previousSibling);
+          i.parentElement.insertBefore(tog, i);
+        }
+      });
+      // Open the collapsible demo an "#example" link points to, then scroll to
+      // it.  getElementById (not querySelector) matches ids that contain a dot,
+      // e.g. "Class.method-example1".
+      function openHashTarget () {
+        if (! window.location.hash) { return; }
+        let el = document.getElementById (
+          decodeURIComponent (window.location.hash.slice (1)));
+        if (! el) { return; }
+        if (el.classList.contains ("collapse") &&
+            ! el.classList.contains ("show")) {
+          bootstrap.Collapse.getOrCreateInstance (el).show ();
+        }
+        el.scrollIntoView ();
+      }
+      window.addEventListener ("DOMContentLoaded", openHashTarget);
+      window.addEventListener ("hashchange", openHashTarget);
+      // When the collapsible named by the current URL fragment is collapsed,
+      // drop the fragment (replaceState: no scroll, no history entry).  Otherwise
+      // the fragment would still equal this id, so clicking the same #example
+      // link again fires no "hashchange" and the example would not re-expand.
+      document.addEventListener ("hide.bs.collapse", (e) => {
+        if (e.target.id && window.location.hash === "#" + e.target.id) {
+          history.replaceState (null, "",
+            window.location.pathname + window.location.search);
+        }
+      });
+      // Let the browser's find-in-page reach the text inside a collapsed
+      // panel.  The attribute "hidden=until-found" is what makes content
+      // searchable and revealable; the style block below clears the
+      // "display: none" that would otherwise stop the attribute meaning
+      // anything, a box that is not generated having nothing to reveal.  Set
+      // it only where it is understood, which "content-visibility" is no test
+      // for, Firefox having shipped the two apart.  Where it is not, the panel
+      // keeps the user agent's plain [hidden] and the page behaves as before.
+      window.addEventListener ("DOMContentLoaded", () => {
+        if (! ("onbeforematch" in document.body)) { return; }
+        document.documentElement.classList.add ("until-found");
+        let panels = document.querySelectorAll (
+          ".collapse:not(.show):not(.navbar-collapse)");
+        for (let el of panels) {
+          el.setAttribute ("hidden", "until-found");
+          // Fired on a find-in-page hit, before the browser drops the
+          // attribute and scrolls to it.  Bootstrap keeps a panel's state in
+          // its class list, so adding the class here opens the panel in the
+          // same frame and leaves the button shutting it correctly afterwards.
+          // Bootstrap's own show () would animate against that scroll, and the
+          // attribute once dropped, "display: none" would take the panel back
+          // part way through.
+          el.addEventListener ("beforematch", () => {
+            el.classList.add ("show");
+            for (let b of document.querySelectorAll ("[data-bs-target]")) {
+              if (b.getAttribute ("data-bs-target") === "#" + el.id) {
+                b.setAttribute ("aria-expanded", "true");
+              }
+            }
+          });
+        }
+        // Drop the attribute before Bootstrap measures the panel it is opening,
+        // which it does after firing this; a revealable one measures nothing.
+        document.addEventListener ("show.bs.collapse", (e) => {
+          e.target.removeAttribute ("hidden");
+        });
+        // Restore it once the panel is shut, rather than while it is shutting.
+        document.addEventListener ("hidden.bs.collapse", (e) => {
+          if (! e.target.classList.contains ("navbar-collapse")) {
+            e.target.setAttribute ("hidden", "until-found");
+          }
+        });
+      });
+    </script>
+    <style>
+    .fs {
+    margin-top: -0.15em;
+    margin-bottom: -0.15em;
+    }
+    .fs-last {
+    margin-bottom: calc(1rem - 0.15em);
+    }
+    p.description {
+    font-family: Consolas, "Courier New", monospace;
+    }
+    p.description code {
+    font-size: inherit;
+    }
+    h6:hover {
+      color: gray;
+    }
+    code {
+    font-family: Consolas, "Courier New", monospace;
+    border-radius: 0.3em;
+    white-space: nowrap;
+    color: gray;
+    }
+    code.description {
+    font-family: Consolas, "Courier New", monospace;
+    border-radius: 0.3em;
+    white-space: normal;
+    font-size:1.2em;
+    color: gray;
+    }
+    var {
+    font-family: Consolas, "Courier New", monospace;
+    border-radius: 0.3em;
+    font-style: normal;
+    font-weight: bold;
+    color: gray;
+    }
+    td {
+      vertical-align: top;
+    }
+    [id^="togList"],                        /* HIDE CHECKBOX */
+    [id^="togList"] ~ .list,                /* HIDE LIST */
+    [id^="togList"] + label  span + span,   /* HIDE "Collapse" */
+    [id^="togList"]:checked + label span{   /* HIDE "Expand" (IF CHECKED) */
+      display:none;
+    }
+    [id^="togList"]:checked + label span + span{
+      display:inline-block;                 /* SHOW "Collapse" (IF CHECKED) */
+    }
+    [id^="togList"]:checked ~ .list{
+      display:block;                        /* SHOW LIST (IF CHECKED) */
+    }
+    /* Bootstrap hides a collapsed panel with "display: none", which generates
+       no box, so the "content-visibility: hidden" the user agent gives
+       "hidden=until-found" could never apply and the text would stay beyond
+       find-in-page.  Clear that one declaration, and only where the script
+       above has found the attribute to be understood: an attribute selector
+       matches a value the browser does not understand, so an ungated rule
+       would leave every panel of an older browser standing open.  The
+       "!important" is required rather than decoration: the reboot carries
+       "[hidden] {display: none !important}", which the attribute itself brings
+       into play, and only another "!important" can outrank it. */
+    html.until-found .collapse[hidden="until-found"]:not(.show) {
+      display: block !important;
+    }
+    </style>
+  </head>
+  <body>
+    <div class="bg-dark">
+      <div class="container-xl">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+          <div class="container-fluid">
+            <a class="navbar-brand" href=index.html>
+              <img src="assets/datatypes.png" alt="datatypes" class="d-inline-block align-top" width="25" height="25">
+              Data Types for GNU Octave
+            </a>
+            <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+              <ul class="navbar-nav">
+                <li class="nav-item">
+                  <a class="nav-link" href="index.html#dictionary objects">
+                    <i class="fas fa-list-alt"></i>
+                    dictionary objects
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="https://gnu-octave.github.io/packages/">
+                  <img src="assets/octave-logo.svg" alt="GNU Octave logo" class="d-inline-block align-top" width="25" height="25">
+                    Octave Packages
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="https://www.octave.org">
+                    <i class="fas fa-home"></i>
+                    GNU Octave website
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </div>
+    <div class="container-xl my-4">
+      <div class="row flex-nowrap" style="min-height:0">
+        <div class="col-md-2 bg-light" style="overflow-y: scroll; width: 250px;">
+          <div class="p-2" style="text-align: center;">
+            <h3><a href="dictionary.html" class="text-decoration-none">dictionary</a></h3>
+            <h4 style="color: blue">Methods</h4>
+          </div>
+			<div class="row">
+				<a href="dictionary.html" class="text-decoration-none"><h6>&#8962;&nbsp;dictionary</h6></a>
+			</div>
+			<div class="row">
+				<input id="togList1" type="checkbox" checked>
+				<label for="togList1">
+					<span><h6>Create and describe 'dictionary'</h6></span>
+					<span><h6>Create and describe 'dictionary'</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="dictionary.dictionary.html" class="text-decoration-none font-monospace fw-bolder"><small>dictionary</small></a></li>
+					<li><a href="dictionary.types.html" class="text-decoration-none font-monospace"><small>types</small></a></li>
+					<li><a href="dictionary.isConfigured.html" class="text-decoration-none font-monospace"><small>isConfigured</small></a></li>
+					<li><a href="dictionary.numEntries.html" class="text-decoration-none font-monospace"><small>numEntries</small></a></li>
+					<li><a href="dictionary.numel.html" class="text-decoration-none font-monospace"><small>numel</small></a></li>
+					<li><a href="dictionary.length.html" class="text-decoration-none font-monospace"><small>length</small></a></li>
+					<li><a href="dictionary.size.html" class="text-decoration-none font-monospace"><small>size</small></a></li>
+					<li><a href="dictionary.ndims.html" class="text-decoration-none font-monospace"><small>ndims</small></a></li>
+					<li><a href="dictionary.isempty.html" class="text-decoration-none font-monospace"><small>isempty</small></a></li>
+					<li><a href="dictionary.dispstrings.html" class="text-decoration-none font-monospace"><small>dispstrings</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList2" type="checkbox">
+				<label for="togList2">
+					<span><h6>Keys and values</h6></span>
+					<span><h6>Keys and values</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="dictionary.keys.html" class="text-decoration-none font-monospace"><small>keys</small></a></li>
+					<li><a href="dictionary.values.html" class="text-decoration-none font-monospace"><small>values</small></a></li>
+					<li><a href="dictionary.isKey.html" class="text-decoration-none font-monospace"><small>isKey</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList3" type="checkbox">
+				<label for="togList3">
+					<span><h6>Entries</h6></span>
+					<span><h6>Entries</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="dictionary.insert.html" class="text-decoration-none font-monospace"><small>insert</small></a></li>
+					<li><a href="dictionary.lookup.html" class="text-decoration-none font-monospace"><small>lookup</small></a></li>
+					<li><a href="dictionary.remove.html" class="text-decoration-none font-monospace"><small>remove</small></a></li>
+					<li><a href="dictionary.entries.html" class="text-decoration-none font-monospace"><small>entries</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList4" type="checkbox">
+				<label for="togList4">
+					<span><h6>Files</h6></span>
+					<span><h6>Files</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="dictionary.writedictionary.html" class="text-decoration-none font-monospace"><small>writedictionary</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList5" type="checkbox">
+				<label for="togList5">
+					<span><h6>Compare and hash</h6></span>
+					<span><h6>Compare and hash</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="dictionary.isequal.html" class="text-decoration-none font-monospace"><small>isequal</small></a></li>
+					<li><a href="dictionary.isequaln.html" class="text-decoration-none font-monospace"><small>isequaln</small></a></li>
+					<li><a href="dictionary.keyHash.html" class="text-decoration-none font-monospace"><small>keyHash</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList6" type="checkbox">
+				<label for="togList6">
+					<span><h6>Indexing and concatenation</h6></span>
+					<span><h6>Indexing and concatenation</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="dictionary.horzcat.html" class="text-decoration-none font-monospace"><small>horzcat</small></a></li>
+					<li><a href="dictionary.vertcat.html" class="text-decoration-none font-monospace"><small>vertcat</small></a></li>
+					<li><a href="dictionary.cat.html" class="text-decoration-none font-monospace"><small>cat</small></a></li>
+				</ul>
+				</div>
+			</div>
+
+			  </div>
+			  <div class="col-md-10">
+          <div class="card rounded">
+            <div class="card-header card-header-mod">
+              <div class="row d-flex flex-wrap align-items-center">
+                <h3 class="d-inline-block mr-2">
+                Method&nbsp;Reference: <b><code>dictionary.dictionary</code></b>
+                </h3>
+              </div>
+            </div>
+            <div class="card-body">
+              <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                  <li class="breadcrumb-item"><a href="index.html">datatypes</a></li>
+                  <li class="breadcrumb-item"><a href="dictionary.html">dictionary</a></li>
+                  <li class="breadcrumb-item active" aria-current="page">dictionary (constructor)</li>
+                </ol>
+              </nav>
+
+<p class="h5 fs"><code>dictionary: <var>d</var> = <b>dictionary</b> ()</code></p>
+<p class="h5 fs"><code>dictionary: <var>d</var> = <b>dictionary</b> (<var>keys</var>, <var>values</var>)</code></p>
+<p class="h5 fs fs-last"><code>dictionary: <var>d</var> = <b>dictionary</b> (<var>k1</var>, <var>v1</var>, &hellip;, <var>kN</var>, <var>vN</var>)</code></p>
+<p> Create a <code>dictionary</code> object.
+</p>
+<div class="ms-5">
+<p> <code><var>d</var> = dictionary ()</code> returns an unconfigured dictionary, with
+ no entries and no key and value types.
+</p>
+<p> <code><var>d</var> = dictionary (<var>keys</var>, <var>values</var>)</code> returns a
+ dictionary mapping each element of the array <var>keys</var> to the element
+ of <var>values</var> in the same position, in that order.  The two must be
+ of the same size, or <var>values</var> a single value given to every key; an
+ empty <var>keys</var> gives a configured dictionary with no entries.  A key
+ repeated keeps its first position and takes its last value.  The class
+ of <var>keys</var> is the key type and that of <var>values</var> the value type,
+ except that a character array is a string array of its rows.
+</p>
+<p> The key type must be one that <code>keyHash</code> can hash: a built-in type
+ or a class with a <code>keyHash</code> method; a cell array is a key type of
+ its own, each cell one key.  An array of objects holds one key or value
+ per object, but a <code>table</code> or <code>timetable</code> of any size is one
+ value, where MATLAB accepts only a 1-by-1 one.
+</p>
+<p> <code><var>d</var> = dictionary (<var>k1</var>, <var>v1</var>, &hellip;, <var>kN</var>,
+ <var>vN</var>)</code> adds each pair of keys and values in turn, the first pair
+ setting the key and value types and later pairs converted to them.
+ Keys and values of another class are converted by the function of the
+ type&rsquo;s name, as in MATLAB: <code>string (<var>x</var>)</code>, <code>double
+ (<var>x</var>)</code>, <code>categorical (<var>x</var>)</code> and so on, and refused where
+ that fails or gives another class.  So <code>5</code> becomes <code>&quot;5&quot;</code> as
+ a string, <code>&quot;3.5&quot;</code> becomes 3.5 as a <code>double</code> but is refused
+ by <code>single</code> and the integer types, a character array gives its
+ character codes as a number, a <code>categorical</code> its code, and
+ <code>missing</code> gives <code>NaN</code>, <code>NaT</code> or an undefined category.
+ The exceptions:
+</p>
+<ul>
+<li> a <code>'cell'</code> type takes only cell arrays, which are never
+ wrapped, as in MATLAB;
+</li><li> a <code>'struct'</code> type takes only structures, where MATLAB turns
+ an object into a structure of its private properties;
+</li><li> a <code>'table'</code> type makes a table of the variable
+ <code>Var1</code> and refuses character arrays, as in MATLAB;
+</li><li> a <code>'logical'</code> type takes a character as true for a nonzero
+ code, as in MATLAB;
+</li><li> a <code>'datetime'</code> type reads dates given as text in the time
+ zone of the dictionary, and moves a key with a time zone to that of the
+ keys; a value keeps its own.
+</li></ul>
+
+<p> A date with a time zone and one without are different keys, so that
+ looking up one as the other finds nothing, and <code>keys</code> cannot join
+ a dictionary holding both.  Dates given as text to a dictionary whose
+ keys have a time zone are read in that zone, so that they find its
+ keys; MATLAB reads them without one, a key that no date with a zone
+ matches.
+</p>
+<p> <strong>See also: </strong>
+  <a href="configureDictionary.html">configureDictionary</a>, 
+  <a href="dictionary.isConfigured.html">dictionary.isConfigured</a>, 
+  <a href="dictionary.keys.html">dictionary.keys</a>, 
+  <a href="keyHash.html">keyHash</a>, 
+  <a href="keyMatch.html">keyMatch</a>
+</p>
+<p><strong>Source Code: </strong>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/d9d79ec/inst/dictionary.m#L217">dictionary</a>
+</p>
+</div>
+        <div class="card rounded my-4">
+          <div class="card-header card-header-mod">
+            <div class="row d-flex flex-wrap align-items-center">
+              <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                <button class="btn btn-link fs-4 fw-normal d-inline-block mr-2 p-0 text-reset text-decoration-none"
+                  type="button" data-bs-toggle="collapse"
+                  data-bs-target="#dictionary_dictionary-example1" aria-expanded="true"
+                  aria-controls="dictionary_dictionary-example1">
+                Example: 1
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="collapse show" id="dictionary_dictionary-example1">
+            <div class="card-body">
+                <p>A dictionary maps unique keys to values, of one key type and one value type.  In Octave both <code>'a'</code> and <code>"a"</code> are character vectors, which a dictionary stores as strings, one per row.  A cell array is a key type of its own, each cell one key, so text keys are given as a <code>string</code> array.</p>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> fruit = dictionary (string ({'apple', 'pear', 'fig'}), [3, 5, 2])</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">fruit =
+
+  dictionary (string ⟼ double) with 3 entries:
+
+    "apple" ⟼ 3
+    "pear"  ⟼ 5
+    "fig"   ⟼ 2</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> types (fruit)</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
+  string
+
+   "string"</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> types (dictionary ('apple', 3))</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
+  string
+
+   "string"</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> types (dictionary ({'apple', 'pear'}, [3, 5]))</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
+  string
+
+   "cell"</pre>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="card rounded my-4">
+          <div class="card-header card-header-mod">
+            <div class="row d-flex flex-wrap align-items-center">
+              <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                <button class="btn btn-link fs-4 fw-normal d-inline-block mr-2 p-0 text-reset text-decoration-none"
+                  type="button" data-bs-toggle="collapse"
+                  data-bs-target="#dictionary_dictionary-example2" aria-expanded="true"
+                  aria-controls="dictionary_dictionary-example2">
+                Example: 2
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="collapse show" id="dictionary_dictionary-example2">
+            <div class="card-body">
+                <p>A dictionary is a scalar object, whatever it holds: <code>numel</code> and <code>size</code> describe the object, and <code>numEntries</code> counts the entries.</p>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> fruit = dictionary (string ({'apple', 'pear', 'fig'}), [3, 5, 2]);
+ numel (fruit)</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans = 1</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> numEntries (fruit)</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans = 3</pre>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="card rounded my-4">
+          <div class="card-header card-header-mod">
+            <div class="row d-flex flex-wrap align-items-center">
+              <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                <button class="btn btn-link fs-4 fw-normal d-inline-block mr-2 p-0 text-reset text-decoration-none"
+                  type="button" data-bs-toggle="collapse"
+                  data-bs-target="#dictionary_dictionary-example3" aria-expanded="true"
+                  aria-controls="dictionary_dictionary-example3">
+                Example: 3
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="collapse show" id="dictionary_dictionary-example3">
+            <div class="card-body">
+                <p>Entries keep the order their keys were first added.  Replacing a value keeps the key in place, and a key repeated in the constructor keeps its first position and takes its last value.</p>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> d = dictionary (string ({'b', 'a', 'b'}), [1, 2, 3])</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">d =
+
+  dictionary (string ⟼ double) with 2 entries:
+
+    "b" ⟼ 3
+    "a" ⟼ 2</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> d('b') = 10</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">d =
+
+  dictionary (string ⟼ double) with 2 entries:
+
+    "b" ⟼ 10
+    "a" ⟼ 2</pre>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="card rounded my-4">
+          <div class="card-header card-header-mod">
+            <div class="row d-flex flex-wrap align-items-center">
+              <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                <button class="btn btn-link fs-4 fw-normal d-inline-block mr-2 p-0 text-reset text-decoration-none"
+                  type="button" data-bs-toggle="collapse"
+                  data-bs-target="#dictionary_dictionary-example4" aria-expanded="true"
+                  aria-controls="dictionary_dictionary-example4">
+                Example: 4
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="collapse show" id="dictionary_dictionary-example4">
+            <div class="card-body">
+                <p>Index with keys to read values, assign to add or replace entries, and assign <code>[]</code> to remove them.  Keys are converted to the key type, so a dictionary of <code>double</code> keys accepts integers and logical values.</p>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> sq = dictionary ([1, 2, 3], [1, 4, 9])</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">sq =
+
+  dictionary (double ⟼ double) with 3 entries:
+
+    1 ⟼ 1
+    2 ⟼ 4
+    3 ⟼ 9</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> sq([3, 1])</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
+
+   9   1</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> sq(int8 (4)) = 16;
+ sq(2) = []</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">sq =
+
+  dictionary (double ⟼ double) with 3 entries:
+
+    1 ⟼ 1
+    3 ⟼ 9
+    4 ⟼ 16</pre>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="card rounded my-4">
+          <div class="card-header card-header-mod">
+            <div class="row d-flex flex-wrap align-items-center">
+              <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                <button class="btn btn-link fs-4 fw-normal d-inline-block mr-2 p-0 text-reset text-decoration-none"
+                  type="button" data-bs-toggle="collapse"
+                  data-bs-target="#dictionary_dictionary-example5" aria-expanded="true"
+                  aria-controls="dictionary_dictionary-example5">
+                Example: 5
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="collapse show" id="dictionary_dictionary-example5">
+            <div class="card-body">
+                <p>Several pairs of keys and values can be given at once: the first pair sets the types, and later pairs are converted to them.  Here the dates of a dictionary of <code>datetime</code> keys are also given as text.</p>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> marks = dictionary (datetime (2024, 3, 1), 'start', '2024-03-15', 'middle')</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">marks =
+
+  dictionary (datetime ⟼ string) with 2 entries:
+
+    01-Mar-2024 ⟼ "start"
+    15-Mar-2024 ⟼ "middle"</pre>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="card rounded my-4">
+          <div class="card-header card-header-mod">
+            <div class="row d-flex flex-wrap align-items-center">
+              <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                <button class="btn btn-link fs-4 fw-normal d-inline-block mr-2 p-0 text-reset text-decoration-none"
+                  type="button" data-bs-toggle="collapse"
+                  data-bs-target="#dictionary_dictionary-example6" aria-expanded="true"
+                  aria-controls="dictionary_dictionary-example6">
+                Example: 6
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="collapse show" id="dictionary_dictionary-example6">
+            <div class="card-body">
+                <p>Values of the class <code>cell</code> hold anything, one cell per key, and <code>{}</code> reaches their contents.</p>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> cfg = dictionary (string ({'size', 'name', 'when'}), ...
+                   {[640, 480], 'demo', duration(1, 30, 0)})</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">cfg =
+
+  dictionary (string ⟼ cell) with 3 entries:
+
+    "size" ⟼ {[640 480]}
+    "name" ⟼ {'demo'}
+    "when" ⟼ {[01:30:00]}</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> cfg{'size'}</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
+
+   640   480</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> cfg{'name'} = 'renamed';
+ cfg('name')</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
+  1x1 cell array
+
+    {'renamed'}</pre>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="card rounded my-4">
+          <div class="card-header card-header-mod">
+            <div class="row d-flex flex-wrap align-items-center">
+              <div class="col-sm-3 col-md-5 mb-2 mb-sm-0">
+                <button class="btn btn-link fs-4 fw-normal d-inline-block mr-2 p-0 text-reset text-decoration-none"
+                  type="button" data-bs-toggle="collapse"
+                  data-bs-target="#dictionary_dictionary-example7" aria-expanded="true"
+                  aria-controls="dictionary_dictionary-example7">
+                Example: 7
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="collapse show" id="dictionary_dictionary-example7">
+            <div class="card-body">
+                <p>A value can be any object, a <code>table</code> of any size or another dictionary included, and indexing continues into it.</p>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> shelf = dictionary (string ({'north', 'south'}), ...
+                     {table([1; 2], {'pen'; 'ink'}, 'VariableNames', ...
+                            {'Qty', 'Item'}), ...
+                      table(5, {'tape'}, 'VariableNames', {'Qty', 'Item'})});
+ shelf{'north'}</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans =
+  2x2 table
+
+    Qty     Item      
+    ___    _______    
+
+      1    {'pen'}    
+      2    {'ink'}</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> nested = dictionary ('inner', dictionary (string ({'x', 'y'}), [1, 2]))</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">nested =
+
+  dictionary (string ⟼ dictionary) with 1 entry:
+
+    "inner" ⟼ dictionary (string ⟼ double) with 2 entries</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0; border: 1px solid #cfe0e6; border-left: 4px solid #4a90a4; border-radius: 4px; background-color: #eef5f8;"> nested('inner')('y')</pre>
+                <pre style="overflow-x: auto; white-space: pre; padding: 0.6rem 0.8rem; margin: 0.3rem 0 0.8rem 0; border: 1px solid #e2e2e2; border-left: 4px solid #b7b7b7; border-radius: 4px; background-color: #fafafa;">ans = 2</pre>
+
+            </div>
+          </div>
+        </div>
+
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </body>
+</html>

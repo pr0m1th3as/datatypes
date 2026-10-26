@@ -348,6 +348,21 @@
 			<div class="row">
 				<input id="togList9" type="checkbox">
 				<label for="togList9">
+					<span><h6>dictionary objects</h6></span>
+					<span><h6>dictionary objects</h6></span>
+				</label>
+				<div class="list">
+				<ul style="list-style-type: none; padding-left: 20px;">
+					<li><a href="dictionary.html" class="text-decoration-none font-monospace"><small>dictionary</small></a></li>
+					<li><a href="configureDictionary.html" class="text-decoration-none font-monospace"><small>configureDictionary</small></a></li>
+					<li><a href="isdictionary.html" class="text-decoration-none font-monospace"><small>isdictionary</small></a></li>
+					<li><a href="readdictionary.html" class="text-decoration-none font-monospace"><small>readdictionary</small></a></li>
+				</ul>
+				</div>
+			</div>
+			<div class="row">
+				<input id="togList10" type="checkbox">
+				<label for="togList10">
 					<span><h6>supplementary classes</h6></span>
 					<span><h6>supplementary classes</h6></span>
 				</label>
@@ -366,8 +381,8 @@
 				</div>
 			</div>
 			<div class="row">
-				<input id="togList10" type="checkbox">
-				<label for="togList10">
+				<input id="togList11" type="checkbox">
+				<label for="togList11">
 					<span><h6>supplementary functions</h6></span>
 					<span><h6>supplementary functions</h6></span>
 				</label>
@@ -389,8 +404,8 @@
 				</div>
 			</div>
 			<div class="row">
-				<input id="togList11" type="checkbox">
-				<label for="togList11">
+				<input id="togList12" type="checkbox">
+				<label for="togList12">
 					<span><h6>compiled functions</h6></span>
 					<span><h6>compiled functions</h6></span>
 				</label>
@@ -406,6 +421,8 @@
 					<li><a href="__table2ods__.html" class="text-decoration-none font-monospace"><small>__table2ods__</small></a></li>
 					<li><a href="__xlsx2table__.html" class="text-decoration-none font-monospace"><small>__xlsx2table__</small></a></li>
 					<li><a href="__table2xlsx__.html" class="text-decoration-none font-monospace"><small>__table2xlsx__</small></a></li>
+					<li><a href="__json2dictionary__.html" class="text-decoration-none font-monospace"><small>__json2dictionary__</small></a></li>
+					<li><a href="__dictionary2json__.html" class="text-decoration-none font-monospace"><small>__dictionary2json__</small></a></li>
 				</ul>
 				</div>
 			</div>
@@ -487,13 +504,16 @@
  <code>duration</code>, <code>datetime</code>, <code>string</code>, and <code>struct</code>
  arrays, as well as <code>table</code> itself.
 </p>
-<p> A variable cannot be a function handle; only a cell variable can hold
- one.  Every way of creating or replacing a variable refuses it, and the
- conversions <code>cell2table</code> and <code>struct2table</code>, as well as
- assignment of a cell array with parentheses, give a cell variable
- instead.  MATLAB refuses it only in the constructor and <code>addvars</code>,
- and lets <code><var>tbl</var>.<var>varname</var></code> assignment, <code>struct2table</code>
- and <code>convertvars</code> create one.
+<p> A variable cannot be a function handle, a <code>dictionary</code>, a
+ <code>timeseries</code> or a <code>tscollection</code>; only a cell variable can
+ hold one.  Every way of creating or replacing a variable refuses them.
+ For a function handle, the conversions <code>cell2table</code> and
+ <code>struct2table</code>, as well as assignment of a cell array with
+ parentheses, give a cell variable instead.  MATLAB refuses a function
+ handle or a <code>dictionary</code> only in the constructors and
+ <code>addvars</code>, and lets <code><var>tbl</var>.<var>varname</var></code> assignment,
+ <code>struct2table</code> and <code>convertvars</code> create one; it accepts a
+ <code>timeseries</code> or a <code>tscollection</code> everywhere.
 </p>
 <p> <strong>See also: </strong>
   <a href="vartype.html">vartype</a>, 
@@ -502,7 +522,7 @@
   <a href="struct2table.html">struct2table</a>
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/cde9efc/inst/table.m">table</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/d9d79ec/inst/table.m">table</a>
 </p>
 </div>
         <p class="lead my-3">The <code>table</code> class contains the following properties:</p>

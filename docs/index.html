@@ -199,7 +199,7 @@
             </div>
             <div class="col-sm-9 col-md-10">
               <h3 class="d-inline-block mr-2">datatypes</h3>
-              <b>1.5.0&nbsp;2026-09-30</b>
+              <b>1.6.0&nbsp;2026-10-26</b>
               <p class="indent">
                 A package for providing extra data types  and related functionality for GNU Octave.
               </p>
@@ -217,6 +217,7 @@
              <option value="#table arrays">table arrays</option>
              <option value="#timetable arrays">timetable arrays</option>
              <option value="#timeseries objects">timeseries objects</option>
+             <option value="#dictionary objects">dictionary objects</option>
              <option value="#supplementary classes">supplementary classes</option>
              <option value="#supplementary functions">supplementary functions</option>
              <option value="#compiled functions">compiled functions</option>
@@ -740,6 +741,47 @@ measured.</td>
              </tbody>
            </table>
            <h3 class="category">
+             <a name="dictionary objects">dictionary objects</a>
+           </h3>
+           <table class="table table-striped">
+             <tbody>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="dictionary.html">dictionary</a>
+                   </code></b>
+                 </td>
+                 <td>Map of unique keys to values.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="configureDictionary.html">configureDictionary</a>
+                   </code></b>
+                 </td>
+                 <td>Create a dictionary with key and value types and no entries.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="isdictionary.html">isdictionary</a>
+                   </code></b>
+                 </td>
+                 <td>True if input is a ‘dictionary’ object, false otherwise.
+
+  </td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="readdictionary.html">readdictionary</a>
+                   </code></b>
+                 </td>
+                 <td>Read a dictionary from a JSON or an OpenDocument spreadsheet file.</td>
+               </tr>
+             </tbody>
+           </table>
+           <h3 class="category">
              <a name="supplementary classes">supplementary classes</a>
            </h3>
            <table class="table table-striped">
@@ -1015,6 +1057,22 @@ spreadsheet.</td>
                    </code></b>
                  </td>
                  <td>Barebone function for writing an Office Open XML (.xlsx / .xlsm) spreadsheet.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="__json2dictionary__.html">__json2dictionary__</a>
+                   </code></b>
+                 </td>
+                 <td>Parse JSON text into a tree that keeps the kinds of JSON values.</td>
+               </tr>
+               <tr>
+                 <td>
+                   <b><code>
+                   <a href="__dictionary2json__.html">__dictionary2json__</a>
+                   </code></b>
+                 </td>
+                 <td>Write a tree of JSON values to a file.</td>
                </tr>
              </tbody>
            </table>
