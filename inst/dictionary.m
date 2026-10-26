@@ -35,6 +35,36 @@ classdef dictionary
   ## not its entries, which @code{numEntries} counts.  Dictionaries cannot be
   ## concatenated.
   ##
+  ## Entries are reached by indexing with keys, converted to the key type as
+  ## @code{dictionary} converts them:
+  ##
+  ## @itemize
+  ## @item @code{@var{d}(@var{keys})} returns the values of @var{keys}, an
+  ## array of keys, in an array of the same shape; a key not in @var{d} is an
+  ## error.
+  ##
+  ## @item @code{@var{d}(@var{keys}) = @var{values}} adds entries, or replaces
+  ## the values of keys already present, which keep their positions;
+  ## @var{values} has the size of @var{keys}, or is one value for all.  An
+  ## unconfigured dictionary takes its types from the first entries.
+  ##
+  ## @item @code{@var{d}(@var{keys}) = []} removes the entries of
+  ## @var{keys}, ignoring keys not in @var{d}.  A key removed and added
+  ## again goes after the others.
+  ##
+  ## @item @code{@var{d}@{@var{keys}@}}, for a dictionary of @qcode{'cell'}
+  ## values, returns the contents of their cells as a comma-separated list,
+  ## and @code{@var{d}@{@var{key}@} = @var{value}} stores @var{value} in a
+  ## cell under the single key @var{key}, @code{[]} included.
+  ##
+  ## @item @code{@var{d}.@var{method} (@dots{})} calls a method, as
+  ## @code{@var{d}.keys ()}.
+  ## @end itemize
+  ##
+  ## Indexing can continue into a value, as in @code{@var{d}(@var{key}).x}
+  ## or @code{@var{d}@{@var{key}@}(2) = 5}.  @code{end} and @qcode{':'} are
+  ## not supported.
+  ##
   ## @seealso{configureDictionary, isdictionary, keyHash, keyMatch}
   ## @end deftp
 
@@ -191,6 +221,14 @@ classdef dictionary
     ## @end deftypefn
     function n = numel (this, varargin)
       n = 1;
+      ## Octave asks with the subscripts how many values '{}' yields
+      if (numel (varargin) == 1 && ! isempty (this.keyType_))
+        [K, errmsg] = convert (varargin{1}, this.keyType_, this.keyEmpty_, ...
+                               'key');
+        if (isempty (errmsg))
+          n = prod (arraySize (K));
+        endif
+      endif
     endfunction
 
     ## -*- texinfo -*-
@@ -321,7 +359,7 @@ classdef dictionary
       endif
       [k, errmsg] = join (this.keys_, this.keyEmpty_, this.keyType_, 'keys');
       if (! isempty (errmsg))
-        error ("%s: %s", scope, errmsg);
+        error ("%s: %s; use the 'cell' format.", scope, errmsg);
       endif
     endfunction
 
@@ -362,7 +400,7 @@ classdef dictionary
       [v, errmsg] = join (this.values_, this.valueEmpty_, this.valueType_, ...
                           'values');
       if (! isempty (errmsg))
-        error ("%s: %s", scope, errmsg);
+        error ("%s: %s; use the 'cell' format.", scope, errmsg);
       endif
     endfunction
 
@@ -411,13 +449,114 @@ classdef dictionary
   endmethods
 
 ################################################################################
-##                         ** Concatenation **                                ##
+##                    ** Indexing and concatenation **                        ##
 ################################################################################
 ##                             Available Methods                              ##
 ##                                                                            ##
+## 'subsref'          'subsasgn'         'end'                                ##
 ## 'horzcat'          'vertcat'          'cat'                                ##
 ##                                                                            ##
 ################################################################################
+
+  methods (Hidden)
+
+    ## Lookup by '()' and '{}', and method calls by '.'
+    function varargout = subsref (this, s)
+      scope = 'dictionary.subsref';
+      switch (s(1).type)
+        case '()'
+          [out, errmsg] = lookupValues (this, s(1).subs, false);
+          if (! isempty (errmsg))
+            error ("%s: %s", scope, errmsg);
+          endif
+          out = {out};
+          s = s(2:end);
+        case '{}'
+          [out, errmsg] = lookupValues (this, s(1).subs, true);
+          if (! isempty (errmsg))
+            error ("%s: %s", scope, errmsg);
+          endif
+          s = s(2:end);
+        case '.'
+          name = s(1).subs;
+          if (! (ischar (name) && any (strcmp (name, publicMethods ()))))
+            error ("%s: no method named '%s'.", scope, char (name));
+          endif
+          args = {};
+          if (numel (s) > 1 && strcmp (s(2).type, '()'))
+            args = s(2).subs;
+            s = s(3:end);
+          else
+            s = s(2:end);
+          endif
+          out = cell (1, max (nargout, 1));
+          [out{:}] = feval (name, this, args{:});
+      endswitch
+      if (isempty (s))
+        varargout = out;
+      else
+        varargout = cell (1, max (nargout, 1));
+        [varargout{:}] = subsref (out{1}, s);
+      endif
+    endfunction
+
+    ## Insertion and update by '()' and '{}', deletion by '() = []'
+    function this = subsasgn (this, s, val)
+      scope = 'dictionary.subsasgn';
+      switch (s(1).type)
+        case '()'
+          if (numel (s(1).subs) != 1)
+            error ("%s: index with one array of keys.", scope);
+          endif
+          K = s(1).subs{1};
+          if (numel (s) > 1)
+            val = subsasgn (subsref (this, s(1)), s(2:end), val);
+          elseif (isa (val, 'double') && isequal (size (val), [0, 0]))
+            if (isempty (this.keyType_))
+              error ("%s: D is not configured.", scope);
+            endif
+            [this, errmsg] = removeEntries (this, K);
+            if (! isempty (errmsg))
+              error ("%s: %s", scope, errmsg);
+            endif
+            return;
+          endif
+          [this, errmsg] = addEntries (this, K, val);
+        case '{}'
+          if (! (isempty (this.keyType_) || strcmp (this.valueType_, 'cell')))
+            error ("%s: '{}' indexing needs a dictionary of 'cell' values.", ...
+                   scope);
+          endif
+          if (numel (s(1).subs) != 1)
+            error ("%s: index with one array of keys.", scope);
+          endif
+          K = s(1).subs{1};
+          if (! isempty (this.keyType_))
+            [K, errmsg] = convert (K, this.keyType_, this.keyEmpty_, 'key');
+            if (! isempty (errmsg))
+              error ("%s: %s", scope, errmsg);
+            endif
+          endif
+          if (prod (arraySize (asStored (K))) != 1)
+            error ("%s: '{}' assignment takes a single key.", scope);
+          endif
+          if (numel (s) > 1)
+            val = subsasgn (subsref (this, s(1)), s(2:end), val);
+          endif
+          [this, errmsg] = addEntries (this, K, {val});
+        case '.'
+          error ("%s: a dictionary has no properties to assign.", scope);
+      endswitch
+      if (! isempty (errmsg))
+        error ("%s: %s", scope, errmsg);
+      endif
+    endfunction
+
+    function last = end (this, k, n)
+      error ("dictionary.end: 'end' is not supported for a dictionary.");
+    endfunction
+
+  endmethods
 
   methods (Access = public)
 
@@ -467,6 +606,101 @@ classdef dictionary
   endmethods
 
   methods (Access = private)
+
+    ## The values of the keys in SUBS, the subscripts of '()' or, for BRACE,
+    ## of '{}': one array of the shape of the keys, or the contents of the
+    ## cells in a cell array.
+    function [out, errmsg] = lookupValues (this, subs, brace)
+      out = [];
+      errmsg = '';
+      if (isempty (this.keyType_))
+        errmsg = "D is not configured.";
+        return;
+      endif
+      if (brace && ! strcmp (this.valueType_, 'cell'))
+        errmsg = "'{}' indexing needs a dictionary of 'cell' values.";
+        return;
+      endif
+      if (numel (subs) != 1)
+        errmsg = "index with one array of keys.";
+        return;
+      endif
+      K = subs{1};
+      if (ischar (K) && strcmp (K, ':'))
+        errmsg = "':' is not supported; use 'keys' or 'values'.";
+        return;
+      endif
+      [K, errmsg] = convert (K, this.keyType_, this.keyEmpty_, 'key');
+      if (! isempty (errmsg))
+        return;
+      endif
+      ksz = arraySize (K);
+      n = prod (ksz);
+      idx = zeros (n, 1);
+      for i = 1:n
+        k = element (K, i);
+        try
+          h = keyHash (k);
+        catch err
+          errmsg = regexprep (err.message, '^keyHash: ', '');
+          return;
+        end_try_catch
+        idx(i) = locate (this.hashes_, this.order_, this.keys_, k, h);
+        if (idx(i) == 0)
+          if (n == 1)
+            errmsg = "key not found.";
+          else
+            errmsg = sprintf ("element %d of the keys not found.", i);
+          endif
+          return;
+        endif
+      endfor
+      if (brace)
+        out = cellfun (@(c) c{1}, this.values_(idx)', 'UniformOutput', false);
+        return;
+      endif
+      [out, errmsg] = join (this.values_(idx), this.valueEmpty_, ...
+                            this.valueType_, 'values');
+      if (! isempty (errmsg))
+        errmsg = [errmsg "; look up each key separately."];
+      elseif (isArray (out) && ! isequal (size (out), ksz))
+        out = reshape (out, ksz);
+      endif
+    endfunction
+
+    ## Remove the entries of the keys K; a key not in the dictionary is
+    ## ignored.
+    function [this, errmsg] = removeEntries (this, K)
+      [K, errmsg] = convert (K, this.keyType_, this.keyEmpty_, 'key');
+      if (! isempty (errmsg))
+        return;
+      endif
+      drop = false (numel (this.keys_), 1);
+      for i = 1:prod (arraySize (K))
+        k = element (K, i);
+        try
+          h = keyHash (k);
+        catch err
+          errmsg = regexprep (err.message, '^keyHash: ', '');
+          return;
+        end_try_catch
+        e = locate (this.hashes_, this.order_, this.keys_, k, h);
+        if (e > 0)
+          drop(e) = true;
+        endif
+      endfor
+      if (! any (drop))
+        return;
+      endif
+      keep = ! drop;
+      renumber = zeros (size (keep));
+      renumber(keep) = 1:nnz (keep);
+      sorted = keep(this.order_);
+      this.hashes_ = this.hashes_(sorted);
+      this.order_ = renumber(this.order_(sorted));
+      this.keys_ = this.keys_(keep);
+      this.values_ = this.values_(keep);
+    endfunction
 
     ## Add the entries of the keys K and the values V, configuring the
     ## dictionary from them when it has no types yet.
@@ -740,8 +974,14 @@ function [x, errmsg] = join (items, empty, type, what)
     x = items{1};
     return;
   endif
-  errmsg = sprintf ("cannot join %s of type '%s'; use the 'cell' format.", ...
-                    what, type);
+  errmsg = sprintf ("cannot join %s of type '%s'", what, type);
+endfunction
+
+## The methods '.' may call
+function names = publicMethods ()
+  names = {'types', 'isConfigured', 'numEntries', 'numel', 'length', ...
+           'size', 'ndims', 'isempty', 'keys', 'values', 'isKey', ...
+           'horzcat', 'vertcat', 'cat'};
 endfunction
 
 ## FORMAT, a format option of 'keys' and 'values', in lower case
