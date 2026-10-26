@@ -760,29 +760,21 @@ function dt = anyDate (t, locale)
   dt = readDate (t, '', locale);
 endfunction
 
-## The text T read by datetime in the format FMT, or as datetime guesses,
-## then in the long forms of LOCALE; NaT when it cannot
+## The text T read by datetime in the format FMT, or in the format it
+## detects in the language of LOCALE; NaT when it cannot
 function dt = readDate (t, fmt, locale)
   args = {};
+  if (! isempty (fmt))
+    args = {'InputFormat', fmt};
+  endif
   if (! isempty (locale))
-    args = {'Locale', locale};
+    args(end+1:end+2) = {'Locale', locale};
   endif
-  forms = {fmt};
-  if (isempty (fmt))
-    forms = {'', 'd. MMMM uuuu', 'd MMMM uuuu', 'MMMM d, uuuu', 'dd.MM.uuuu'};
-  endif
-  for i = 1:numel (forms)
-    try
-      if (isempty (forms{i}))
-        dt = datetime (t, args{:});
-      else
-        dt = datetime (t, 'InputFormat', forms{i}, args{:});
-      endif
-      return;
-    catch
-    end_try_catch
-  endfor
-  dt = NaT;
+  try
+    dt = datetime (t, args{:});
+  catch
+    dt = NaT;
+  end_try_catch
 endfunction
 
 ## The dates DTS, one per value, joined when they share a zone, else kept
