@@ -27,7 +27,8 @@
 ## their common data type (i.e. if a column of @var{C} contains explicitly
 ## @qcode{double} numbers, then the corresponding variable in @var{tbl} is of
 ## the same type), otherwise they are added as a column of cells.  A column
-## holding function handles always becomes a column of cells.
+## holding function handles, @code{dictionary}, @code{timeseries} or
+## @code{tscollection} objects always becomes a column of cells.
 ##
 ## @code{@var{tbl} = cell2table (@var{C}, @var{Name}, @var{Value})} specifies
 ## optional parameters for creating the table @var{tbl} with the following
@@ -73,7 +74,7 @@ function tbl = cell2table (C, varargin)
   varValues = cell (1, varN);
   for ix = 1:varN
     tmp = C(:,ix);
-    if (iscellstr (tmp) || any (cellfun (@is_function_handle, tmp)))
+    if (iscellstr (tmp) || any (cellfun (@cellOnly, tmp)))
       varValues{ix} = tmp;
     else
       ## Try to concatenate into array
@@ -128,6 +129,12 @@ function tbl = cell2table (C, varargin)
   ## Construct table
   tbl = table (varValues{:}, optArgs{:});
 
+endfunction
+
+## True for a value only a cell variable can hold
+function tf = cellOnly (x)
+  tf = (is_function_handle (x) || isa (x, 'dictionary')
+        || isa (x, 'timeseries') || isa (x, 'tscollection'));
 endfunction
 
 %!demo
@@ -188,6 +195,17 @@ endfunction
 %! tbl = cell2table ({@sin, 1; @cos, 2});
 %! assert_equal (class (tbl.Var1), 'cell');
 %! assert_equal (func2str (tbl.Var1{2}), 'cos');
+%!test  # a column of time series stays a cell variable, never one series
+%! tbl = cell2table ({timeseries([1; 2]); timeseries([3; 4])});
+%! assert_equal (class (tbl.Var1), 'cell');
+%! assert_equal (size (tbl.Var1), [2, 1]);
+%! assert_equal (tbl.Var1{2}.Data, [3; 4]);
+%!test
+%! tbl = cell2table ({dictionary(1, 2)});
+%! assert_equal (class (tbl.Var1), 'cell');
+%!test
+%! tbl = cell2table ({tscollection([0; 1])});
+%! assert_equal (class (tbl.Var1), 'cell');
 
 %!error<cell2table: input array must be a 2-D cell array.> ...
 %! cell2table (cell (3, 3, 3));

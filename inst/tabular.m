@@ -1651,6 +1651,20 @@ classdef (Abstract) tabular
 
   methods (Access = protected)
 
+    ## The body of the complaint against X as the value of a variable, or ''
+    ## when a variable can hold it.  A cell variable can hold anything.
+    function errmsg = variableRefusal (this, x)
+      errmsg = '';
+      if (is_function_handle (x))
+        errmsg = strcat ("a variable cannot be a function handle; only a", ...
+                         " cell array can hold one.");
+      elseif (isa (x, 'dictionary') || isa (x, 'timeseries')
+              || isa (x, 'tscollection'))
+        errmsg = sprintf (strcat ("a variable cannot be a '%s'; only a", ...
+                                  " cell array can hold one."), class (x));
+      endif
+    endfunction
+
     ## The names of the custom properties of one scope, in the order they were
     ## added.  TYPE is 'table' or 'variable'.  A property's type is held under
     ## the property's own name, so nothing here depends on two containers
@@ -2312,11 +2326,12 @@ classdef (Abstract) tabular
       endif
 
       ## Append the new variables
-      if (any (cellfun (@is_function_handle, args)))
-        errmsg = strcat ("a variable cannot be a function handle; only a", ...
-                         " cell array can hold one.");
-        return
-      endif
+      for i = 1:numel (args)
+        errmsg = variableRefusal (this, args{i});
+        if (! isempty (errmsg))
+          return
+        endif
+      endfor
       tbl = this;
       for i = 1:numel (args)
         tbl = setvar (tbl, newVarNames{i}, args{i});
@@ -2652,9 +2667,8 @@ classdef (Abstract) tabular
                  varNames{i});
           return
         end_try_catch
-        if (is_function_handle (newVarValue))
-          errmsg = strcat ("a variable cannot be a function handle; only", ...
-                           " a cell array can hold one.");
+        errmsg = variableRefusal (this, newVarValue);
+        if (! isempty (errmsg))
           return
         endif
         if (size (newVarValue, 1) != height (this))
@@ -7508,9 +7522,9 @@ classdef (Abstract) tabular
     ## @end deftypefn
     function tbl = setvar (this, varRef, value)
       clstype = class (this);
-      if (is_function_handle (value))
-        error (strcat ("%s.subsasgn: a variable cannot be a function", ...
-                       " handle; only a cell array can hold one."), clstype);
+      errmsg = variableRefusal (this, value);
+      if (! isempty (errmsg))
+        error ("%s.subsasgn: %s", clstype, errmsg);
       endif
       ## An object with neither rows nor variables takes its height from
       ## the first variable given it, as in MATLAB, so nothing is expanded;
@@ -7633,9 +7647,11 @@ classdef (Abstract) tabular
       else
         labelsAdded = false;
       endif
-      if (isBrace && is_function_handle (rhs))
-        error (strcat ("%s.subsasgn: a variable cannot be a function", ...
-                       " handle; only a cell array can hold one."), clstype);
+      if (isBrace)
+        errmsg = variableRefusal (this, rhs);
+        if (! isempty (errmsg))
+          error ("%s.subsasgn: %s", clstype, errmsg);
+        endif
       endif
       if (isBrace)
         ## The value is the contents of the variables side by side, as

@@ -83,13 +83,16 @@ classdef table < tabular
   ## @qcode{duration}, @qcode{datetime}, @qcode{string}, and @qcode{struct}
   ## arrays, as well as @qcode{table} itself.
   ##
-  ## A variable cannot be a function handle; only a cell variable can hold
-  ## one.  Every way of creating or replacing a variable refuses it, and the
-  ## conversions @code{cell2table} and @code{struct2table}, as well as
-  ## assignment of a cell array with parentheses, give a cell variable
-  ## instead.  MATLAB refuses it only in the constructor and @code{addvars},
-  ## and lets @code{@var{tbl}.@var{varname}} assignment, @code{struct2table}
-  ## and @code{convertvars} create one.
+  ## A variable cannot be a function handle, a @code{dictionary}, a
+  ## @code{timeseries} or a @code{tscollection}; only a cell variable can
+  ## hold one.  Every way of creating or replacing a variable refuses them.
+  ## For a function handle, the conversions @code{cell2table} and
+  ## @code{struct2table}, as well as assignment of a cell array with
+  ## parentheses, give a cell variable instead.  MATLAB refuses a function
+  ## handle or a @code{dictionary} only in the constructors and
+  ## @code{addvars}, and lets @code{@var{tbl}.@var{varname}} assignment,
+  ## @code{struct2table} and @code{convertvars} create one; it accepts a
+  ## @code{timeseries} or a @code{tscollection} everywhere.
   ##
   ## @seealso{vartype, array2table, cell2table, struct2table}
   ## @end deftp
@@ -603,11 +606,14 @@ classdef table < tabular
                          " (%d) and variable values (%d)."), ...
                  numel (VariableNames), numel (args));
         endif
-        ## Only a cell variable can hold a function handle
-        if (any (cellfun (@is_function_handle, args)))
-          error (strcat ("table: a variable cannot be a function handle;", ...
-                         " only a cell array can hold one."));
-        endif
+        ## Only a cell variable can hold a function handle, a dictionary or
+        ## a time series
+        for i = 1:numel (args)
+          errmsg = variableRefusal (this, args{i});
+          if (! isempty (errmsg))
+            error ("table: %s", errmsg);
+          endif
+        endfor
         ## Check size of input variables
         if (! isempty (args))
           nrows = size (args{1}, 1);

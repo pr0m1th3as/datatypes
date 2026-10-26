@@ -26,8 +26,8 @@
 ## variable in the output table.  For a scalar structure with @math{N} fields,
 ## all of which have @math{M} rows, or an @math{M*1} or @math{1*M} structure
 ## array with @math{N} fields, the output is an @math{M*N} table.  A field of
-## function handles becomes a cell variable, since no other variable can hold
-## a function handle.
+## function handles, @code{dictionary}, @code{timeseries} or @code{tscollection}
+## objects becomes a cell variable, since no other variable can hold one.
 ##
 ## @code{@var{tbl} = struct2table (@var{S}, @var{Name}, @var{Value})} specifies
 ## optional parameters for creating the table @var{tbl} with the following
@@ -90,8 +90,8 @@ function tbl = struct2table (S, varargin)
   if (AsArray)
     for i = 1:varN
       try
-        ## A field of function handles becomes a cell variable
-        if (any (cellfun (@is_function_handle, {S(:).(varNames{i})})))
+        ## A field of what only a cell can hold becomes a cell variable
+        if (any (cellfun (@cellOnly, {S(:).(varNames{i})})))
           error ();
         endif
         varValues{i} = cat (1, S(:).(varNames{i}));
@@ -109,7 +109,7 @@ function tbl = struct2table (S, varargin)
     vals = struct2cell (S);
     for i = 1:varN
       try
-        if (any (cellfun (@is_function_handle, vals(i,1,:))))
+        if (any (cellfun (@cellOnly, vals(i,1,:))))
           error ();
         endif
         varValues{i} = cat (1, vals{i,1,:});
@@ -141,6 +141,12 @@ function tbl = struct2table (S, varargin)
   ## Construct table
   tbl = table (varValues{:}, optArgs{:});
 
+endfunction
+
+## True for a value only a cell variable can hold
+function tf = cellOnly (x)
+  tf = (is_function_handle (x) || isa (x, 'dictionary')
+        || isa (x, 'timeseries') || isa (x, 'tscollection'));
 endfunction
 
 %!demo
@@ -203,6 +209,20 @@ endfunction
 %! tbl = struct2table (struct ('a', {@sin; @cos}));
 %! assert_equal (class (tbl.a), 'cell');
 %! assert_equal (func2str (tbl.a{2}), 'cos');
+%!test  # a field of time series becomes a cell variable, never one series
+%! tbl = struct2table (struct ('t', {timeseries([1; 2]); timeseries([3; 4])}));
+%! assert_equal (class (tbl.t), 'cell');
+%! assert_equal (size (tbl.t), [2, 1]);
+%! assert_equal (tbl.t{2}.Data, [3; 4]);
+%!test
+%! tbl = struct2table (struct ('t', timeseries (5)));
+%! assert_equal (class (tbl.t), 'cell');
+%!test
+%! tbl = struct2table (struct ('d', dictionary (1, 2)));
+%! assert_equal (class (tbl.d), 'cell');
+%!test
+%! tbl = struct2table (struct ('c', tscollection ([0; 1])));
+%! assert_equal (class (tbl.c), 'cell');
 
 %!error<struct2table: input array must be a structure.> struct2table ({1});
 %!error<struct2table: name-value arguments must be in pairs.> ...
