@@ -849,6 +849,87 @@ function d = readods (filename)
   endif
 endfunction
 
+%!demo
+%! ## `readdictionary` reads the JSON object in a file as a dictionary with
+%! ## `string` keys, in the order of the file.  The value type follows the
+%! ## values: here they are all numbers, so they are `double`.
+%!
+%! f = [tempname() '.json'];
+%! text = '{"Boston": 55, "Denver": 48, "Dallas": 75}'
+%! fid = fopen (f, 'w');
+%! fputs (fid, text);
+%! fclose (fid);
+%! temps = readdictionary (f)
+%! delete (f);
+
+%!demo
+%! ## Values of different kinds give `cell` values.  An array becomes a column
+%! ## cell array and a nested object a dictionary of its own, so `{}` reaches
+%! ## into both; `null` is `missing`.
+%!
+%! f = [tempname() '.json'];
+%! text = ['{"id": 12345, "tags": ["new", "urgent"], ', ...
+%!         '"sender": {"name": "Ann", "id": 7}, "reply": null}']
+%! fid = fopen (f, 'w');
+%! fputs (fid, text);
+%! fclose (fid);
+%! msg = readdictionary (f)
+%! msg{'tags'}
+%! sender = msg{'sender'}
+%! delete (f);
+
+%!demo
+%! ## Text in ISO 8601 form becomes dates, and `hh:mm:ss` durations.  A
+%! ## timestamp marked with a time zone stays text, unless dates are asked for
+%! ## with `'ValueType'`, when each keeps the zone it states.
+%!
+%! f = [tempname() '.json'];
+%! text = '{"start": "2024-03-01", "end": "2024-03-15"}'
+%! fid = fopen (f, 'w');
+%! fputs (fid, text);
+%! fclose (fid);
+%! dates = readdictionary (f)
+%! text = ['{"utc": "2024-03-01T10:00:00Z", ', ...
+%!         '"local": "2024-03-01T12:00:00+02:00"}']
+%! fid = fopen (f, 'w');
+%! fputs (fid, text);
+%! fclose (fid);
+%! asText = readdictionary (f)
+%! asDates = readdictionary (f, 'ValueType', 'datetime')
+%! v = values (asDates, 'cell');
+%! v{2}.TimeZone
+%! delete (f);
+
+%!demo
+%! ## `'DictionarySelector'` reads one object within the file by a JSON
+%! ## Pointer, counting array elements from 0, and `'DuplicateKeyRule'` says
+%! ## what a repeated key becomes: renamed by default, or the last value kept.
+%!
+%! f = [tempname() '.json'];
+%! text = '{"site": {"a": 1, "a": 2, "b": 3}, "runs": [{"x": 10}, {"x": 20}]}'
+%! fid = fopen (f, 'w');
+%! fputs (fid, text);
+%! fclose (fid);
+%! readdictionary (f, 'DictionarySelector', '/site')
+%! readdictionary (f, 'DictionarySelector', '/site', ...
+%!                 'DuplicateKeyRule', 'preserveLast')
+%! readdictionary (f, 'DictionarySelector', '/runs/1')
+%! delete (f);
+
+%!demo
+%! ## An OpenDocument spreadsheet gives one entry per sheet, the sheet name
+%! ## the key and its table or timetable the value, so a dictionary of tables
+%! ## written by `writedictionary` comes back as it was.
+%!
+%! sales = dictionary (string ({'North', 'South 2024'}), ...
+%!                     {table([10; 12], {'pens'; 'ink'}), ...
+%!                      table(7, {'tape'})})
+%! f = [tempname() '.ods'];
+%! writedictionary (sales, f);
+%! back = readdictionary (f)
+%! back('South 2024')
+%! delete (f);
+
 ## Write TXT to a temporary file, read it, and delete the file
 %!function d = rj (txt, varargin)
 %!  d = rjx (txt, '.json', varargin{:});

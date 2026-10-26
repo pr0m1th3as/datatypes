@@ -1,0 +1,56 @@
+%!demo
+%! ## `writedictionary` writes a dictionary as a JSON object, indented by four
+%! ## spaces.  A `double` is always written with a point, and keys that are
+%! ## not text are written as text.
+%!
+%! f = [tempname() '.json'];
+%! d = dictionary (string ({'pi', 'one', 'big'}), [pi, 1, 1e20])
+%! writedictionary (d, f);
+%! disp (fileread (f))
+%! writedictionary (dictionary ([1.5, 2], [true, false]), f, ...
+%!                  'PrettyPrint', false);
+%! disp (fileread (f))
+%! delete (f);
+
+%!demo
+%! ## Nested dictionaries become objects and the contents of cells their
+%! ## values, a vector an array.  `NaN` and `Inf` are written as such, or as
+%! ## `null` under `'PreserveInfAndNaN'` false, as missing values are.
+%!
+%! f = [tempname() '.json'];
+%! inner = dictionary (string ({'mean', 'max'}), [NaN, Inf]);
+%! d = dictionary (string ({'stats', 'samples', 'note'}), ...
+%!                 {inner, [3, 5, 8], string(missing)})
+%! writedictionary (d, f, 'PreserveInfAndNaN', false);
+%! disp (fileread (f))
+%! delete (f);
+
+%!demo
+%! ## What JSON cannot hold is refused before anything is written: here a
+%! ## categorical value.  Dates are written as text, and read back as dates.
+%!
+%! f = [tempname() '.json'];
+%! try
+%!   writedictionary (dictionary ('size', categorical ({'large'})), f);
+%! catch err
+%!   disp (err.message)
+%! end_try_catch
+%! days = dictionary (string ({'start', 'end'}), datetime (2024, 3, [1, 15]));
+%! writedictionary (days, f);
+%! disp (fileread (f))
+%! readdictionary (f)
+%! delete (f);
+
+%!demo
+%! ## A dictionary of tables or timetables can be written to an OpenDocument
+%! ## spreadsheet, one sheet per key, which `readdictionary` reads back.
+%!
+%! readings = dictionary (string ({'Lab A', 'Lab B'}), ...
+%!                        {timetable(hours ([1; 2]), [20.5; 21.0]), ...
+%!                         timetable(hours ([1; 2]), [19.8; 20.1])})
+%! f = [tempname() '.ods'];
+%! writedictionary (readings, f);
+%! back = readdictionary (f);
+%! keys (back)
+%! back('Lab B')
+%! delete (f);
