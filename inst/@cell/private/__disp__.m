@@ -121,6 +121,7 @@ function [dispstr, optLen]  = mixedcell2str (data, cols)
   is_struct = is_char;
   has_method = is_char;
   no_method = is_char;
+  is_fhandle = is_char;
 
   ## Nested cells are printed by size
   is_cell = cellfun ('iscell', data);
@@ -155,6 +156,11 @@ function [dispstr, optLen]  = mixedcell2str (data, cols)
   is_numeric(ve) = cellfun ('isnumeric', data(ve));
   sf = @(x) sprintf ("%s", strtrim (sprintf ("%g ", x)));
   dispstr(is_numeric) = cellfun (sf, data(is_numeric), "UniformOutput", false);
+  ## Complex values with their imaginary parts; adding 0 unsigns a zero part
+  is_complex = is_numeric;
+  is_complex(is_numeric) = cellfun ('iscomplex', data(is_numeric));
+  sf = @(x) strtrim (sprintf ("%g%+gi ", [real(x(:).'); imag(x(:).')] + 0));
+  dispstr(is_complex) = cellfun (sf, data(is_complex), "UniformOutput", false);
 
   ## Catch 'object' scalars or row vectors
   is_object(ve) = cellfun ('isobject', data(ve));
@@ -174,6 +180,11 @@ function [dispstr, optLen]  = mixedcell2str (data, cols)
   sf = @(x) sprintf (strcat ([strjoin(repmat ({'%d'}, 1, ndims (x)), 'x'), ...
                              ' struct']), size (x));
   dispstr(is_struct) = cellfun (sf, data(is_struct), "UniformOutput", false);
+
+  ## Catch function handles, each written with its '@'
+  is_fhandle(ve) = cellfun (@is_function_handle, data(ve));
+  sf = @(x) regexprep (func2str (x), '^([^@])', '@$1');
+  dispstr(is_fhandle) = cellfun (sf, data(is_fhandle), "UniformOutput", false);
 
   ## Catch remaining elements containing matrices or arrays of any type
   sf = @(x) sprintf (strcat ([strjoin(repmat ({'%d'}, 1, ndims (x)), 'x'), ...
@@ -258,8 +269,14 @@ function [dispstr, optLen]  = mixedcell2str (data, cols)
 
   La_nB = sprintf ("{%%-%ds}", optLen);
   fcn = @(x) sprintf (La_nB, x);
-  idx = (! pad_B & ! brackets) | me;
+  idx = ((! pad_B & ! brackets) | me) & ! is_fhandle;
   dispstr(idx) = cellfun (fcn, dispstr(idx), "UniformOutput", false);
+
+  ## Function handles are right aligned without brackets
+  Ra_nB = sprintf ("{%%+%ds}", optLen);
+  fcn = @(x) sprintf (Ra_nB, x);
+  dispstr(is_fhandle) = cellfun (fcn, dispstr(is_fhandle), ...
+                                 "UniformOutput", false);
 endfunction
 
 function out = combvec (vecs)

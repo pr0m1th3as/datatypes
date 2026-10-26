@@ -69,3 +69,31 @@ endfunction
 %!test
 %! C = {1, 2};
 %! assert_equal (evalc ('disp (C)'), evalc ('display ({1, 2})'));
+%!test
+%! C = {@sin};
+%! want = "  1x1 cell array\n\n    {@sin}    \n\n";
+%! assert_equal (evalc ('disp (C)'), want);
+%!test
+%! C = {@(x) x + 1};
+%! want = "  1x1 cell array\n\n    {@(x) x + 1}    \n\n";
+%! assert_equal (evalc ('disp (C)'), want);
+%!test  # function handles align right, without brackets
+%! C = {@sin; @(x) x + 1};
+%! want = "  2x1 cell array\n\n    {      @sin}    \n    {@(x) x + 1}    \n\n";
+%! assert_equal (evalc ('disp (C)'), want);
+%!test
+%! C = {1+2i};
+%! want = "  1x1 cell array\n\n    {[1+2i]}    \n\n";
+%! assert_equal (evalc ('disp (C)'), want);
+%!test
+%! C = {1-2.5i};
+%! want = "  1x1 cell array\n\n    {[1-2.5i]}    \n\n";
+%! assert_equal (evalc ('disp (C)'), want);
+%!test
+%! C = {[1+2i, 3]};
+%! want = "  1x1 cell array\n\n    {[1+2i 3+0i]}    \n\n";
+%! assert_equal (evalc ('disp (C)'), want);
+%!test
+%! C = {complex(1, -0)};
+%! want = "  1x1 cell array\n\n    {[1+0i]}    \n\n";
+%! assert_equal (evalc ('disp (C)'), want);
