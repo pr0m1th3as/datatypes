@@ -2,7 +2,7 @@
 # name: cache
 # type: cell
 # rows: 3
-# columns: 846
+# columns: 875
 # name: <cell-element>
 # type: sq_string
 # elements: 1
@@ -13,12 +13,16 @@
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 170
+# length: 274
 cell: disp (C)
+cell: str = disp (C)
 Customized display of cell arrays.
 
 This function overloads Octave core disp with respect to cell arrays
 and displays their contents in MATLAB like manner.
+
+str = disp (C) returns the text instead of printing it,
+as Octave core disp does.
 
 
 # name: <cell-element>
@@ -5745,7 +5749,7 @@ cell2table
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 1289
+# length: 1337
 datatypes: tbl = cell2table (C)
 datatypes: tbl = cell2table (C, Name, Value)
 Convert a cell array to a table.
@@ -5756,7 +5760,8 @@ a variable in tbl. The contents of each column are concatenated into
 their common data type (i.e. if a column of C contains explicitly
 double numbers, then the corresponding variable in tbl is of
 the same type), otherwise they are added as a column of cells. A column
-holding function handles always becomes a column of cells.
+holding function handles, dictionary, timeseries or
+tscollection objects always becomes a column of cells.
 
 tbl = cell2table (C, Name, Value) specifies
 optional parameters for creating the table tbl with the following
@@ -5785,6 +5790,52 @@ table
 # elements: 1
 # length: 32
 Convert a cell array to a table.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 19
+configureDictionary
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 948
+datatypes: d = configureDictionary (keyType, valueType)
+Create a dictionary with key and value types and no entries.
+
+d = configureDictionary (keyType, valueType)
+returns a configured dictionary with no entries, whose keys are of
+class keyType and whose values are of class valueType, each
+given as a character vector or a string scalar. The names are matched in
+case, and 'char' gives 'string', since a character vector
+is stored as a string scalar.
+
+valueType may name a built-in type ('double',
+'logical', 'cell', 'struct',
+'function_handle', ...) or any class that is not abstract.
+keyType must also name a type that keyHash can hash: a
+built-in type or a class with a keyHash method, such as
+string, datetime, duration, calendarDuration
+and categorical. MATLAB accepts any class there, a table
+or a timetable among them, and refuses the key only when an entry
+is added.
+
+See also:
+dictionary,
+dictionary.types,
+dictionary.isConfigured,
+keyHash
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 60
+Create a dictionary with key and value types and no entries.
 
 
 
@@ -6835,7 +6886,7 @@ datetime.datetime
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 17946
+# length: 19322
 datetime: T = datetime ('now')
 datetime: T = datetime ('today')
 datetime: T = datetime ('tomorrow')
@@ -6887,9 +6938,18 @@ which is read as with an offset field and so requires
 'TimeZone'. MATLAB detects no text carrying an offset.
 'dd-MMM-uuuu' month named in full or abbreviated,
 optionally followed by a time as above.
-'MMMM d, uuuu' as in 'March 15, 2024'.
-'MM/dd/uuuu' or 'dd/MM/uuuu'; see below.
+'MMMM d, uuuu' as in 'March 15, 2024', in
+English only, optionally followed by a time.
+'MM/dd/uuuu' or 'dd/MM/uuuu', the year in two
+digits or four, optionally followed by a time; see below.
+'dd.MM.uuuu' day first in every locale, optionally
+followed by a time, or 'dd.MM.yy' with all three fields in two
+digits, so that a version number such as '1.5.10' stays text.
 'HH:mm:ss' a time alone, taking today's date.
+
+A two-digit year is read against the pivot year, as with an
+'InputFormat', where MATLAB reads '05.03.24' as the year
+24.
 
 Three further shapes are read that MATLAB does not detect, and are
 Octave extensions: 'uuuu/MM/dd' with an optional time,
@@ -6900,9 +6960,26 @@ Numeric fields need not be padded, so '2024-2-9' reads as
 A date written with slashes is ambiguous: '03/09/2024' is the 3rd
 of September to some readers and the 9th of March to others. The whole
 array decides, since one entry naming a day past the twelfth settles the
-order for all of them; where nothing settles it the American reading is
-taken and a warning
-('Octave:datetime:ambiguous-format') is raised.
+order for all of them; where nothing settles it the reading of the
+'Locale' is taken, month first in English but for
+'en_GB' and day first in every other language, and a warning
+('Octave:datetime:ambiguous-format') is raised, but for
+'pt_PT'. Under a German locale, which writes dates with dots,
+slashes are not read, as in MATLAB.
+
+T = datetime (DateStrings, 'Locale',
+LOCALE) detects the format in the language of LOCALE: the
+month names above are its own, abbreviated or full, matched in any case
+and with or without the point after an abbreviation, and English names
+are not read under another language. Each language adds its long form,
+optionally followed by a time: 'd. MMMM uuuu' in German
+('1. Januar 2024', 'Jänner' under 'de_AT'),
+'d 'de' MMMM 'de' uuuu' in Spanish and Portuguese
+('5 de marzo de 2024'), and 'dd MMMM uuuu' in the other
+languages but Portuguese ('15 mars 2024', '15 Μαρτίου
+2024'). MATLAB reads the Spanish and Portuguese long form under
+'pt_BR' alone, refuses a point after a Spanish abbreviation, and
+refuses Greek written in capitals; all of these are read here.
 
 T = datetime (DateStrings, 'MixedFormats',
 true) detects a format for each piece of text separately instead,
@@ -6962,19 +7039,19 @@ two-digit years will be referenced. When not specified, it defaults to
 the current year minus 50.
 
 T = datetime (DateStrings, 'InputFormat',
-INFMT, 'Locale', LOCALE) interprets the month names,
-weekday names, and day-period markers in DateStrings according to
-LOCALE, given as an 'xx_YY' identifier whose language part
-selects the names. The supported languages are 'en' (the
-default), 'fr', 'de', 'es', 'it',
-'pt', and 'el'; 'system' is treated as
-'en'. Both full ('MMMM'/'eeee') and abbreviated
-('MMM'/'eee') month and weekday names are recognized
-case-insensitively; for Greek, matching is also accent-insensitive, so
-the accentless all-caps spelling is accepted, and the genitive month
-forms ('Μαρτίου') are used. A weekday name is validated but does
-not otherwise affect the result. A hyphen may stand for the underscore,
-as in 'fr-FR'.
+INFMT, 'Locale', LOCALE) also interprets the month
+names, weekday names, and day-period markers in DateStrings
+according to LOCALE, given as an 'xx_YY' identifier whose
+language part selects the names. The supported languages are
+'en' (the default), 'fr', 'de', 'es',
+'it', 'pt', and 'el'; 'system' is treated
+as 'en'. Both full ('MMMM'/'eeee') and
+abbreviated ('MMM'/'eee') month and weekday names are
+recognized case-insensitively; for Greek, matching is also
+accent-insensitive, so the accentless all-caps spelling is accepted, and
+the genitive month forms ('Μαρτίου') are used. A weekday name is
+validated but does not otherwise affect the result. A hyphen may stand
+for the underscore, as in 'fr-FR'.
 
 T = datetime (DateVectors) creates a column vector of
 datetime values from the date vectors in DateVectors.
@@ -10587,6 +10664,1005 @@ duration.days
 # elements: 1
 # length: 28
 Fixed-time duration in days.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 10
+dictionary
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 1907
+datatypes: dictionary
+Map of unique keys to values.
+
+A dictionary object holds entries, each a key and the value it
+maps to. Every key is of one type and every value of one type, the key
+type and the value type of the dictionary; two keys are the same key when
+keyMatch says so.
+
+A dictionary with no entries may have no key and value types yet, when
+it is unconfigured; the first entries added configure it, and
+configureDictionary creates one configured with no entries.
+
+dictionary is a value class, and a dictionary is always a scalar
+object: numel, size and isempty describe the object,
+not its entries, which numEntries counts. Dictionaries cannot be
+concatenated.
+
+Entries are reached by indexing with keys, converted to the key type as
+dictionary converts them:
+
+d(keys) returns the values of keys, an
+array of keys, in an array of the same shape; a key not in d is an
+error.
+d(keys) = values adds entries, or replaces
+the values of keys already present, which keep their positions;
+values has the size of keys, or is one value for all. An
+unconfigured dictionary takes its types from the first entries.
+d(keys) = [] removes the entries of
+keys, ignoring keys not in d. A key removed and added
+again goes after the others.
+d{keys}, for a dictionary of 'cell'
+values, returns the contents of their cells as a comma-separated list,
+and d{key} = value stores value in a
+cell under the single key key, [] included.
+d.method (...) calls a method, as
+d.keys ().
+
+Indexing can continue into a value, as in d(key).x
+or d{key}(2) = 5; assigning into the contents of
+a new key starts from empty. end is not supported. Octave
+cannot tell d(:) from d(':'), so ':'
+is the key ":", as it is in MATLAB in an assignment; use
+keys or values for every entry.
+
+jsonencode refuses a dictionary, as in MATLAB, and
+writedictionary writes one to a JSON file.
+
+See also:
+configureDictionary,
+isdictionary,
+keyHash,
+keyMatch
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 29
+Map of unique keys to values.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 14
+dictionary.cat
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 243
+dictionary: cat (dim, d1, d2, ...)
+Refuse to concatenate: a dictionary is a scalar object.
+
+cat (dim, d1, d2, ...) raises an error,
+whatever the dimension and the other arguments, as in MATLAB.
+
+See also:
+dictionary.horzcat,
+dictionary.vertcat
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 55
+Refuse to concatenate: a dictionary is a scalar object.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 21
+dictionary.dictionary
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 2617
+dictionary: d = dictionary ()
+dictionary: d = dictionary (keys, values)
+dictionary: d = dictionary (k1, v1, ..., kN, vN)
+Create a dictionary object.
+
+d = dictionary () returns an unconfigured dictionary, with
+no entries and no key and value types.
+
+d = dictionary (keys, values) returns a
+dictionary mapping each element of the array keys to the element
+of values in the same position, in that order. The two must be
+of the same size, or values a single value given to every key; an
+empty keys gives a configured dictionary with no entries. A key
+repeated keeps its first position and takes its last value. The class
+of keys is the key type and that of values the value type,
+except that a character array is a string array of its rows.
+
+The key type must be one that keyHash can hash: a built-in type
+or a class with a keyHash method; a cell array is a key type of
+its own, each cell one key. An array of objects holds one key or value
+per object, but a table or timetable of any size is one
+value, where MATLAB accepts only a 1-by-1 one.
+
+d = dictionary (k1, v1, ..., kN,
+vN) adds each pair of keys and values in turn, the first pair
+setting the key and value types and later pairs converted to them.
+Keys and values of another class are converted by the function of the
+type's name, as in MATLAB: string (x), double
+(x), categorical (x) and so on, and refused where
+that fails or gives another class. So 5 becomes "5" as
+a string, "3.5" becomes 3.5 as a double but is refused
+by single and the integer types, a character array gives its
+character codes as a number, a categorical its code, and
+missing gives NaN, NaT or an undefined category.
+The exceptions:
+
+a 'cell' type takes only cell arrays, which are never
+wrapped, as in MATLAB;
+a 'struct' type takes only structures, where MATLAB turns
+an object into a structure of its private properties;
+a 'table' type makes a table of the variable
+Var1 and refuses character arrays, as in MATLAB;
+a 'logical' type takes a character as true for a nonzero
+code, as in MATLAB;
+a 'datetime' type reads dates given as text in the time
+zone of the dictionary, and moves a key with a time zone to that of the
+keys; a value keeps its own.
+
+A date with a time zone and one without are different keys, so that
+looking up one as the other finds nothing, and keys cannot join
+a dictionary holding both. Dates given as text to a dictionary whose
+keys have a time zone are read in that zone, so that they find its
+keys; MATLAB reads them without one, a key that no date with a zone
+matches.
+
+See also:
+configureDictionary,
+dictionary.isConfigured,
+dictionary.keys,
+keyHash,
+keyMatch
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 27
+Create a dictionary object.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 22
+dictionary.dispstrings
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 491
+dictionary: cstr = dispstrings (d)
+Return the line that describes a dictionary.
+
+cstr = dispstrings (d) returns a 1-by-1 cell array
+holding the line that describes d by its key and value types and
+its number of entries, as 'dictionary (string ⟼ double) with 2
+entries', or 'dictionary with unset key and value types' while
+it is unconfigured. A cell array displays a dictionary by this line,
+and so does a dictionary holding dictionaries.
+
+See also:
+dictionary.types,
+dictionary.numEntries
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 44
+Return the line that describes a dictionary.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 18
+dictionary.entries
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 765
+dictionary: e = entries (d)
+dictionary: e = entries (d, format)
+Return the keys and values together.
+
+e = entries (d) returns a table with the variables
+Key and Value, one row per entry in the order the keys
+were added: the columns keys (d) and values
+(d) return. Keys or values that a table cannot hold, function
+handles, dictionaries or values that cannot be joined, are refused.
+
+e = entries (d, format) returns the table above
+for format 'table', the default; for 'struct' a
+column structure array with the fields Key and Value,
+one element per entry; and for 'cell' a cell array of two
+columns, each key and value in a cell of its own. format is
+matched in any case and by its first letters.
+
+d must be configured.
+
+See also:
+dictionary.keys,
+dictionary.values
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 36
+Return the keys and values together.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 18
+dictionary.horzcat
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 274
+dictionary: horzcat (d1, d2, ...)
+Refuse to concatenate: a dictionary is a scalar object.
+
+[d1, d2] raises an error, whatever the other
+arguments, as in MATLAB. Add the entries of one dictionary to another
+by assignment instead.
+
+See also:
+dictionary.vertcat,
+dictionary.cat
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 55
+Refuse to concatenate: a dictionary is a scalar object.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 17
+dictionary.insert
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 762
+dictionary: d = insert (d, keys, values)
+dictionary: d = insert (..., 'Overwrite', tf)
+Add entries.
+
+d = insert (d, keys, values) adds the
+entries of keys and values to d, as
+d(keys) = values does: values has the
+size of keys, or is one value for all, and both are converted to
+the types of d, which an unconfigured dictionary takes from them.
+A key already present has its value replaced and keeps its position.
+
+d = insert (..., 'Overwrite', tf) with
+tf false leaves the value of a key already present unchanged, and
+a key repeated in keys takes its first value; it still adds the
+keys not yet present. tf is a logical or numeric scalar, true by
+default. The option name is matched in any case.
+
+See also:
+dictionary.remove,
+dictionary.lookup,
+dictionary.isKey
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 12
+Add entries.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 23
+dictionary.isConfigured
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 288
+dictionary: tf = isConfigured (d)
+True for a dictionary with key and value types.
+
+tf = isConfigured (d) returns false for an
+unconfigured dictionary, which has no entries and no key and value
+types yet, and true otherwise, entries or not.
+
+See also:
+dictionary.types,
+configureDictionary
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 47
+True for a dictionary with key and value types.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 16
+dictionary.isKey
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 456
+dictionary: tf = isKey (d, keys)
+True for each of the keys that is in the dictionary.
+
+tf = isKey (d, keys) returns a logical array
+of the size of keys, true where the element of keys is a key
+of d. The keys are first converted to the key type of d, as
+dictionary converts them, so that isKey (d, 1) on a
+dictionary of string keys asks for the key "1"; a class that
+cannot be converted is refused. d must be configured.
+
+See also:
+dictionary.keys,
+keyMatch
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 52
+True for each of the keys that is in the dictionary.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 18
+dictionary.isempty
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 300
+dictionary: tf = isempty (d)
+Return false: a dictionary is never an empty array.
+
+tf = isempty (d) is false even for a
+dictionary with no entries, since the object itself is a scalar; test
+numEntries (d) == 0 for a dictionary with no entries.
+
+See also:
+dictionary.numEntries,
+dictionary.isConfigured
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 51
+Return false: a dictionary is never an empty array.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 18
+dictionary.isequal
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 588
+dictionary: tf = isequal (d1, d2, ...)
+True when dictionaries hold the same entries.
+
+tf = isequal (d1, d2, ...) returns
+true when every argument is a dictionary with the same keys, in
+any order, each mapped to values that isequal finds equal, so
+that NaN values are unequal and values of different classes may
+be equal. Keys of different classes are different keys. Two
+unconfigured dictionaries are equal, an unconfigured and a configured
+one are not, and two configured dictionaries with no entries are equal
+whatever their types, as in MATLAB.
+
+See also:
+dictionary.isequaln,
+keyMatch
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 45
+True when dictionaries hold the same entries.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 19
+dictionary.isequaln
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 279
+dictionary: tf = isequaln (d1, d2, ...)
+True when dictionaries hold the same entries, NaN values equal.
+
+tf = isequaln (d1, d2, ...) is
+isequal with values compared by isequaln, so that
+NaN and other missing values are equal to themselves.
+
+See also:
+dictionary.isequal,
+keyMatch
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 63
+True when dictionaries hold the same entries, NaN values equal.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 18
+dictionary.keyHash
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 1033
+dictionary: key = keyHash (d)
+dictionary: key = keyHash (d, base)
+Generate a hash code for a dictionary.
+
+key = keyHash (d) returns a 64-bit hash code of the
+dictionary d as a uint64 scalar, from its key and value
+types and its entries in the order they were added, so that a
+dictionary can be a key of another. Unlike isequal, the code,
+and with it keyMatch, depends on the order of the entries and on
+the types, as in MATLAB. A dictionary whose keys or values
+keyHash cannot hash, such as tables, is refused.
+
+key = keyHash (d, base) also generates a
+64-bit hash code using base as the offset basis for the FNV-1a
+hash algorithm. base must be a uint64 integer type
+scalar. Use this syntax to cascade keyHash on multiple objects
+for which a single hash code is required.
+
+Note that unlike MATLAB, this implementation does not use any random
+seed. As a result, keyHash will always generate the exact same
+hash key for any particular input across different workers and Octave
+sessions.
+
+See also:
+keyHash,
+keyMatch,
+dictionary.isequal
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 38
+Generate a hash code for a dictionary.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 15
+dictionary.keys
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 594
+dictionary: k = keys (d)
+dictionary: k = keys (d, format)
+Return the keys.
+
+k = keys (d) returns the keys of d as a
+column array of the key type, in the order they were added. Keys of a
+type that cannot be joined into one array, such as function handles,
+are refused unless there is exactly one.
+
+k = keys (d, format) returns them as above for
+format 'uniform', the default, and as a column cell
+array, each key in a cell of its own, for 'cell'.
+format is matched in any case and by its first letters.
+
+d must be configured.
+
+See also:
+dictionary.values,
+dictionary.isKey,
+dictionary.numEntries
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 16
+Return the keys.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 17
+dictionary.length
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 200
+dictionary: n = length (d)
+Return 1, the length of a scalar object.
+
+n = length (d) is always 1, however many entries
+d holds; numEntries counts them.
+
+See also:
+dictionary.numEntries,
+dictionary.size
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 40
+Return 1, the length of a scalar object.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 17
+dictionary.lookup
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 640
+dictionary: v = lookup (d, keys)
+dictionary: v = lookup (..., 'FallbackValue', fallback)
+Return the values of keys.
+
+v = lookup (d, keys) returns the values of
+keys, an array of keys, in an array of the same shape, as
+d(keys) does; a key not in d is an error.
+
+v = lookup (..., 'FallbackValue',
+fallback) returns fallback for each key not in d
+instead. fallback is a single value, converted to the value type
+of d, so that a dictionary of 'cell' values needs a cell;
+it is checked only when some key is missing. The option name is
+matched in any case.
+
+d must be configured.
+
+See also:
+dictionary.isKey,
+dictionary.insert,
+dictionary.values
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 26
+Return the values of keys.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 16
+dictionary.ndims
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 107
+dictionary: n = ndims (d)
+Return 2, the number of dimensions of a scalar object.
+
+See also:
+dictionary.size
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 54
+Return 2, the number of dimensions of a scalar object.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 21
+dictionary.numEntries
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 190
+dictionary: n = numEntries (d)
+Return the number of entries.
+
+n = numEntries (d) returns the number of entries in
+d as a double, 0 for an unconfigured dictionary.
+
+See also:
+dictionary.numel
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 29
+Return the number of entries.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 16
+dictionary.numel
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 210
+dictionary: n = numel (d)
+Return 1, the number of elements of a scalar object.
+
+n = numel (d) is always 1, however many entries
+d holds; numEntries counts them.
+
+See also:
+dictionary.numEntries,
+dictionary.size
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 52
+Return 1, the number of elements of a scalar object.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 17
+dictionary.remove
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 319
+dictionary: d = remove (d, keys)
+Remove entries.
+
+d = remove (d, keys) removes the entries of
+keys, an array of keys converted to the key type of d, as
+d(keys) = [] does. A key not in d is ignored.
+A key removed and added again goes after the others. d must be
+configured.
+
+See also:
+dictionary.insert,
+dictionary.isKey
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 15
+Remove entries.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 15
+dictionary.size
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 494
+dictionary: sz = size (d)
+dictionary: dim_sz = size (d, dim)
+dictionary: dim_sz = size (d, d1, d2, ...)
+dictionary: [rows, cols, ...] = size (d)
+Return the size of a scalar object.
+
+sz = size (d) is always [1, 1], however many
+entries d holds. size (d, dim) returns 1 for
+each dimension in dim, a positive integer or a vector of them,
+and size (d, d1, d2, ...) returns 1 for
+each dimension given. With several outputs each takes one dimension.
+
+See also:
+dictionary.numel,
+dictionary.numEntries
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 35
+Return the size of a scalar object.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 16
+dictionary.types
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 325
+dictionary: [keyType, valueType] = types (d)
+dictionary: keyType = types (d)
+Return the key and value types.
+
+[keyType, valueType] = types (d) returns the
+class names of the keys and of the values of d, each a string
+scalar, or a missing string while d is unconfigured.
+
+See also:
+dictionary.isConfigured,
+configureDictionary
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 31
+Return the key and value types.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 17
+dictionary.values
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 721
+dictionary: v = values (d)
+dictionary: v = values (d, format)
+Return the values.
+
+v = values (d) returns the values of d as a
+column array of the value type, in the order their keys were added.
+Values that cannot be joined into one array, such as function handles,
+dictionaries or structures with different fields, are refused unless
+there is exactly one. Tables are joined only when each has one row,
+so that row i is the value of key i.
+
+v = values (d, format) returns them as above
+for format 'uniform', the default, and as a column cell
+array, each value in a cell of its own, for 'cell'.
+format is matched in any case and by its first letters.
+
+d must be configured.
+
+See also:
+dictionary.keys,
+dictionary.numEntries
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 18
+Return the values.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 18
+dictionary.vertcat
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 206
+dictionary: vertcat (d1, d2, ...)
+Refuse to concatenate: a dictionary is a scalar object.
+
+[d1; d2] raises an error, whatever the other
+arguments, as in MATLAB.
+
+See also:
+dictionary.horzcat,
+dictionary.cat
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 55
+Refuse to concatenate: a dictionary is a scalar object.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 26
+dictionary.writedictionary
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 2400
+dictionary: writedictionary (d, filename)
+dictionary: writedictionary (d, filename, Name, Value)
+Write a dictionary to a JSON or an OpenDocument spreadsheet file.
+
+writedictionary (d, filename) writes d as a
+JSON object to the file filename, a character vector or a string
+scalar, replacing any file of that name. Each entry is a member, in
+the order of the keys, written as follows:
+
+keys as text: numbers in their shortest form ("1.5"),
+logical values as "true" and "false", dates and
+durations as they display;
+a double or single in the fewest digits that read
+back as its value, always with a point (1.0), with an exponent
+only from 10^21 up and below 10^-6; integers exactly;
+NaN and Inf as NaN, Infinity and
+-Infinity, or as null under
+'PreserveInfAndNaN' false; missing strings, NaT and
+missing as null; logical values as true and
+false;
+dates and durations as text, as they display;
+a dictionary as an object, nested ones too; the contents of a
+cell as the value they hold, a vector of them as an array, and an empty
+one as [].
+
+writedictionary (d, filename, Name,
+Value) specifies options with the following Name-Value paired
+arguments, matched in any case.
+
+Name Value
+'FileType' 'auto' (the default) tells the
+type from the extension, .json, .ods or .fods;
+'json' or 'ods' sets it.
+'PrettyPrint' A logical scalar: true (the default)
+indents by four spaces, one member or element a line; false writes no
+spaces or line breaks.
+'PreserveInfAndNaN' A logical scalar: true (the
+default) writes NaN and Inf, false writes null.
+
+Nothing is written when any key or value cannot be. Values of types
+other than string, the numeric types, logical,
+datetime, duration, missing, dictionary
+and cell are refused, as in MATLAB, and so are matrices in
+cells and complex values, on which MATLAB fails; keys of types other
+than string, a cell array of text, the numeric types,
+logical, datetime and duration are refused, and so
+are missing string keys.
+
+An OpenDocument spreadsheet, FileType 'ods', holds one
+sheet per entry, named by the key and holding its table or
+timetable, written by struct2ods, so that
+readdictionary reads it back as it was. The keys must be text
+and the values tables or timetables, in a cell or not. Writing ODS is
+an extension of this package; it takes no option but
+'FileType'.
+
+Remote locations, which MATLAB writes to, are not supported.
+
+See also:
+readdictionary,
+struct2ods
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 65
+Write a dictionary to a JSON or an OpenDocument spreadsheet file.
 
 
 
@@ -16368,6 +17444,38 @@ True if input is a datetime array, false otherwise.
 # name: <cell-element>
 # type: sq_string
 # elements: 1
+# length: 12
+isdictionary
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 319
+datatypes: TF = isdictionary (X)
+True if input is a dictionary object, false otherwise.
+
+TF = isdictionary (X) always returns a logical scalar,
+for a configured or an unconfigured dictionary alike. MATLAB has no such
+function; it is provided as istable and istimeseries are for
+their classes.
+
+See also:
+dictionary,
+isa
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 54
+True if input is a dictionary object, false otherwise.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
 # length: 10
 isduration
 
@@ -17085,6 +18193,53 @@ Return true if missing array is a vector.
 # name: <cell-element>
 # type: sq_string
 # elements: 1
+# length: 15
+missing.keyHash
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 979
+missing: key = keyHash (M)
+missing: key = keyHash (M, base)
+Generate a hash code for a missing array.
+
+key = keyHash (M) returns a 64-bit hash code of the
+missing array M as a uint64 scalar. Every element of a
+missing array is missing, so the code depends on its size alone: two
+missing arrays of the same size are the same key, and keyMatch
+reports them so. A missing array is a different key from a missing
+value of another type, such as NaN or a missing string.
+
+key = keyHash (M, base) also generates a
+64-bit hash code using base as the offset basis for the FNV-1a
+hash algorithm. base must be a uint64 integer type
+scalar. Use this syntax to cascade keyHash on multiple objects
+for which a single hash code is required.
+
+Note that unlike MATLAB, this implementation does not use any random
+seed. As a result, keyHash will always generate the exact same
+hash key for any particular input across different workers and Octave
+sessions.
+
+See also:
+keyHash,
+keyMatch,
+dictionary
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 41
+Generate a hash code for a missing array.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
 # length: 10
 missing.le
 
@@ -17563,6 +18718,112 @@ parsePairedArguments (optNames, dfValues, args);
 # elements: 1
 # length: 186
 parsePairedArguments (optarg_names, default_values, arg_list) @deftypefnx {datatypes} {[optarg_1, , optarg_N, rem_args] =} @ parsePairedArguments (optarg_names, default_values, arg_list)
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 14
+readdictionary
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 3584
+datatypes: d = readdictionary (filename)
+datatypes: d = readdictionary (filename, Name, Value)
+Read a dictionary from a JSON or an OpenDocument spreadsheet file.
+
+d = readdictionary (filename) reads the JSON object in
+the file filename, a character vector or a string scalar naming a
+local file or an http or https address, and returns it as a
+dictionary with string keys in the order of the file. The
+value type is chosen from the values, all of them together:
+
+numbers give double; integers beyond 2^53 give
+uint64, or int64 when one is negative and all fit, and a
+number with a fraction among them gives cell;
+text gives string; dates in ISO 8601 form without a time zone
+(2024-01-01, 2024-01-01T10:00:00) or as
+01-Jan-2024 give datetime, and times as
+01:30:00 give duration; a timestamp with a zone mark
+(Z, +02:00) stays text;
+true and false give logical;
+null is missing: NaN, a missing string or NaT
+among the values above, the missing type when all are
+null; among logical or 64-bit integer values, which have no
+missing value, it gives cell;
+any other mixture, an array, or an object gives cell: an
+array becomes a column cell array of its elements, each typed alone, and
+an object a dictionary read by these rules, {} an unconfigured
+one.
+
+d = readdictionary (filename, Name, Value)
+specifies options with the following Name-Value paired arguments, whose
+names and text values are matched in any case.
+
+Name Value
+'FileType' 'auto' (the default) tells the type
+from the extension, .json, .ods or .fods;
+'json' or 'ods' sets it.
+'ValueType' 'auto' (the default) as above, or
+one of 'cell', 'string', 'double',
+'single', the integer types, 'logical',
+'datetime' and 'duration'. Text is never read as a
+number: it gives NaN, 0 or false; numbers give text under
+'string', and true gives "true" or 1; arrays,
+objects and null give the missing value of the type. Under
+'datetime' text is read as dates, each keeping the zone it states:
+Z gives UTC, an offset a fixed-offset zone, no mark no zone.
+Under 'cell' every value is in a cell, objects read the same way.
+'DuplicateKeyRule' 'auto' and
+'makeUnique' rename a repeated key a as a_1,
+a_2 and so on, skipping names in use; 'preserveLast'
+keeps the first position with the last value; 'error' refuses.
+'DictionarySelector' A JSON Pointer to the object to
+read, as '/data/2', counting array elements from 0; '' is
+the whole file.
+'DictionaryNodeName' The name of the object to read:
+the first key of that name, depth first. It cannot be given with
+'DictionarySelector'.
+'DateLocale' The locale of month names in dates, as
+'de_DE'.
+'ParsingMode' 'lenient' (the default) allows
+comments, trailing commas and NaN, Inf and
+Infinity; 'strict' refuses them.
+'AllowComments', 'AllowTrailingCommas',
+'AllowInfAndNaN' Logical scalars allowing each form; each
+overrides 'ParsingMode'.
+
+The top level, or the object selected, must be a JSON object. MATLAB's
+'ValueType', 'datetime' reads an ISO 8601 date as NaT;
+here it reads it as the default does.
+
+An OpenDocument spreadsheet, FileType 'ods', gives one
+entry per sheet, the sheet name the key and the table or
+timetable read by ods2struct the value, so that a dictionary
+written by writedictionary comes back as written. A workbook
+holding both tables and timetables gives cell values. Reading
+ODS is an extension of this package; it takes no option but
+'FileType'.
+
+Remote locations other than http and https (Amazon S3,
+Azure Blob Storage, HDFS), compressed files and 'WebOptions',
+which MATLAB accepts, are not supported.
+
+See also:
+dictionary,
+dictionary.writedictionary,
+ods2struct
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 66
+Read a dictionary from a JSON or an OpenDocument spreadsheet file.
 
 
 
@@ -18340,11 +19601,11 @@ string.double
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 286
+# length: 288
 string: X = double (str)
 Convert string array to a double array.
 
-X = char (str) returns a double array, X, which
+X = double (str) returns a double array, X, which
 has the same size as the input string str. All elements in
 str that represent real or complex numbers are converted to
 equivalent double values. Otherwise, NaN is returned.
@@ -20905,7 +22166,7 @@ struct2table
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 1247
+# length: 1281
 datatypes: tbl = struct2table (S)
 datatypes: tbl = struct2table (S, Name, Value)
 Convert a structure array to a table.
@@ -20915,8 +22176,8 @@ to the table tbl, where each field of the input structure becomes a
 variable in the output table. For a scalar structure with N fields,
 all of which have M rows, or an Mx1 or 1xM structure
 array with N fields, the output is an MxN table. A field of
-function handles becomes a cell variable, since no other variable can hold
-a function handle.
+function handles, dictionary, timeseries or tscollection
+objects becomes a cell variable, since no other variable can hold one.
 
 tbl = struct2table (S, Name, Value) specifies
 optional parameters for creating the table tbl with the following
@@ -21001,7 +22262,7 @@ table
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 3748
+# length: 3901
 datatypes: table
 Array of tabular data containing multiple columnar variables.
 
@@ -21067,13 +22328,16 @@ cell, (including cellstr), calendarDuration,
 duration, datetime, string, and struct
 arrays, as well as table itself.
 
-A variable cannot be a function handle; only a cell variable can hold
-one. Every way of creating or replacing a variable refuses it, and the
-conversions cell2table and struct2table, as well as
-assignment of a cell array with parentheses, give a cell variable
-instead. MATLAB refuses it only in the constructor and addvars,
-and lets tbl.varname assignment, struct2table
-and convertvars create one.
+A variable cannot be a function handle, a dictionary, a
+timeseries or a tscollection; only a cell variable can
+hold one. Every way of creating or replacing a variable refuses them.
+For a function handle, the conversions cell2table and
+struct2table, as well as assignment of a cell array with
+parentheses, give a cell variable instead. MATLAB refuses a function
+handle or a dictionary only in the constructors and
+addvars, and lets tbl.varname assignment,
+struct2table and convertvars create one; it accepts a
+timeseries or a tscollection everywhere.
 
 See also:
 vartype,
@@ -32772,7 +34036,7 @@ tscollection.addsampletocollection
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 960
+# length: 1087
 tscollection: tc = addsampletocollection (tc, 'Time', time, name1, data1, ...)
 Add samples to every member.
 
@@ -32785,6 +34049,9 @@ time, read against time as the timeseries constructor reads
 data against times and each of the size of the member's samples. A
 member not named takes NaN, or 0 for integer data and
 false for logical data. 'Time' is matched in any case.
+A row of data for a column of times is accepted, as the
+timeseries constructor accepts it; MATLAB refuses it for a
+collection.
 
 For a collection with no TimeInfo.StartDate time is
 numbers in its units; for one with a start date it may also be dates as
@@ -33304,7 +34571,7 @@ tscollection.resample
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 941
+# length: 1063
 tscollection: tc = resample (tc, time)
 tscollection: tc = resample (tc, time, method)
 tscollection: tc = resample (tc, time, method, code)
@@ -33315,7 +34582,9 @@ tc with every member evaluated at time by its own
 interpolation method, as timeseries.resample evaluates a series:
 at a time outside the collection the data is NaN, and a member
 with quality codes gives each new time the code of the nearest sample.
-MATLAB raises there for a member with quality codes.
+MATLAB raises there for a member with quality codes. time is
+taken in any order and sorted, as timeseries.resample takes it;
+MATLAB refuses descending times for a collection.
 
 tc = resample (tc, time, method) uses
 method, 'linear' or 'zoh', for every member;
