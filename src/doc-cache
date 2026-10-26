@@ -2,7 +2,7 @@
 # name: cache
 # type: cell
 # rows: 3
-# columns: 10
+# columns: 12
 # name: <cell-element>
 # type: sq_string
 # elements: 1
@@ -113,6 +113,60 @@ a repeated clock when an offset is given.
 # elements: 1
 # length: 33
 Base function for datetime class.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 19
+__dictionary2json__
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 648
+datatypes: errmsg = __dictionary2json__ (tree, file, pretty, preserve)
+Write a tree of JSON values to a file.
+
+tree has the form __json2dictionary__ returns: an object is a scalar structure with the fields keys and values, the keys text, numbers or logical values; an array a cell array; text a character row; a number or logical value a scalar, a vector of them an array; and null a 0-by-0 structure array with no fields. pretty indents by four spaces, preserve writes NaN and Inf rather than null. errmsg is empty, or names the file that could not be written.
+
+This is a helper IO function for the writedictionary method. Do NOT call it directly.
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 38
+Write a tree of JSON values to a file.
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 19
+__json2dictionary__
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 747
+datatypes: [tree, errmsg] = __json2dictionary__ (text, comments, commas, infnan)
+Parse JSON text into a tree that keeps the kinds of JSON values.
+
+An object is a scalar structure with the fields keys and values, two column cell arrays in file order, duplicate keys kept. An array is a column cell array, text a character row, a number a double, or an int64 or uint64 for an integer beyond 2^53 that one holds exactly, true and false logical scalars, and null a 0-by-0 structure array with no fields. comments, commas and infnan allow comments, trailing commas and the non-finite numbers. On an error tree is empty and errmsg names it with its line and column.
+
+This is a helper IO function for the readdictionary function. Do NOT call it directly.
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 64
+Parse JSON text into a tree that keeps the kinds of JSON values.
 
 
 
