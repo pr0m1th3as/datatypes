@@ -68,6 +68,9 @@ classdef dictionary
   ## is the key @qcode{":"}, as it is in MATLAB in an assignment; use
   ## @code{keys} or @code{values} for every entry.
   ##
+  ## @code{jsonencode} refuses a dictionary, as in MATLAB, and
+  ## @code{writedictionary} writes one to a JSON file.
+  ##
   ## @seealso{configureDictionary, isdictionary, keyHash, keyMatch}
   ## @end deftp
 

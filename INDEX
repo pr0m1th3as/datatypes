@@ -65,6 +65,7 @@ dictionary objects
  dictionary
  configureDictionary
  isdictionary
+ readdictionary
 supplementary classes
  tabular
  missing
