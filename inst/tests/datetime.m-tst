@@ -1469,6 +1469,1994 @@
 %! d = month (datetime ('9 March 2024', 'InputFormat', 'd MMMM yyyy'));
 %! assert_equal ([a, b, c, d], [3, 3, 3, 3])
 
+## Test 'datetime' constructor -- the format detected under a 'Locale'
+## (MATLAB-verified on R2024a; where a ruling differs, it is named)
+%!test
+%! d = datetime ('01-Mar-2024');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-01 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!error <datetime: could not recognize date/time format from input.> ...
+%! datetime ('01-Mär-2024', 'Locale', 'de_DE');
+%!test
+%! d = datetime ('01-März-2024', 'Locale', 'de_DE');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-01 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!error <datetime: could not recognize date/time format from input.> ...
+%! datetime ('01-Mär-2024 10:30:00', 'Locale', 'de_DE');
+%!error <datetime: could not recognize the date/time format of '15 März 2024'.> ...
+%! datetime ('15 März 2024', 'Locale', 'de_DE');
+%!error <datetime: could not recognize the date/time format of 'März 15, 2024'.> ...
+%! datetime ('März 15, 2024', 'Locale', 'de_DE');
+%!test
+%! d = datetime ('1. Januar 2024', 'Locale', 'de_DE');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-01-01 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('01.03.2024', 'Locale', 'de_DE');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-01 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!error <datetime: could not recognize the date/time format of '01/03/2024'.> ...
+%! datetime ('01/03/2024', 'Locale', 'de_DE');
+%!error <datetime: could not recognize the date/time format of '13/03/2024'.> ...
+%! datetime ('13/03/2024', 'Locale', 'de_DE');
+%!error <datetime: could not recognize date/time format from input.> ...
+%! datetime ('01-Mar-2024', 'Locale', 'de_DE');
+%!test
+%! d = datetime ('01-Okt-2024', 'Locale', 'de_DE');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-10-01 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!error <datetime: could not recognize date/time format from input.> ...
+%! datetime ({'01-Mär-2024', '15-Okt-2024'}, 'Locale', 'de_DE');
+%!error <datetime: could not recognize date/time format from input.> ...
+%! datetime ({'01-Mär-2024', '15-Oct-2024'}, 'Locale', 'de_DE');
+%!error <datetime: could not recognize date/time format from input.> ...
+%! datetime ('01-Mär-2024', 'Locale', 'de');
+%!error <datetime: could not recognize date/time format from input.> ...
+%! datetime ('01-Mär-2024');
+%!test
+%! d = datetime ('01-mars-2024', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-01 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('01-janv.-2024', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-01-01 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('01-janv-2024', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-01-01 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('01-déc.-2024', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-12-01 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('15 mars 2024', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-15 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!error <datetime: could not recognize date/time format from input.> ...
+%! datetime ('01-Jan-2024', 'Locale', 'fr_FR');
+%!test
+%! d = datetime ('01-ene-2024', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-01-01 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('01-gen-2024', 'Locale', 'it_IT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-01-01 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('01-fev-2024', 'Locale', 'pt_PT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-02-01 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('01-Μαρ-2024', 'Locale', 'el_GR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-01 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('01-Μαΐ-2024', 'Locale', 'el_GR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-05-01 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('15 Μαρτίου 2024', 'Locale', 'el_GR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-15 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!error <datetime: could not recognize date/time format from input.> ...
+%! datetime ('01-Mär-2024', 'Locale', 'de_DE');
+%!error <datetime: could not recognize the date/time format of '15 März 2024'.> ...
+%! datetime ('15 März 2024', 'Locale', 'de_DE');
+%!error <datetime: unsupported 'Locale' 'xx_YY'; supported languages are en, fr, de, es, it, pt, and el.> ...
+%! datetime ('01-Mär-2024', 'Locale', 'xx_YY');
+%!test
+%! d = datetime ('05-Jan-2024', 'Locale', 'en_US');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-01-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-January-2024', 'Locale', 'en_US');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-01-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Feb-2024', 'Locale', 'en_US');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-02-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-February-2024', 'Locale', 'en_US');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-02-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Mar-2024', 'Locale', 'en_US');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-March-2024', 'Locale', 'en_US');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Apr-2024', 'Locale', 'en_US');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-04-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-April-2024', 'Locale', 'en_US');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-04-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-May-2024', 'Locale', 'en_US');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-05-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-May-2024', 'Locale', 'en_US');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-05-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Jun-2024', 'Locale', 'en_US');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-06-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-June-2024', 'Locale', 'en_US');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-06-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Jul-2024', 'Locale', 'en_US');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-07-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-July-2024', 'Locale', 'en_US');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-07-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Aug-2024', 'Locale', 'en_US');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-08-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-August-2024', 'Locale', 'en_US');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-08-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Sep-2024', 'Locale', 'en_US');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-09-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-September-2024', 'Locale', 'en_US');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-09-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Oct-2024', 'Locale', 'en_US');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-10-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-October-2024', 'Locale', 'en_US');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-10-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Nov-2024', 'Locale', 'en_US');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-11-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-November-2024', 'Locale', 'en_US');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-11-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Dec-2024', 'Locale', 'en_US');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-12-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-December-2024', 'Locale', 'en_US');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-12-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-janv-2024', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-01-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-janv.-2024', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-01-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-janvier-2024', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-01-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-févr-2024', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-02-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-févr.-2024', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-02-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-février-2024', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-02-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-mars-2024', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-mars-2024', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-avr-2024', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-04-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-avr.-2024', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-04-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-avril-2024', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-04-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-mai-2024', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-05-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-mai-2024', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-05-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-juin-2024', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-06-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-juin-2024', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-06-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-juil-2024', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-07-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-juil.-2024', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-07-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-juillet-2024', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-07-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-août-2024', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-08-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-août-2024', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-08-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-sept-2024', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-09-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-sept.-2024', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-09-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-septembre-2024', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-09-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-oct-2024', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-10-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-oct.-2024', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-10-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-octobre-2024', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-10-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-nov-2024', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-11-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-nov.-2024', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-11-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-novembre-2024', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-11-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-déc-2024', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-12-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-déc.-2024', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-12-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-décembre-2024', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-12-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Jan-2024', 'Locale', 'de_DE');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-01-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Jan.-2024', 'Locale', 'de_DE');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-01-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Januar-2024', 'Locale', 'de_DE');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-01-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Feb-2024', 'Locale', 'de_DE');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-02-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Feb.-2024', 'Locale', 'de_DE');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-02-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Februar-2024', 'Locale', 'de_DE');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-02-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-März-2024', 'Locale', 'de_DE');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-März-2024', 'Locale', 'de_DE');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Apr-2024', 'Locale', 'de_DE');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-04-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Apr.-2024', 'Locale', 'de_DE');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-04-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-April-2024', 'Locale', 'de_DE');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-04-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Mai-2024', 'Locale', 'de_DE');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-05-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Mai-2024', 'Locale', 'de_DE');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-05-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Juni-2024', 'Locale', 'de_DE');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-06-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Juni-2024', 'Locale', 'de_DE');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-06-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Juli-2024', 'Locale', 'de_DE');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-07-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Juli-2024', 'Locale', 'de_DE');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-07-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Aug-2024', 'Locale', 'de_DE');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-08-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Aug.-2024', 'Locale', 'de_DE');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-08-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-August-2024', 'Locale', 'de_DE');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-08-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Sept-2024', 'Locale', 'de_DE');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-09-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Sept.-2024', 'Locale', 'de_DE');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-09-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-September-2024', 'Locale', 'de_DE');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-09-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Okt-2024', 'Locale', 'de_DE');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-10-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Okt.-2024', 'Locale', 'de_DE');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-10-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Oktober-2024', 'Locale', 'de_DE');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-10-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Nov-2024', 'Locale', 'de_DE');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-11-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Nov.-2024', 'Locale', 'de_DE');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-11-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-November-2024', 'Locale', 'de_DE');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-11-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Dez-2024', 'Locale', 'de_DE');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-12-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Dez.-2024', 'Locale', 'de_DE');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-12-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Dezember-2024', 'Locale', 'de_DE');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-12-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-ene-2024', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-01-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+## (c) Spanish abbreviations may carry a point
+%!test
+%! d = datetime ('05-ene.-2024', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-01-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-enero-2024', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-01-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-feb-2024', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-02-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+## (c) Spanish abbreviations may carry a point
+%!test
+%! d = datetime ('05-feb.-2024', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-02-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-febrero-2024', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-02-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-mar-2024', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+## (c) Spanish abbreviations may carry a point
+%!test
+%! d = datetime ('05-mar.-2024', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-marzo-2024', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-abr-2024', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-04-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+## (c) Spanish abbreviations may carry a point
+%!test
+%! d = datetime ('05-abr.-2024', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-04-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-abril-2024', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-04-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-may-2024', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-05-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+## (c) Spanish abbreviations may carry a point
+%!test
+%! d = datetime ('05-may.-2024', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-05-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-mayo-2024', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-05-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-jun-2024', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-06-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+## (c) Spanish abbreviations may carry a point
+%!test
+%! d = datetime ('05-jun.-2024', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-06-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-junio-2024', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-06-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-jul-2024', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-07-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+## (c) Spanish abbreviations may carry a point
+%!test
+%! d = datetime ('05-jul.-2024', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-07-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-julio-2024', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-07-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-ago-2024', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-08-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+## (c) Spanish abbreviations may carry a point
+%!test
+%! d = datetime ('05-ago.-2024', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-08-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-agosto-2024', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-08-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-sept-2024', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-09-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+## (c) Spanish abbreviations may carry a point
+%!test
+%! d = datetime ('05-sept.-2024', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-09-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-septiembre-2024', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-09-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-oct-2024', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-10-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+## (c) Spanish abbreviations may carry a point
+%!test
+%! d = datetime ('05-oct.-2024', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-10-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-octubre-2024', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-10-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-nov-2024', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-11-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+## (c) Spanish abbreviations may carry a point
+%!test
+%! d = datetime ('05-nov.-2024', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-11-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-noviembre-2024', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-11-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-dic-2024', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-12-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+## (c) Spanish abbreviations may carry a point
+%!test
+%! d = datetime ('05-dic.-2024', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-12-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-diciembre-2024', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-12-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-gen-2024', 'Locale', 'it_IT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-01-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-gennaio-2024', 'Locale', 'it_IT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-01-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-feb-2024', 'Locale', 'it_IT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-02-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-febbraio-2024', 'Locale', 'it_IT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-02-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-mar-2024', 'Locale', 'it_IT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-marzo-2024', 'Locale', 'it_IT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-apr-2024', 'Locale', 'it_IT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-04-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-aprile-2024', 'Locale', 'it_IT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-04-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-mag-2024', 'Locale', 'it_IT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-05-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-maggio-2024', 'Locale', 'it_IT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-05-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-giu-2024', 'Locale', 'it_IT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-06-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-giugno-2024', 'Locale', 'it_IT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-06-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-lug-2024', 'Locale', 'it_IT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-07-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-luglio-2024', 'Locale', 'it_IT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-07-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-ago-2024', 'Locale', 'it_IT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-08-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-agosto-2024', 'Locale', 'it_IT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-08-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-set-2024', 'Locale', 'it_IT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-09-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-settembre-2024', 'Locale', 'it_IT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-09-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-ott-2024', 'Locale', 'it_IT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-10-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-ottobre-2024', 'Locale', 'it_IT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-10-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-nov-2024', 'Locale', 'it_IT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-11-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-novembre-2024', 'Locale', 'it_IT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-11-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-dic-2024', 'Locale', 'it_IT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-12-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-dicembre-2024', 'Locale', 'it_IT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-12-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-jan-2024', 'Locale', 'pt_PT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-01-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-jan.-2024', 'Locale', 'pt_PT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-01-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-janeiro-2024', 'Locale', 'pt_PT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-01-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-fev-2024', 'Locale', 'pt_PT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-02-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-fev.-2024', 'Locale', 'pt_PT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-02-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-fevereiro-2024', 'Locale', 'pt_PT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-02-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-mar-2024', 'Locale', 'pt_PT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-mar.-2024', 'Locale', 'pt_PT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-março-2024', 'Locale', 'pt_PT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-abr-2024', 'Locale', 'pt_PT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-04-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-abr.-2024', 'Locale', 'pt_PT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-04-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-abril-2024', 'Locale', 'pt_PT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-04-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-mai-2024', 'Locale', 'pt_PT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-05-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-mai.-2024', 'Locale', 'pt_PT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-05-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-maio-2024', 'Locale', 'pt_PT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-05-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-jun-2024', 'Locale', 'pt_PT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-06-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-jun.-2024', 'Locale', 'pt_PT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-06-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-junho-2024', 'Locale', 'pt_PT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-06-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-jul-2024', 'Locale', 'pt_PT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-07-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-jul.-2024', 'Locale', 'pt_PT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-07-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-julho-2024', 'Locale', 'pt_PT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-07-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-ago-2024', 'Locale', 'pt_PT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-08-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-ago.-2024', 'Locale', 'pt_PT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-08-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-agosto-2024', 'Locale', 'pt_PT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-08-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-set-2024', 'Locale', 'pt_PT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-09-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-set.-2024', 'Locale', 'pt_PT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-09-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-setembro-2024', 'Locale', 'pt_PT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-09-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-out-2024', 'Locale', 'pt_PT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-10-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-out.-2024', 'Locale', 'pt_PT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-10-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-outubro-2024', 'Locale', 'pt_PT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-10-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-nov-2024', 'Locale', 'pt_PT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-11-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-nov.-2024', 'Locale', 'pt_PT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-11-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-novembro-2024', 'Locale', 'pt_PT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-11-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-dez-2024', 'Locale', 'pt_PT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-12-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-dez.-2024', 'Locale', 'pt_PT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-12-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-dezembro-2024', 'Locale', 'pt_PT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-12-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Ιαν-2024', 'Locale', 'el_GR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-01-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Ιανουαρίου-2024', 'Locale', 'el_GR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-01-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Φεβ-2024', 'Locale', 'el_GR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-02-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Φεβρουαρίου-2024', 'Locale', 'el_GR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-02-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Μαρ-2024', 'Locale', 'el_GR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Μαρτίου-2024', 'Locale', 'el_GR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Απρ-2024', 'Locale', 'el_GR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-04-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Απριλίου-2024', 'Locale', 'el_GR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-04-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Μαΐ-2024', 'Locale', 'el_GR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-05-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Μαΐου-2024', 'Locale', 'el_GR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-05-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Ιουν-2024', 'Locale', 'el_GR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-06-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Ιουνίου-2024', 'Locale', 'el_GR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-06-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Ιουλ-2024', 'Locale', 'el_GR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-07-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Ιουλίου-2024', 'Locale', 'el_GR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-07-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Αυγ-2024', 'Locale', 'el_GR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-08-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Αυγούστου-2024', 'Locale', 'el_GR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-08-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Σεπ-2024', 'Locale', 'el_GR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-09-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Σεπτεμβρίου-2024', 'Locale', 'el_GR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-09-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Οκτ-2024', 'Locale', 'el_GR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-10-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Οκτωβρίου-2024', 'Locale', 'el_GR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-10-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Νοε-2024', 'Locale', 'el_GR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-11-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Νοεμβρίου-2024', 'Locale', 'el_GR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-11-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Δεκ-2024', 'Locale', 'el_GR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-12-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Δεκεμβρίου-2024', 'Locale', 'el_GR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-12-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('2024-03-05', 'Locale', 'en_US');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('2024-03-05 14:30:00', 'Locale', 'en_US');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 14:30:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu HH:mm:ss');
+%!test
+%! d = datetime ('05-Mar-2024 14:30:00', 'Locale', 'en_US');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 14:30:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu HH:mm:ss');
+%!test
+%! d = datetime ('05-Mar-2024 14:30', 'Locale', 'en_US');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 14:30:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu HH:mm:ss');
+%!test
+%! d = datetime ('March 5, 2024', 'Locale', 'en_US');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+## An Octave extension: 'dd MMMM uuuu' is read in English.
+%!test
+%! d = datetime ('5 March 2024', 'Locale', 'en_US');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+## An Octave extension: 'dd MMMM uuuu' is read in English.
+%!test
+%! d = datetime ('05 March 2024', 'Locale', 'en_US');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!error <datetime: could not recognize the date/time format of '5. March 2024'.> ...
+%! datetime ('5. March 2024', 'Locale', 'en_US');
+%!error <datetime: could not recognize the date/time format of '5 de March de 2024'.> ...
+%! datetime ('5 de March de 2024', 'Locale', 'en_US');
+## An Octave extension: 'dd MMMM uuuu' is read in English.
+%!test
+%! d = datetime ('5 Mar 2024', 'Locale', 'en_US');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+## An Octave extension: 'dd MMMM uuuu' is read in English.
+%!test
+%! d = datetime ('5 Mar 2024', 'Locale', 'en_US');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!error <datetime: could not recognize the date/time format of '5. Mar 2024'.> ...
+%! datetime ('5. Mar 2024', 'Locale', 'en_US');
+%!error <datetime: could not recognize the date/time format of '5 de Mar de 2024'.> ...
+%! datetime ('5 de Mar de 2024', 'Locale', 'en_US');
+%!test
+%! d = datetime ('Mar 5, 2024', 'Locale', 'en_US');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05.03.2024', 'Locale', 'en_US');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('5.3.2024', 'Locale', 'en_US');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+## (a) a two-digit year takes the pivot; R2024a reads the year 24
+%!test
+%! d = datetime ('05.03.24', 'Locale', 'en_US');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!warning <datetime: the text was read with the format 'MM/dd/yyyy', but 'dd/MM/yyyy' would read it just as well; give 'InputFormat' to say which is meant.> ...
+%! datetime ('05/03/2024', 'Locale', 'en_US');
+%!test
+%! warning ('off', 'Octave:datetime:ambiguous-format', 'local');
+%! d = datetime ('05/03/2024', 'Locale', 'en_US');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-05-03 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+## (a) a two-digit year takes the pivot; R2024a reads the year 24
+%!warning <datetime: the text was read with the format 'MM/dd/yyyy', but 'dd/MM/yyyy' would read it just as well; give 'InputFormat' to say which is meant.> ...
+%! datetime ('5/3/24', 'Locale', 'en_US');
+%!test
+%! warning ('off', 'Octave:datetime:ambiguous-format', 'local');
+%! d = datetime ('5/3/24', 'Locale', 'en_US');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-05-03 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+## (a) a two-digit year takes the pivot; R2024a reads the year 24
+%!warning <datetime: the text was read with the format 'MM/dd/yyyy', but 'dd/MM/yyyy' would read it just as well; give 'InputFormat' to say which is meant.> ...
+%! datetime ('05/03/24', 'Locale', 'en_US');
+%!test
+%! warning ('off', 'Octave:datetime:ambiguous-format', 'local');
+%! d = datetime ('05/03/24', 'Locale', 'en_US');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-05-03 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!warning <datetime: the text was read with the format 'MM/dd/yyyy', but 'dd/MM/yyyy' would read it just as well; give 'InputFormat' to say which is meant.> ...
+%! datetime ('03/05/2024', 'Locale', 'en_US');
+%!test
+%! warning ('off', 'Octave:datetime:ambiguous-format', 'local');
+%! d = datetime ('03/05/2024', 'Locale', 'en_US');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+## (a) a two-digit year takes the pivot; R2024a reads the year 24
+%!warning <datetime: the text was read with the format 'MM/dd/yyyy', but 'dd/MM/yyyy' would read it just as well; give 'InputFormat' to say which is meant.> ...
+%! datetime ('3/5/24', 'Locale', 'en_US');
+%!test
+%! warning ('off', 'Octave:datetime:ambiguous-format', 'local');
+%! d = datetime ('3/5/24', 'Locale', 'en_US');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!error <datetime: could not recognize the date/time format of '05-03-2024'.> ...
+%! datetime ('05-03-2024', 'Locale', 'en_US');
+%!test
+%! d = datetime ('05.03.2024 14:30', 'Locale', 'en_US');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 14:30:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu HH:mm:ss');
+%!test
+%! d = datetime ('05.03.2024 14:30:00', 'Locale', 'en_US');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 14:30:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu HH:mm:ss');
+%!warning <datetime: the text was read with the format 'MM/dd/yyyy', but 'dd/MM/yyyy' would read it just as well; give 'InputFormat' to say which is meant.> ...
+%! datetime ('05/03/2024 14:30', 'Locale', 'en_US');
+%!test
+%! warning ('off', 'Octave:datetime:ambiguous-format', 'local');
+%! d = datetime ('05/03/2024 14:30', 'Locale', 'en_US');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-05-03 14:30:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu HH:mm:ss');
+## An Octave extension: 'dd MMMM uuuu' is read in English.
+%!test
+%! d = datetime ('5 March 2024 14:30', 'Locale', 'en_US');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 14:30:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu HH:mm:ss');
+%!error <datetime: could not recognize the date/time format of '5. March 2024 14:30'.> ...
+%! datetime ('5. March 2024 14:30', 'Locale', 'en_US');
+%!error <datetime: could not recognize the date/time format of '5 de March de 2024 14:30'.> ...
+%! datetime ('5 de March de 2024 14:30', 'Locale', 'en_US');
+%!test
+%! d = datetime ('March 5, 2024 14:30', 'Locale', 'en_US');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 14:30:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu HH:mm:ss');
+%!error <datetime: could not recognize the date/time format of 'Tuesday, 5. March 2024'.> ...
+%! datetime ('Tuesday, 5. March 2024', 'Locale', 'en_US');
+%!error <datetime: could not recognize the date/time format of 'Tuesday 5 March 2024'.> ...
+%! datetime ('Tuesday 5 March 2024', 'Locale', 'en_US');
+%!error <datetime: could not recognize the date/time format of 'Tuesday, 5 de March de 2024'.> ...
+%! datetime ('Tuesday, 5 de March de 2024', 'Locale', 'en_US');
+%!error <datetime: could not recognize the date/time format of 'Tuesday, 5 March 2024'.> ...
+%! datetime ('Tuesday, 5 March 2024', 'Locale', 'en_US');
+%!error <datetime: could not recognize the date/time format of 'Tuesday, March 5, 2024'.> ...
+%! datetime ('Tuesday, March 5, 2024', 'Locale', 'en_US');
+%!test
+%! d = datetime ('2024-03-05', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('2024-03-05 14:30:00', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 14:30:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu HH:mm:ss');
+%!test
+%! d = datetime ('05-mars-2024 14:30:00', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 14:30:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu HH:mm:ss');
+%!test
+%! d = datetime ('05-mars-2024 14:30', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 14:30:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu HH:mm:ss');
+%!error <datetime: could not recognize the date/time format of 'mars 5, 2024'.> ...
+%! datetime ('mars 5, 2024', 'Locale', 'fr_FR');
+%!test
+%! d = datetime ('5 mars 2024', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05 mars 2024', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!error <datetime: could not recognize the date/time format of '5. mars 2024'.> ...
+%! datetime ('5. mars 2024', 'Locale', 'fr_FR');
+%!error <datetime: could not recognize the date/time format of '5 de mars de 2024'.> ...
+%! datetime ('5 de mars de 2024', 'Locale', 'fr_FR');
+%!test
+%! d = datetime ('5 mars 2024', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('5 mars 2024', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!error <datetime: could not recognize the date/time format of '5. mars 2024'.> ...
+%! datetime ('5. mars 2024', 'Locale', 'fr_FR');
+%!error <datetime: could not recognize the date/time format of '5 de mars de 2024'.> ...
+%! datetime ('5 de mars de 2024', 'Locale', 'fr_FR');
+%!error <datetime: could not recognize the date/time format of 'mars 5, 2024'.> ...
+%! datetime ('mars 5, 2024', 'Locale', 'fr_FR');
+%!test
+%! d = datetime ('05.03.2024', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('5.3.2024', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+## (a) a two-digit year takes the pivot; R2024a reads the year 24
+%!test
+%! d = datetime ('05.03.24', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!warning <datetime: the text was read with the format 'dd/MM/yyyy', but 'MM/dd/yyyy' would read it just as well; give 'InputFormat' to say which is meant.> ...
+%! datetime ('05/03/2024', 'Locale', 'fr_FR');
+%!test
+%! warning ('off', 'Octave:datetime:ambiguous-format', 'local');
+%! d = datetime ('05/03/2024', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+## (a) a two-digit year takes the pivot; R2024a reads the year 24
+%!warning <datetime: the text was read with the format 'dd/MM/yyyy', but 'MM/dd/yyyy' would read it just as well; give 'InputFormat' to say which is meant.> ...
+%! datetime ('5/3/24', 'Locale', 'fr_FR');
+%!test
+%! warning ('off', 'Octave:datetime:ambiguous-format', 'local');
+%! d = datetime ('5/3/24', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+## (a) a two-digit year takes the pivot; R2024a reads the year 24
+%!warning <datetime: the text was read with the format 'dd/MM/yyyy', but 'MM/dd/yyyy' would read it just as well; give 'InputFormat' to say which is meant.> ...
+%! datetime ('05/03/24', 'Locale', 'fr_FR');
+%!test
+%! warning ('off', 'Octave:datetime:ambiguous-format', 'local');
+%! d = datetime ('05/03/24', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!warning <datetime: the text was read with the format 'dd/MM/yyyy', but 'MM/dd/yyyy' would read it just as well; give 'InputFormat' to say which is meant.> ...
+%! datetime ('03/05/2024', 'Locale', 'fr_FR');
+%!test
+%! warning ('off', 'Octave:datetime:ambiguous-format', 'local');
+%! d = datetime ('03/05/2024', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-05-03 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+## (a) a two-digit year takes the pivot; R2024a reads the year 24
+%!warning <datetime: the text was read with the format 'dd/MM/yyyy', but 'MM/dd/yyyy' would read it just as well; give 'InputFormat' to say which is meant.> ...
+%! datetime ('3/5/24', 'Locale', 'fr_FR');
+%!test
+%! warning ('off', 'Octave:datetime:ambiguous-format', 'local');
+%! d = datetime ('3/5/24', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-05-03 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!error <datetime: could not recognize the date/time format of '05-03-2024'.> ...
+%! datetime ('05-03-2024', 'Locale', 'fr_FR');
+%!test
+%! d = datetime ('05.03.2024 14:30', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 14:30:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu HH:mm:ss');
+%!test
+%! d = datetime ('05.03.2024 14:30:00', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 14:30:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu HH:mm:ss');
+%!warning <datetime: the text was read with the format 'dd/MM/yyyy', but 'MM/dd/yyyy' would read it just as well; give 'InputFormat' to say which is meant.> ...
+%! datetime ('05/03/2024 14:30', 'Locale', 'fr_FR');
+%!test
+%! warning ('off', 'Octave:datetime:ambiguous-format', 'local');
+%! d = datetime ('05/03/2024 14:30', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 14:30:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu HH:mm:ss');
+%!test
+%! d = datetime ('5 mars 2024 14:30', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 14:30:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu HH:mm:ss');
+%!error <datetime: could not recognize the date/time format of '5. mars 2024 14:30'.> ...
+%! datetime ('5. mars 2024 14:30', 'Locale', 'fr_FR');
+%!error <datetime: could not recognize the date/time format of '5 de mars de 2024 14:30'.> ...
+%! datetime ('5 de mars de 2024 14:30', 'Locale', 'fr_FR');
+%!error <datetime: could not recognize the date/time format of 'mars 5, 2024 14:30'.> ...
+%! datetime ('mars 5, 2024 14:30', 'Locale', 'fr_FR');
+%!error <datetime: could not recognize the date/time format of 'mardi, 5. mars 2024'.> ...
+%! datetime ('mardi, 5. mars 2024', 'Locale', 'fr_FR');
+%!error <datetime: could not recognize the date/time format of 'mardi 5 mars 2024'.> ...
+%! datetime ('mardi 5 mars 2024', 'Locale', 'fr_FR');
+%!error <datetime: could not recognize the date/time format of 'mardi, 5 de mars de 2024'.> ...
+%! datetime ('mardi, 5 de mars de 2024', 'Locale', 'fr_FR');
+%!error <datetime: could not recognize the date/time format of 'mardi, 5 mars 2024'.> ...
+%! datetime ('mardi, 5 mars 2024', 'Locale', 'fr_FR');
+%!error <datetime: could not recognize the date/time format of 'mardi, mars 5, 2024'.> ...
+%! datetime ('mardi, mars 5, 2024', 'Locale', 'fr_FR');
+%!test
+%! d = datetime ('2024-03-05', 'Locale', 'de_DE');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('2024-03-05 14:30:00', 'Locale', 'de_DE');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 14:30:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu HH:mm:ss');
+%!test
+%! d = datetime ('05-März-2024 14:30:00', 'Locale', 'de_DE');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 14:30:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu HH:mm:ss');
+%!test
+%! d = datetime ('05-März-2024 14:30', 'Locale', 'de_DE');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 14:30:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu HH:mm:ss');
+%!error <datetime: could not recognize the date/time format of 'März 5, 2024'.> ...
+%! datetime ('März 5, 2024', 'Locale', 'de_DE');
+%!error <datetime: could not recognize the date/time format of '5 März 2024'.> ...
+%! datetime ('5 März 2024', 'Locale', 'de_DE');
+%!error <datetime: could not recognize the date/time format of '05 März 2024'.> ...
+%! datetime ('05 März 2024', 'Locale', 'de_DE');
+%!test
+%! d = datetime ('5. März 2024', 'Locale', 'de_DE');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!error <datetime: could not recognize the date/time format of '5 de März de 2024'.> ...
+%! datetime ('5 de März de 2024', 'Locale', 'de_DE');
+%!error <datetime: could not recognize the date/time format of '5 März 2024'.> ...
+%! datetime ('5 März 2024', 'Locale', 'de_DE');
+%!error <datetime: could not recognize the date/time format of '5 März 2024'.> ...
+%! datetime ('5 März 2024', 'Locale', 'de_DE');
+%!test
+%! d = datetime ('5. März 2024', 'Locale', 'de_DE');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!error <datetime: could not recognize the date/time format of '5 de März de 2024'.> ...
+%! datetime ('5 de März de 2024', 'Locale', 'de_DE');
+%!error <datetime: could not recognize the date/time format of 'März 5, 2024'.> ...
+%! datetime ('März 5, 2024', 'Locale', 'de_DE');
+%!test
+%! d = datetime ('05.03.2024', 'Locale', 'de_DE');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('5.3.2024', 'Locale', 'de_DE');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+## (a) a two-digit year takes the pivot; R2024a reads the year 24
+%!test
+%! d = datetime ('05.03.24', 'Locale', 'de_DE');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!error <datetime: could not recognize the date/time format of '05/03/2024'.> ...
+%! datetime ('05/03/2024', 'Locale', 'de_DE');
+%!error <datetime: could not recognize the date/time format of '5/3/24'.> ...
+%! datetime ('5/3/24', 'Locale', 'de_DE');
+%!error <datetime: could not recognize the date/time format of '05/03/24'.> ...
+%! datetime ('05/03/24', 'Locale', 'de_DE');
+%!error <datetime: could not recognize the date/time format of '03/05/2024'.> ...
+%! datetime ('03/05/2024', 'Locale', 'de_DE');
+%!error <datetime: could not recognize the date/time format of '3/5/24'.> ...
+%! datetime ('3/5/24', 'Locale', 'de_DE');
+%!error <datetime: could not recognize the date/time format of '05-03-2024'.> ...
+%! datetime ('05-03-2024', 'Locale', 'de_DE');
+%!test
+%! d = datetime ('05.03.2024 14:30', 'Locale', 'de_DE');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 14:30:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu HH:mm:ss');
+%!test
+%! d = datetime ('05.03.2024 14:30:00', 'Locale', 'de_DE');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 14:30:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu HH:mm:ss');
+%!error <datetime: could not recognize the date/time format of '05/03/2024 14:30'.> ...
+%! datetime ('05/03/2024 14:30', 'Locale', 'de_DE');
+%!error <datetime: could not recognize the date/time format of '5 März 2024 14:30'.> ...
+%! datetime ('5 März 2024 14:30', 'Locale', 'de_DE');
+%!test
+%! d = datetime ('5. März 2024 14:30', 'Locale', 'de_DE');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 14:30:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu HH:mm:ss');
+%!error <datetime: could not recognize the date/time format of '5 de März de 2024 14:30'.> ...
+%! datetime ('5 de März de 2024 14:30', 'Locale', 'de_DE');
+%!error <datetime: could not recognize the date/time format of 'März 5, 2024 14:30'.> ...
+%! datetime ('März 5, 2024 14:30', 'Locale', 'de_DE');
+%!error <datetime: could not recognize the date/time format of 'Dienstag, 5. März 2024'.> ...
+%! datetime ('Dienstag, 5. März 2024', 'Locale', 'de_DE');
+%!error <datetime: could not recognize the date/time format of 'Dienstag 5 März 2024'.> ...
+%! datetime ('Dienstag 5 März 2024', 'Locale', 'de_DE');
+%!error <datetime: could not recognize the date/time format of 'Dienstag, 5 de März de 2024'.> ...
+%! datetime ('Dienstag, 5 de März de 2024', 'Locale', 'de_DE');
+%!error <datetime: could not recognize the date/time format of 'Dienstag, 5 März 2024'.> ...
+%! datetime ('Dienstag, 5 März 2024', 'Locale', 'de_DE');
+%!error <datetime: could not recognize the date/time format of 'Dienstag, März 5, 2024'.> ...
+%! datetime ('Dienstag, März 5, 2024', 'Locale', 'de_DE');
+%!test
+%! d = datetime ('2024-03-05', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('2024-03-05 14:30:00', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 14:30:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu HH:mm:ss');
+%!test
+%! d = datetime ('05-mar-2024 14:30:00', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 14:30:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu HH:mm:ss');
+%!test
+%! d = datetime ('05-mar-2024 14:30', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 14:30:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu HH:mm:ss');
+%!error <datetime: could not recognize the date/time format of 'marzo 5, 2024'.> ...
+%! datetime ('marzo 5, 2024', 'Locale', 'es_ES');
+%!test
+%! d = datetime ('5 marzo 2024', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05 marzo 2024', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!error <datetime: could not recognize the date/time format of '5. marzo 2024'.> ...
+%! datetime ('5. marzo 2024', 'Locale', 'es_ES');
+## (b) the 'de' form is read for every Spanish and Portuguese locale
+%!test
+%! d = datetime ('5 de marzo de 2024', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('5 mar 2024', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+## (c) Spanish abbreviations may carry a point
+%!test
+%! d = datetime ('5 mar. 2024', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!error <datetime: could not recognize the date/time format of '5. mar. 2024'.> ...
+%! datetime ('5. mar. 2024', 'Locale', 'es_ES');
+## (b) the 'de' form is read for every Spanish and Portuguese locale
+%!test
+%! d = datetime ('5 de mar. de 2024', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!error <datetime: could not recognize the date/time format of 'mar 5, 2024'.> ...
+%! datetime ('mar 5, 2024', 'Locale', 'es_ES');
+%!test
+%! d = datetime ('05.03.2024', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('5.3.2024', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+## (a) a two-digit year takes the pivot; R2024a reads the year 24
+%!test
+%! d = datetime ('05.03.24', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!warning <datetime: the text was read with the format 'dd/MM/yyyy', but 'MM/dd/yyyy' would read it just as well; give 'InputFormat' to say which is meant.> ...
+%! datetime ('05/03/2024', 'Locale', 'es_ES');
+%!test
+%! warning ('off', 'Octave:datetime:ambiguous-format', 'local');
+%! d = datetime ('05/03/2024', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+## (a) a two-digit year takes the pivot; R2024a reads the year 24
+%!warning <datetime: the text was read with the format 'dd/MM/yyyy', but 'MM/dd/yyyy' would read it just as well; give 'InputFormat' to say which is meant.> ...
+%! datetime ('5/3/24', 'Locale', 'es_ES');
+%!test
+%! warning ('off', 'Octave:datetime:ambiguous-format', 'local');
+%! d = datetime ('5/3/24', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+## (a) a two-digit year takes the pivot; R2024a reads the year 24
+%!warning <datetime: the text was read with the format 'dd/MM/yyyy', but 'MM/dd/yyyy' would read it just as well; give 'InputFormat' to say which is meant.> ...
+%! datetime ('05/03/24', 'Locale', 'es_ES');
+%!test
+%! warning ('off', 'Octave:datetime:ambiguous-format', 'local');
+%! d = datetime ('05/03/24', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!warning <datetime: the text was read with the format 'dd/MM/yyyy', but 'MM/dd/yyyy' would read it just as well; give 'InputFormat' to say which is meant.> ...
+%! datetime ('03/05/2024', 'Locale', 'es_ES');
+%!test
+%! warning ('off', 'Octave:datetime:ambiguous-format', 'local');
+%! d = datetime ('03/05/2024', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-05-03 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+## (a) a two-digit year takes the pivot; R2024a reads the year 24
+%!warning <datetime: the text was read with the format 'dd/MM/yyyy', but 'MM/dd/yyyy' would read it just as well; give 'InputFormat' to say which is meant.> ...
+%! datetime ('3/5/24', 'Locale', 'es_ES');
+%!test
+%! warning ('off', 'Octave:datetime:ambiguous-format', 'local');
+%! d = datetime ('3/5/24', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-05-03 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!error <datetime: could not recognize the date/time format of '05-03-2024'.> ...
+%! datetime ('05-03-2024', 'Locale', 'es_ES');
+%!test
+%! d = datetime ('05.03.2024 14:30', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 14:30:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu HH:mm:ss');
+%!test
+%! d = datetime ('05.03.2024 14:30:00', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 14:30:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu HH:mm:ss');
+%!warning <datetime: the text was read with the format 'dd/MM/yyyy', but 'MM/dd/yyyy' would read it just as well; give 'InputFormat' to say which is meant.> ...
+%! datetime ('05/03/2024 14:30', 'Locale', 'es_ES');
+%!test
+%! warning ('off', 'Octave:datetime:ambiguous-format', 'local');
+%! d = datetime ('05/03/2024 14:30', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 14:30:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu HH:mm:ss');
+%!test
+%! d = datetime ('5 marzo 2024 14:30', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 14:30:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu HH:mm:ss');
+%!error <datetime: could not recognize the date/time format of '5. marzo 2024 14:30'.> ...
+%! datetime ('5. marzo 2024 14:30', 'Locale', 'es_ES');
+## (b) the 'de' form is read for every Spanish and Portuguese locale
+%!test
+%! d = datetime ('5 de marzo de 2024 14:30', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 14:30:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu HH:mm:ss');
+%!error <datetime: could not recognize the date/time format of 'marzo 5, 2024 14:30'.> ...
+%! datetime ('marzo 5, 2024 14:30', 'Locale', 'es_ES');
+%!error <datetime: could not recognize the date/time format of 'martes, 5. marzo 2024'.> ...
+%! datetime ('martes, 5. marzo 2024', 'Locale', 'es_ES');
+%!error <datetime: could not recognize the date/time format of 'martes 5 marzo 2024'.> ...
+%! datetime ('martes 5 marzo 2024', 'Locale', 'es_ES');
+%!error <datetime: could not recognize the date/time format of 'martes, 5 de marzo de 2024'.> ...
+%! datetime ('martes, 5 de marzo de 2024', 'Locale', 'es_ES');
+%!error <datetime: could not recognize the date/time format of 'martes, 5 marzo 2024'.> ...
+%! datetime ('martes, 5 marzo 2024', 'Locale', 'es_ES');
+%!error <datetime: could not recognize the date/time format of 'martes, marzo 5, 2024'.> ...
+%! datetime ('martes, marzo 5, 2024', 'Locale', 'es_ES');
+%!test
+%! d = datetime ('2024-03-05', 'Locale', 'it_IT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('2024-03-05 14:30:00', 'Locale', 'it_IT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 14:30:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu HH:mm:ss');
+%!test
+%! d = datetime ('05-mar-2024 14:30:00', 'Locale', 'it_IT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 14:30:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu HH:mm:ss');
+%!test
+%! d = datetime ('05-mar-2024 14:30', 'Locale', 'it_IT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 14:30:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu HH:mm:ss');
+%!error <datetime: could not recognize the date/time format of 'marzo 5, 2024'.> ...
+%! datetime ('marzo 5, 2024', 'Locale', 'it_IT');
+%!test
+%! d = datetime ('5 marzo 2024', 'Locale', 'it_IT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05 marzo 2024', 'Locale', 'it_IT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!error <datetime: could not recognize the date/time format of '5. marzo 2024'.> ...
+%! datetime ('5. marzo 2024', 'Locale', 'it_IT');
+%!error <datetime: could not recognize the date/time format of '5 de marzo de 2024'.> ...
+%! datetime ('5 de marzo de 2024', 'Locale', 'it_IT');
+%!test
+%! d = datetime ('5 mar 2024', 'Locale', 'it_IT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('5 mar 2024', 'Locale', 'it_IT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!error <datetime: could not recognize the date/time format of '5. mar 2024'.> ...
+%! datetime ('5. mar 2024', 'Locale', 'it_IT');
+%!error <datetime: could not recognize the date/time format of '5 de mar de 2024'.> ...
+%! datetime ('5 de mar de 2024', 'Locale', 'it_IT');
+%!error <datetime: could not recognize the date/time format of 'mar 5, 2024'.> ...
+%! datetime ('mar 5, 2024', 'Locale', 'it_IT');
+%!test
+%! d = datetime ('05.03.2024', 'Locale', 'it_IT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('5.3.2024', 'Locale', 'it_IT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+## (a) a two-digit year takes the pivot; R2024a reads the year 24
+%!test
+%! d = datetime ('05.03.24', 'Locale', 'it_IT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!warning <datetime: the text was read with the format 'dd/MM/yyyy', but 'MM/dd/yyyy' would read it just as well; give 'InputFormat' to say which is meant.> ...
+%! datetime ('05/03/2024', 'Locale', 'it_IT');
+%!test
+%! warning ('off', 'Octave:datetime:ambiguous-format', 'local');
+%! d = datetime ('05/03/2024', 'Locale', 'it_IT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+## (a) a two-digit year takes the pivot; R2024a reads the year 24
+%!warning <datetime: the text was read with the format 'dd/MM/yyyy', but 'MM/dd/yyyy' would read it just as well; give 'InputFormat' to say which is meant.> ...
+%! datetime ('5/3/24', 'Locale', 'it_IT');
+%!test
+%! warning ('off', 'Octave:datetime:ambiguous-format', 'local');
+%! d = datetime ('5/3/24', 'Locale', 'it_IT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+## (a) a two-digit year takes the pivot; R2024a reads the year 24
+%!warning <datetime: the text was read with the format 'dd/MM/yyyy', but 'MM/dd/yyyy' would read it just as well; give 'InputFormat' to say which is meant.> ...
+%! datetime ('05/03/24', 'Locale', 'it_IT');
+%!test
+%! warning ('off', 'Octave:datetime:ambiguous-format', 'local');
+%! d = datetime ('05/03/24', 'Locale', 'it_IT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!warning <datetime: the text was read with the format 'dd/MM/yyyy', but 'MM/dd/yyyy' would read it just as well; give 'InputFormat' to say which is meant.> ...
+%! datetime ('03/05/2024', 'Locale', 'it_IT');
+%!test
+%! warning ('off', 'Octave:datetime:ambiguous-format', 'local');
+%! d = datetime ('03/05/2024', 'Locale', 'it_IT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-05-03 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+## (a) a two-digit year takes the pivot; R2024a reads the year 24
+%!warning <datetime: the text was read with the format 'dd/MM/yyyy', but 'MM/dd/yyyy' would read it just as well; give 'InputFormat' to say which is meant.> ...
+%! datetime ('3/5/24', 'Locale', 'it_IT');
+%!test
+%! warning ('off', 'Octave:datetime:ambiguous-format', 'local');
+%! d = datetime ('3/5/24', 'Locale', 'it_IT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-05-03 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!error <datetime: could not recognize the date/time format of '05-03-2024'.> ...
+%! datetime ('05-03-2024', 'Locale', 'it_IT');
+%!test
+%! d = datetime ('05.03.2024 14:30', 'Locale', 'it_IT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 14:30:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu HH:mm:ss');
+%!test
+%! d = datetime ('05.03.2024 14:30:00', 'Locale', 'it_IT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 14:30:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu HH:mm:ss');
+%!warning <datetime: the text was read with the format 'dd/MM/yyyy', but 'MM/dd/yyyy' would read it just as well; give 'InputFormat' to say which is meant.> ...
+%! datetime ('05/03/2024 14:30', 'Locale', 'it_IT');
+%!test
+%! warning ('off', 'Octave:datetime:ambiguous-format', 'local');
+%! d = datetime ('05/03/2024 14:30', 'Locale', 'it_IT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 14:30:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu HH:mm:ss');
+%!test
+%! d = datetime ('5 marzo 2024 14:30', 'Locale', 'it_IT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 14:30:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu HH:mm:ss');
+%!error <datetime: could not recognize the date/time format of '5. marzo 2024 14:30'.> ...
+%! datetime ('5. marzo 2024 14:30', 'Locale', 'it_IT');
+%!error <datetime: could not recognize the date/time format of '5 de marzo de 2024 14:30'.> ...
+%! datetime ('5 de marzo de 2024 14:30', 'Locale', 'it_IT');
+%!error <datetime: could not recognize the date/time format of 'marzo 5, 2024 14:30'.> ...
+%! datetime ('marzo 5, 2024 14:30', 'Locale', 'it_IT');
+%!error <datetime: could not recognize the date/time format of 'martedì, 5. marzo 2024'.> ...
+%! datetime ('martedì, 5. marzo 2024', 'Locale', 'it_IT');
+%!error <datetime: could not recognize the date/time format of 'martedì 5 marzo 2024'.> ...
+%! datetime ('martedì 5 marzo 2024', 'Locale', 'it_IT');
+%!error <datetime: could not recognize the date/time format of 'martedì, 5 de marzo de 2024'.> ...
+%! datetime ('martedì, 5 de marzo de 2024', 'Locale', 'it_IT');
+%!error <datetime: could not recognize the date/time format of 'martedì, 5 marzo 2024'.> ...
+%! datetime ('martedì, 5 marzo 2024', 'Locale', 'it_IT');
+%!error <datetime: could not recognize the date/time format of 'martedì, marzo 5, 2024'.> ...
+%! datetime ('martedì, marzo 5, 2024', 'Locale', 'it_IT');
+%!test
+%! d = datetime ('2024-03-05', 'Locale', 'pt_PT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('2024-03-05 14:30:00', 'Locale', 'pt_PT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 14:30:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu HH:mm:ss');
+%!test
+%! d = datetime ('05-mar-2024 14:30:00', 'Locale', 'pt_PT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 14:30:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu HH:mm:ss');
+%!test
+%! d = datetime ('05-mar-2024 14:30', 'Locale', 'pt_PT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 14:30:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu HH:mm:ss');
+%!error <datetime: could not recognize the date/time format of 'março 5, 2024'.> ...
+%! datetime ('março 5, 2024', 'Locale', 'pt_PT');
+%!error <datetime: could not recognize the date/time format of '5 março 2024'.> ...
+%! datetime ('5 março 2024', 'Locale', 'pt_PT');
+%!error <datetime: could not recognize the date/time format of '05 março 2024'.> ...
+%! datetime ('05 março 2024', 'Locale', 'pt_PT');
+%!error <datetime: could not recognize the date/time format of '5. março 2024'.> ...
+%! datetime ('5. março 2024', 'Locale', 'pt_PT');
+## (b) the 'de' form is read for every Spanish and Portuguese locale
+%!test
+%! d = datetime ('5 de março de 2024', 'Locale', 'pt_PT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!error <datetime: could not recognize the date/time format of '5 mar 2024'.> ...
+%! datetime ('5 mar 2024', 'Locale', 'pt_PT');
+%!error <datetime: could not recognize the date/time format of '5 mar. 2024'.> ...
+%! datetime ('5 mar. 2024', 'Locale', 'pt_PT');
+%!error <datetime: could not recognize the date/time format of '5. mar. 2024'.> ...
+%! datetime ('5. mar. 2024', 'Locale', 'pt_PT');
+## (b) the 'de' form is read for every Spanish and Portuguese locale
+%!test
+%! d = datetime ('5 de mar. de 2024', 'Locale', 'pt_PT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!error <datetime: could not recognize the date/time format of 'mar 5, 2024'.> ...
+%! datetime ('mar 5, 2024', 'Locale', 'pt_PT');
+%!test
+%! d = datetime ('05.03.2024', 'Locale', 'pt_PT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('5.3.2024', 'Locale', 'pt_PT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+## (a) a two-digit year takes the pivot; R2024a reads the year 24
+%!test
+%! d = datetime ('05.03.24', 'Locale', 'pt_PT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05/03/2024', 'Locale', 'pt_PT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+## (a) a two-digit year takes the pivot; R2024a reads the year 24
+%!test
+%! d = datetime ('5/3/24', 'Locale', 'pt_PT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+## (a) a two-digit year takes the pivot; R2024a reads the year 24
+%!test
+%! d = datetime ('05/03/24', 'Locale', 'pt_PT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('03/05/2024', 'Locale', 'pt_PT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-05-03 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+## (a) a two-digit year takes the pivot; R2024a reads the year 24
+%!test
+%! d = datetime ('3/5/24', 'Locale', 'pt_PT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-05-03 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!error <datetime: could not recognize the date/time format of '05-03-2024'.> ...
+%! datetime ('05-03-2024', 'Locale', 'pt_PT');
+%!test
+%! d = datetime ('05.03.2024 14:30', 'Locale', 'pt_PT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 14:30:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu HH:mm:ss');
+%!test
+%! d = datetime ('05.03.2024 14:30:00', 'Locale', 'pt_PT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 14:30:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu HH:mm:ss');
+%!test
+%! d = datetime ('05/03/2024 14:30', 'Locale', 'pt_PT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 14:30:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu HH:mm:ss');
+%!error <datetime: could not recognize the date/time format of '5 março 2024 14:30'.> ...
+%! datetime ('5 março 2024 14:30', 'Locale', 'pt_PT');
+%!error <datetime: could not recognize the date/time format of '5. março 2024 14:30'.> ...
+%! datetime ('5. março 2024 14:30', 'Locale', 'pt_PT');
+## (b) the 'de' form is read for every Spanish and Portuguese locale
+%!test
+%! d = datetime ('5 de março de 2024 14:30', 'Locale', 'pt_PT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 14:30:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu HH:mm:ss');
+%!error <datetime: could not recognize the date/time format of 'março 5, 2024 14:30'.> ...
+%! datetime ('março 5, 2024 14:30', 'Locale', 'pt_PT');
+%!error <datetime: could not recognize the date/time format of 'terça-feira, 5. março 2024'.> ...
+%! datetime ('terça-feira, 5. março 2024', 'Locale', 'pt_PT');
+%!error <datetime: could not recognize the date/time format of 'terça-feira 5 março 2024'.> ...
+%! datetime ('terça-feira 5 março 2024', 'Locale', 'pt_PT');
+%!error <datetime: could not recognize the date/time format of 'terça-feira, 5 de março de 2024'.> ...
+%! datetime ('terça-feira, 5 de março de 2024', 'Locale', 'pt_PT');
+%!error <datetime: could not recognize the date/time format of 'terça-feira, 5 março 2024'.> ...
+%! datetime ('terça-feira, 5 março 2024', 'Locale', 'pt_PT');
+%!error <datetime: could not recognize the date/time format of 'terça-feira, março 5, 2024'.> ...
+%! datetime ('terça-feira, março 5, 2024', 'Locale', 'pt_PT');
+%!test
+%! d = datetime ('2024-03-05', 'Locale', 'el_GR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('2024-03-05 14:30:00', 'Locale', 'el_GR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 14:30:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu HH:mm:ss');
+%!test
+%! d = datetime ('05-Μαρ-2024 14:30:00', 'Locale', 'el_GR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 14:30:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu HH:mm:ss');
+%!test
+%! d = datetime ('05-Μαρ-2024 14:30', 'Locale', 'el_GR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 14:30:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu HH:mm:ss');
+%!error <datetime: could not recognize the date/time format of 'Μαρτίου 5, 2024'.> ...
+%! datetime ('Μαρτίου 5, 2024', 'Locale', 'el_GR');
+%!test
+%! d = datetime ('5 Μαρτίου 2024', 'Locale', 'el_GR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05 Μαρτίου 2024', 'Locale', 'el_GR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!error <datetime: could not recognize the date/time format of '5. Μαρτίου 2024'.> ...
+%! datetime ('5. Μαρτίου 2024', 'Locale', 'el_GR');
+%!error <datetime: could not recognize the date/time format of '5 de Μαρτίου de 2024'.> ...
+%! datetime ('5 de Μαρτίου de 2024', 'Locale', 'el_GR');
+%!test
+%! d = datetime ('5 Μαρ 2024', 'Locale', 'el_GR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('5 Μαρ 2024', 'Locale', 'el_GR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!error <datetime: could not recognize the date/time format of '5. Μαρ 2024'.> ...
+%! datetime ('5. Μαρ 2024', 'Locale', 'el_GR');
+%!error <datetime: could not recognize the date/time format of '5 de Μαρ de 2024'.> ...
+%! datetime ('5 de Μαρ de 2024', 'Locale', 'el_GR');
+%!error <datetime: could not recognize the date/time format of 'Μαρ 5, 2024'.> ...
+%! datetime ('Μαρ 5, 2024', 'Locale', 'el_GR');
+%!test
+%! d = datetime ('05.03.2024', 'Locale', 'el_GR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('5.3.2024', 'Locale', 'el_GR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+## (a) a two-digit year takes the pivot; R2024a reads the year 24
+%!test
+%! d = datetime ('05.03.24', 'Locale', 'el_GR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!warning <datetime: the text was read with the format 'dd/MM/yyyy', but 'MM/dd/yyyy' would read it just as well; give 'InputFormat' to say which is meant.> ...
+%! datetime ('05/03/2024', 'Locale', 'el_GR');
+%!test
+%! warning ('off', 'Octave:datetime:ambiguous-format', 'local');
+%! d = datetime ('05/03/2024', 'Locale', 'el_GR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+## (a) a two-digit year takes the pivot; R2024a reads the year 24
+%!warning <datetime: the text was read with the format 'dd/MM/yyyy', but 'MM/dd/yyyy' would read it just as well; give 'InputFormat' to say which is meant.> ...
+%! datetime ('5/3/24', 'Locale', 'el_GR');
+%!test
+%! warning ('off', 'Octave:datetime:ambiguous-format', 'local');
+%! d = datetime ('5/3/24', 'Locale', 'el_GR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+## (a) a two-digit year takes the pivot; R2024a reads the year 24
+%!warning <datetime: the text was read with the format 'dd/MM/yyyy', but 'MM/dd/yyyy' would read it just as well; give 'InputFormat' to say which is meant.> ...
+%! datetime ('05/03/24', 'Locale', 'el_GR');
+%!test
+%! warning ('off', 'Octave:datetime:ambiguous-format', 'local');
+%! d = datetime ('05/03/24', 'Locale', 'el_GR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!warning <datetime: the text was read with the format 'dd/MM/yyyy', but 'MM/dd/yyyy' would read it just as well; give 'InputFormat' to say which is meant.> ...
+%! datetime ('03/05/2024', 'Locale', 'el_GR');
+%!test
+%! warning ('off', 'Octave:datetime:ambiguous-format', 'local');
+%! d = datetime ('03/05/2024', 'Locale', 'el_GR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-05-03 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+## (a) a two-digit year takes the pivot; R2024a reads the year 24
+%!warning <datetime: the text was read with the format 'dd/MM/yyyy', but 'MM/dd/yyyy' would read it just as well; give 'InputFormat' to say which is meant.> ...
+%! datetime ('3/5/24', 'Locale', 'el_GR');
+%!test
+%! warning ('off', 'Octave:datetime:ambiguous-format', 'local');
+%! d = datetime ('3/5/24', 'Locale', 'el_GR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-05-03 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!error <datetime: could not recognize the date/time format of '05-03-2024'.> ...
+%! datetime ('05-03-2024', 'Locale', 'el_GR');
+%!test
+%! d = datetime ('05.03.2024 14:30', 'Locale', 'el_GR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 14:30:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu HH:mm:ss');
+%!test
+%! d = datetime ('05.03.2024 14:30:00', 'Locale', 'el_GR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 14:30:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu HH:mm:ss');
+%!warning <datetime: the text was read with the format 'dd/MM/yyyy', but 'MM/dd/yyyy' would read it just as well; give 'InputFormat' to say which is meant.> ...
+%! datetime ('05/03/2024 14:30', 'Locale', 'el_GR');
+%!test
+%! warning ('off', 'Octave:datetime:ambiguous-format', 'local');
+%! d = datetime ('05/03/2024 14:30', 'Locale', 'el_GR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 14:30:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu HH:mm:ss');
+%!test
+%! d = datetime ('5 Μαρτίου 2024 14:30', 'Locale', 'el_GR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 14:30:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu HH:mm:ss');
+%!error <datetime: could not recognize the date/time format of '5. Μαρτίου 2024 14:30'.> ...
+%! datetime ('5. Μαρτίου 2024 14:30', 'Locale', 'el_GR');
+%!error <datetime: could not recognize the date/time format of '5 de Μαρτίου de 2024 14:30'.> ...
+%! datetime ('5 de Μαρτίου de 2024 14:30', 'Locale', 'el_GR');
+%!error <datetime: could not recognize the date/time format of 'Μαρτίου 5, 2024 14:30'.> ...
+%! datetime ('Μαρτίου 5, 2024 14:30', 'Locale', 'el_GR');
+%!error <datetime: could not recognize the date/time format of 'Τρίτη, 5. Μαρτίου 2024'.> ...
+%! datetime ('Τρίτη, 5. Μαρτίου 2024', 'Locale', 'el_GR');
+%!error <datetime: could not recognize the date/time format of 'Τρίτη 5 Μαρτίου 2024'.> ...
+%! datetime ('Τρίτη 5 Μαρτίου 2024', 'Locale', 'el_GR');
+%!error <datetime: could not recognize the date/time format of 'Τρίτη, 5 de Μαρτίου de 2024'.> ...
+%! datetime ('Τρίτη, 5 de Μαρτίου de 2024', 'Locale', 'el_GR');
+%!error <datetime: could not recognize the date/time format of 'Τρίτη, 5 Μαρτίου 2024'.> ...
+%! datetime ('Τρίτη, 5 Μαρτίου 2024', 'Locale', 'el_GR');
+%!error <datetime: could not recognize the date/time format of 'Τρίτη, Μαρτίου 5, 2024'.> ...
+%! datetime ('Τρίτη, Μαρτίου 5, 2024', 'Locale', 'el_GR');
+%!test
+%! d = datetime ('5 March 2024', 'Locale', 'en_GB');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!warning <datetime: the text was read with the format 'dd/MM/yyyy', but 'MM/dd/yyyy' would read it just as well; give 'InputFormat' to say which is meant.> ...
+%! datetime ('05/03/2024', 'Locale', 'en_GB');
+%!test
+%! warning ('off', 'Octave:datetime:ambiguous-format', 'local');
+%! d = datetime ('05/03/2024', 'Locale', 'en_GB');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('13/03/2024', 'Locale', 'en_GB');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-13 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('13/03/2024', 'Locale', 'en_US');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-13 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Jänner-2024', 'Locale', 'de_AT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-01-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('5. Jänner 2024', 'Locale', 'de_AT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-01-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05.03.2024', 'Locale', 'de_AT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+## (b) the 'de' form is read for every Spanish and Portuguese locale
+%!test
+%! d = datetime ('5 de marzo de 2024', 'Locale', 'es_MX');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!warning <datetime: the text was read with the format 'dd/MM/yyyy', but 'MM/dd/yyyy' would read it just as well; give 'InputFormat' to say which is meant.> ...
+%! datetime ('05/03/2024', 'Locale', 'es_MX');
+%!test
+%! warning ('off', 'Octave:datetime:ambiguous-format', 'local');
+%! d = datetime ('05/03/2024', 'Locale', 'es_MX');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('5 de março de 2024', 'Locale', 'pt_BR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!warning <datetime: the text was read with the format 'dd/MM/yyyy', but 'MM/dd/yyyy' would read it just as well; give 'InputFormat' to say which is meant.> ...
+%! datetime ('05/03/2024', 'Locale', 'pt_BR');
+%!test
+%! warning ('off', 'Octave:datetime:ambiguous-format', 'local');
+%! d = datetime ('05/03/2024', 'Locale', 'pt_BR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('2024-03-05', 'Locale', 'fr_CA');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('5 mars 2024', 'Locale', 'fr_CA');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('13/03/2024', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-13 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('13.03.2024', 'Locale', 'de_DE');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-13 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('13/03/2024', 'Locale', 'it_IT');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-13 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('13/03/2024', 'Locale', 'el_GR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-13 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+## (a) a two-digit year takes the pivot; R2024a reads the year 24
+%!warning <datetime: the text was read with the format 'dd/MM/yyyy', but 'MM/dd/yyyy' would read it just as well; give 'InputFormat' to say which is meant.> ...
+%! datetime ('5/3/24', 'Locale', 'el_GR');
+%!test
+%! warning ('off', 'Octave:datetime:ambiguous-format', 'local');
+%! d = datetime ('5/3/24', 'Locale', 'el_GR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-MÄRZ-2024', 'Locale', 'de_DE');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-märz-2024', 'Locale', 'de_DE');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-MARS-2024', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('5 MARS 2024', 'Locale', 'fr_FR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+## (b) the 'de' form is read for every Spanish and Portuguese locale
+%!test
+%! d = datetime ('5 de MARZO de 2024', 'Locale', 'es_ES');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-ΜΑΡ-2024', 'Locale', 'el_GR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+## (d) Greek capitals are read, as with 'InputFormat'
+%!test
+%! d = datetime ('5 ΜΑΡΤΙΟΥ 2024', 'Locale', 'el_GR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!error <datetime: could not recognize date/time format from input.> ...
+%! datetime ('5 Μάρτιος 2024', 'Locale', 'el_GR');
+%!test
+%! d = datetime ('05-μαρ-2024', 'Locale', 'el_GR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('5 μαρτίου 2024', 'Locale', 'el_GR');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!error <datetime: could not recognize date/time format from input.> ...
+%! datetime ('05-Μάρτιος-2024', 'Locale', 'el_GR');
+%!test
+%! d = datetime ({'05.03.2024', '13.03.2024'}, 'Locale', 'de_DE');
+%! assert_equal (cellstr (char (d, 'yyyy-MM-dd HH:mm:ss')), ...
+%!               {'2024-03-05 00:00:00'; '2024-03-13 00:00:00'});
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ({'05.03.2024', '5. März 2024'}, 'Locale', 'de_DE');
+%! assert_equal (cellstr (char (d, 'yyyy-MM-dd HH:mm:ss')), ...
+%!               {'2024-03-05 00:00:00'; 'NaT'});
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+## A full name is read where the first entry had a short one.
+%!test
+%! d = datetime ({'5 mars 2024', '6 avril 2024'}, 'Locale', 'fr_FR');
+%! assert_equal (cellstr (char (d, 'yyyy-MM-dd HH:mm:ss')), ...
+%!               {'2024-03-05 00:00:00'; '2024-04-06 00:00:00'});
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ({'05/03/2024', '13/03/2024'}, 'Locale', 'fr_FR');
+%! assert_equal (cellstr (char (d, 'yyyy-MM-dd HH:mm:ss')), ...
+%!               {'2024-03-05 00:00:00'; '2024-03-13 00:00:00'});
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('05-Mar-2024', 'Locale', 'system');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+%!test
+%! d = datetime ('5. März 2024', 'InputFormat', 'd. MMMM yyyy', 'Locale', ...
+%!               'de_DE');
+%! assert_equal (char (d, 'yyyy-MM-dd HH:mm:ss'), '2024-03-05 00:00:00');
+%! assert_equal (d.Format, 'dd-MMM-uuuu');
+
 ## Test 'datetime' constructor -- weekday name fields (consumed, but validated)
 %!assert_equal (day (datetime ('7 09-Mar-2024', 'InputFormat', ...
 %!              'e dd-MMM-yyyy')), 9)

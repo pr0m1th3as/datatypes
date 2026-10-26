@@ -203,11 +203,11 @@ utf8_decode (const string& s, vector<uint32_t>& cp)
 }
 
 // Case- and accent-fold a UTF-8 string to a code point vector.  ASCII
-// capitals and the contiguous Greek capitals
-// both lower case by +32; the accented Greek capitals, the accented lower case
+// capitals, the Latin-1 capitals and the contiguous Greek capitals go to
+// lower case by +32; the accented Greek capitals, the accented lower case
 // vowels, the dialytika forms and the final sigma map to their plain lower
-// case base letters.  Latin accents outside ASCII are deliberately left alone,
-// exactly as in the m-code.
+// case base letters.  Latin accents are kept, so 'MÄRZ' matches 'märz' but
+// 'marz' does not, as in MATLAB.
 static void
 case_fold (const string& s, vector<uint32_t>& cp)
 {
@@ -225,6 +225,11 @@ case_fold (const string& s, vector<uint32_t>& cp)
     uint32_t u = cp[i];
     if (u >= 65 && u <= 90)
     {
+      u += 32;
+    }
+    else if (u >= 0xC0 && u <= 0xDE && u != 0xD7)
+    {
+      // The Latin-1 capitals, but for the multiplication sign
       u += 32;
     }
     else if (u >= 913 && u <= 937)
@@ -311,6 +316,24 @@ folded_locale (int idx)
     f.built = true;
   }
   return f;
+}
+
+// The month a regional name stands for, or 0: Austrian German writes January
+// as 'Jänner' ('Jän'), which MATLAB reads under 'de_AT' alone.
+static int
+regional_month (const string& word, const string& locale)
+{
+  string tag;
+  for (size_t i = 0; i < locale.size (); i++)
+    tag += (locale[i] == '-') ? '_'
+           : static_cast<char> (tolower (static_cast<unsigned char> (locale[i])));
+  if (tag != "de_at")
+    return 0;
+  vector<uint32_t> fw, full, abbr;
+  case_fold (word, fw);
+  case_fold ("jänner", full);
+  case_fold ("jän", abbr);
+  return (fw == full || fw == abbr) ? 1 : 0;
 }
 
 // Return the 1-based index of the first entry of TBL whose folded form matches
@@ -834,6 +857,10 @@ ldml_parse (const Cell& strs, const string& fmt, double pivot, int lidx,
         if (idx == 0)
         {
           idx = fold_find (word, F.mAbbr, 12);
+          if (idx == 0)
+          {
+            idx = regional_month (word, locale);
+          }
           if (idx == 0)
           {
             ok = false;

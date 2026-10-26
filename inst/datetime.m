@@ -452,10 +452,19 @@ classdef datetime
     ## @qcode{'TimeZone'}.  MATLAB detects no text carrying an offset.
     ## @item @qcode{'dd-MMM-uuuu'} @tab month named in full or abbreviated,
     ## optionally followed by a time as above.
-    ## @item @qcode{'MMMM d, uuuu'} @tab as in @qcode{'March 15, 2024'}.
-    ## @item @qcode{'MM/dd/uuuu'} @tab or @qcode{'dd/MM/uuuu'}; see below.
+    ## @item @qcode{'MMMM d, uuuu'} @tab as in @qcode{'March 15, 2024'}, in
+    ## English only, optionally followed by a time.
+    ## @item @qcode{'MM/dd/uuuu'} @tab or @qcode{'dd/MM/uuuu'}, the year in two
+    ## digits or four, optionally followed by a time; see below.
+    ## @item @qcode{'dd.MM.uuuu'} @tab day first in every locale, optionally
+    ## followed by a time, or @qcode{'dd.MM.yy'} with all three fields in two
+    ## digits, so that a version number such as @qcode{'1.5.10'} stays text.
     ## @item @qcode{'HH:mm:ss'} @tab a time alone, taking today's date.
     ## @end multitable
+    ##
+    ## A two-digit year is read against the pivot year, as with an
+    ## @qcode{'InputFormat'}, where MATLAB reads @qcode{'05.03.24'} as the year
+    ## 24.
     ##
     ## Three further shapes are read that MATLAB does not detect, and are
     ## Octave extensions: @qcode{'uuuu/MM/dd'} with an optional time,
@@ -466,9 +475,26 @@ classdef datetime
     ## A date written with slashes is ambiguous: @qcode{'03/09/2024'} is the 3rd
     ## of September to some readers and the 9th of March to others.  The whole
     ## array decides, since one entry naming a day past the twelfth settles the
-    ## order for all of them; where nothing settles it the American reading is
-    ## taken and a warning
-    ## (@qcode{'Octave:datetime:ambiguous-format'}) is raised.
+    ## order for all of them; where nothing settles it the reading of the
+    ## @qcode{'Locale'} is taken, month first in English but for
+    ## @qcode{'en_GB'} and day first in every other language, and a warning
+    ## (@qcode{'Octave:datetime:ambiguous-format'}) is raised, but for
+    ## @qcode{'pt_PT'}.  Under a German locale, which writes dates with dots,
+    ## slashes are not read, as in MATLAB.
+    ##
+    ## @code{@var{T} = datetime (@var{DateStrings}, @qcode{'Locale'},
+    ## @var{LOCALE})} detects the format in the language of @var{LOCALE}: the
+    ## month names above are its own, abbreviated or full, matched in any case
+    ## and with or without the point after an abbreviation, and English names
+    ## are not read under another language.  Each language adds its long form,
+    ## optionally followed by a time: @qcode{'d. MMMM uuuu'} in German
+    ## (@qcode{'1. Januar 2024'}, @qcode{'Jänner'} under @qcode{'de_AT'}),
+    ## @qcode{'d 'de' MMMM 'de' uuuu'} in Spanish and Portuguese
+    ## (@qcode{'5 de marzo de 2024'}), and @qcode{'dd MMMM uuuu'} in the other
+    ## languages but Portuguese (@qcode{'15 mars 2024'}, @qcode{'15 Μαρτίου
+    ## 2024'}).  MATLAB reads the Spanish and Portuguese long form under
+    ## @qcode{'pt_BR'} alone, refuses a point after a Spanish abbreviation, and
+    ## refuses Greek written in capitals; all of these are read here.
     ##
     ## @code{@var{T} = datetime (@var{DateStrings}, @qcode{'MixedFormats'},
     ## @code{true})} detects a format for each piece of text separately instead,
@@ -528,19 +554,19 @@ classdef datetime
     ## the current year minus 50.
     ##
     ## @code{@var{T} = datetime (@var{DateStrings}, @qcode{'InputFormat'},
-    ## @var{INFMT}, @qcode{'Locale'}, @var{LOCALE})} interprets the month names,
-    ## weekday names, and day-period markers in @var{DateStrings} according to
-    ## @var{LOCALE}, given as an @qcode{'xx_YY'} identifier whose language part
-    ## selects the names.  The supported languages are @qcode{'en'} (the
-    ## default), @qcode{'fr'}, @qcode{'de'}, @qcode{'es'}, @qcode{'it'},
-    ## @qcode{'pt'}, and @qcode{'el'}; @qcode{'system'} is treated as
-    ## @qcode{'en'}.  Both full (@qcode{'MMMM'}/@qcode{'eeee'}) and abbreviated
-    ## (@qcode{'MMM'}/@qcode{'eee'}) month and weekday names are recognized
-    ## case-insensitively; for Greek, matching is also accent-insensitive, so
-    ## the accentless all-caps spelling is accepted, and the genitive month
-    ## forms (@qcode{'Μαρτίου'}) are used.  A weekday name is validated but does
-    ## not otherwise affect the result.  A hyphen may stand for the underscore,
-    ## as in @qcode{'fr-FR'}.
+    ## @var{INFMT}, @qcode{'Locale'}, @var{LOCALE})} also interprets the month
+    ## names, weekday names, and day-period markers in @var{DateStrings}
+    ## according to @var{LOCALE}, given as an @qcode{'xx_YY'} identifier whose
+    ## language part selects the names.  The supported languages are
+    ## @qcode{'en'} (the default), @qcode{'fr'}, @qcode{'de'}, @qcode{'es'},
+    ## @qcode{'it'}, @qcode{'pt'}, and @qcode{'el'}; @qcode{'system'} is treated
+    ## as @qcode{'en'}.  Both full (@qcode{'MMMM'}/@qcode{'eeee'}) and
+    ## abbreviated (@qcode{'MMM'}/@qcode{'eee'}) month and weekday names are
+    ## recognized case-insensitively; for Greek, matching is also
+    ## accent-insensitive, so the accentless all-caps spelling is accepted, and
+    ## the genitive month forms (@qcode{'Μαρτίου'}) are used.  A weekday name is
+    ## validated but does not otherwise affect the result.  A hyphen may stand
+    ## for the underscore, as in @qcode{'fr-FR'}.
     ##
     ## @code{@var{T} = datetime (@var{DateVectors})} creates a column vector of
     ## datetime values from the date vectors in @var{DateVectors}.
@@ -1094,7 +1120,7 @@ classdef datetime
               ## cannot read becomes NaT rather than costing the rest, which is
               ## the rule an explicit 'InputFormat' already follows; text no
               ## format can be detected from at all is refused outright.
-              detected = dtDetectFormat (live);
+              detected = dtDetectFormat (live, Locale);
               if (isempty (detected))
                 error (strcat ("datetime: could not recognize the", ...
                                " date/time format of '%s'."), live{1});
@@ -1110,7 +1136,7 @@ classdef datetime
               endif
               try
                 [DV, OFF] = dtParseInput (live, detected, dtDefaultPivot (), ...
-                                          '', dtIsLeapZone (TimeZone));
+                                          Locale, dtIsLeapZone (TimeZone));
                 OFFSET(! blank) = OFF;
                 ## The first text that is not blank is what the format was
                 ## detected from, so text it cannot read leaves no format at
@@ -7479,10 +7505,17 @@ endfunction
 ## shape carries fractional seconds, the pattern is widened to the digits
 ## actually present.
 ##
+## LOCALE decides the shapes that carry names, as MATLAB has them: the month
+## names are the locale's, and some long forms belong to one language only --
+## 'MMMM d, y' to English, 'd. MMMM y' to German, 'd 'de' MMMM 'de' y' to
+## Spanish and Portuguese, and 'd MMMM y' to the rest but German and
+## Portuguese.  The name in a shape is any run of letters; the parser then
+## reads it against the locale's tables.
+##
 ## The slash shape is ambiguous: 03/09/2024 could be the 3rd of September or the
 ## 9th of March.  The whole set decides, since one string past the twelfth of a
-## month settles it for all of them, and only when nothing does is the American
-## reading assumed and a warning raised -- both as MATLAB does.
+## month settles it for all of them, and only when nothing does is the reading
+## of the locale assumed and a warning raised -- both as MATLAB does.
 ##
 ## A year is matched as four digits OR MORE and may carry a sign, which is why
 ## the year token emitted is 'uuuu' rather than 'yyyy': the two parse a digit
@@ -7492,36 +7525,64 @@ endfunction
 ## refused, as MATLAB does.  Two shapes deliberately keep the narrow year,
 ## because MATLAB refuses them too: a year-first SLASH date (32767/03/15) and a
 ## bare year standing alone (32767).
-function fmt = dtDetectFormat (strs)
+function fmt = dtDetectFormat (strs, locale = '')
   persistent shapes;
   if (isempty (shapes))
+    ## A month name: letters of any script, with a point after an abbreviation
+    nm = '[^\s\d,./:-]+\.?';
+    tm = {'', ''; ' \d{1,2}:\d{2}', ' HH:mm'; ' \d{1,2}:\d{2}:\d{2}', ...
+          ' HH:mm:ss'};
     shapes = {
-      '^-?\d{4,}-\d{1,2}-\d{1,2}$',                'uuuu-MM-dd';
-      '^-?\d{4,}-\d{1,2}-\d{1,2} \d{1,2}:\d{2}$',  'uuuu-MM-dd HH:mm';
+      '^-?\d{4,}-\d{1,2}-\d{1,2}$',                'uuuu-MM-dd',      {};
+      '^-?\d{4,}-\d{1,2}-\d{1,2} \d{1,2}:\d{2}$',  'uuuu-MM-dd HH:mm', {};
       '^-?\d{4,}-\d{1,2}-\d{1,2} \d{1,2}:\d{2}:\d{2}$', ...
-                                                    'uuuu-MM-dd HH:mm:ss';
+                                                    'uuuu-MM-dd HH:mm:ss', {};
       '^-?\d{4,}-\d{1,2}-\d{1,2} \d{1,2}:\d{2}:\d{2}\.\d+$', ...
-                                                    'uuuu-MM-dd HH:mm:ss.';
-      '^-?\d{4,}-\d{1,2}-\d{1,2}T\d{1,2}:\d{2}$',  "uuuu-MM-dd'T'HH:mm";
+                                                    'uuuu-MM-dd HH:mm:ss.', {};
+      '^-?\d{4,}-\d{1,2}-\d{1,2}T\d{1,2}:\d{2}$',  "uuuu-MM-dd'T'HH:mm", {};
       '^-?\d{4,}-\d{1,2}-\d{1,2}T\d{1,2}:\d{2}:\d{2}$', ...
-                                                    "uuuu-MM-dd'T'HH:mm:ss";
+                                                    "uuuu-MM-dd'T'HH:mm:ss", {};
       '^-?\d{4,}-\d{1,2}-\d{1,2}T\d{1,2}:\d{2}:\d{2}\.\d+$', ...
-                                                    "uuuu-MM-dd'T'HH:mm:ss.";
-      '^\d{4}/\d{1,2}/\d{1,2}$',                   'yyyy/MM/dd';
-      '^\d{4}/\d{1,2}/\d{1,2} \d{1,2}:\d{2}$',     'yyyy/MM/dd HH:mm';
-      '^\d{4}/\d{1,2}/\d{1,2} \d{1,2}:\d{2}:\d{2}$', 'yyyy/MM/dd HH:mm:ss';
-      '^\d{1,2}/\d{1,2}/-?\d{4,}$',                '';
-      '^\d{1,2}-[A-Za-z]{3,}--?\d{4,}$',            'dd-MMM-uuuu';
-      '^\d{1,2}-[A-Za-z]{3,}--?\d{4,} \d{1,2}:\d{2}$', ...
-                                                    'dd-MMM-uuuu HH:mm';
-      '^\d{1,2}-[A-Za-z]{3,}--?\d{4,} \d{1,2}:\d{2}:\d{2}$', ...
-                                                    'dd-MMM-uuuu HH:mm:ss';
-      '^[A-Za-z]{3,} \d{1,2}, -?\d{4,}$',           'MMMM d, uuuu';
-      '^\d{1,2} [A-Za-z]{3,} -?\d{4,}$',            'dd MMMM uuuu';
-      '^\d{1,2}:\d{2}:\d{2}$',                     'HH:mm:ss';
-      '^\d{1,2}:\d{2}$',                            'HH:mm';
-      '^\d{4}$',                                    'yyyy'};
+                                                "uuuu-MM-dd'T'HH:mm:ss.", {};
+      '^\d{4}/\d{1,2}/\d{1,2}$',                   'yyyy/MM/dd',       {};
+      '^\d{4}/\d{1,2}/\d{1,2} \d{1,2}:\d{2}$',     'yyyy/MM/dd HH:mm', {};
+      '^\d{4}/\d{1,2}/\d{1,2} \d{1,2}:\d{2}:\d{2}$', 'yyyy/MM/dd HH:mm:ss', {};
+      '^\d{2}\.\d{2}\.\d{2}$',                     'dd.MM.yy',         {}};
+    ## Slashed dates, ordered by dtSlashOrder: '/' and the year and time
+    for k = 1:rows (tm)
+      shapes(end+1,:) = {['^\d{1,2}/\d{1,2}/-?\d{4,}', tm{k,1}, '$'], ...
+                         ['/uuuu', tm{k,2}], {}};
+      shapes(end+1,:) = {['^\d{1,2}/\d{1,2}/\d{2}', tm{k,1}, '$'], ...
+                         ['/yy', tm{k,2}], {}};
+    endfor
+    ## Dotted dates, day first in every locale.  With a two-digit year all
+    ## three fields have two digits, so that text such as a version number,
+    ## '1.5.10', is not taken for a date when a column is read.
+    for k = 1:rows (tm)
+      shapes(end+1,:) = {['^\d{1,2}\.\d{1,2}\.-?\d{4,}', tm{k,1}, '$'], ...
+                         ['dd.MM.uuuu', tm{k,2}], {}};
+    endfor
+    ## The shapes with a month name, and the languages each belongs to
+    named = {'^\d{1,2}-%s--?\d{4,}',         'dd-MMM-uuuu',        {};
+             '^%s \d{1,2}, -?\d{4,}',        'MMMM d, uuuu',       {'en'};
+             '^\d{1,2}\. %s -?\d{4,}',       'd. MMMM uuuu',       {'de'};
+             '^\d{1,2} de %s de -?\d{4,}',   "d 'de' MMMM 'de' uuuu", ...
+                                                                   {'es', 'pt'};
+             '^\d{1,2} %s -?\d{4,}',         'dd MMMM uuuu', ...
+                                         {'en', 'fr', 'es', 'it', 'el'}};
+    for j = 1:rows (named)
+      for k = 1:rows (tm)
+        n = rows (shapes) + 1;
+        shapes{n,1} = [strrep(named{j,1}, '%s', nm), tm{k,1}, '$'];
+        shapes{n,2} = [named{j,2}, tm{k,2}];
+        shapes{n,3} = named{j,3};
+      endfor
+    endfor
+    shapes(end+1:end+3,:) = {'^\d{1,2}:\d{2}:\d{2}$', 'HH:mm:ss', {};
+                             '^\d{1,2}:\d{2}$',         'HH:mm',    {};
+                             '^\d{4}$',                  'yyyy',     {}};
   endif
+  [lang, region] = dtLocaleTag (locale);
   fmt = '';
   first = strs{1};
   ## An ISO 8601 date and time carrying a UTC offset, as RFC 3339 writes it.
@@ -7548,7 +7609,9 @@ function fmt = dtDetectFormat (strs)
   endif
   idx = 0;
   for k = 1:rows (shapes)
-    if (! isempty (regexp (first, shapes{k,1}, 'once')))
+    langs = shapes{k,3};
+    if ((isempty (langs) || any (strcmp (lang, langs)))
+        && ! isempty (regexp (first, shapes{k,1}, 'once')))
       idx = k;
       break;
     endif
@@ -7557,8 +7620,12 @@ function fmt = dtDetectFormat (strs)
     return;
   endif
   fmt = shapes{idx,2};
-  if (isempty (fmt))
-    fmt = dtSlashOrder (strs);
+  if (fmt(1) == '/')
+    order = dtSlashOrder (strs, lang, region);
+    if (! isempty (order))
+      order = [order(1:6), fmt(2:end)];
+    endif
+    fmt = order;
   elseif (fmt(end) == '.')
     ## Widen the fractional field to the digits the text actually carries.
     frac = regexp (first, '\.(\d+)$', 'tokens', 'once');
@@ -7566,19 +7633,49 @@ function fmt = dtDetectFormat (strs)
   endif
 endfunction
 
+## The language and region of LOCALE in lower case, English for none or for
+## 'system'
+function [lang, region] = dtLocaleTag (locale)
+  if (isempty (locale))
+    locale = '';
+  endif
+  [lang, rest] = strtok (lower (char (locale)), '_-');
+  region = strtok (rest, '_-');
+  if (isempty (lang) || strcmp (lang, 'system'))
+    lang = 'en';
+    region = '';
+  endif
+endfunction
+
 ## Decide whether a set of day/month/year strings separated by slashes is
 ## written the American way round or the European one.  A first field past 12
 ## can only be a day and a second field past 12 can only be a month, so one such
-## string settles the whole set; with nothing to go on, MATLAB reads them the
-## American way and says so.
-function fmt = dtSlashOrder (strs)
+## string settles the whole set; with nothing to go on, the reading of the
+## locale is taken and said so: month first in English but for 'en_GB', day
+## first elsewhere, and without a word in 'pt_PT'.  German writes dates with
+## dots, and MATLAB refuses slashes under it, so '' is returned for it.
+function fmt = dtSlashOrder (strs, lang = 'en', region = '')
+  if (strcmp (lang, 'de'))
+    fmt = '';
+    return;
+  endif
   first = regexp (strs, '^(\d{1,2})/(\d{1,2})/', 'tokens', 'once');
   f1 = cellfun (@(t) str2double (t{1}), first);
   f2 = cellfun (@(t) str2double (t{2}), first);
+  dayFirst = ! (strcmp (lang, 'en') && ! strcmp (region, 'gb'));
   if (any (f1 > 12))
     fmt = 'dd/MM/uuuu';
   elseif (any (f2 > 12))
     fmt = 'MM/dd/uuuu';
+  elseif (dayFirst)
+    fmt = 'dd/MM/uuuu';
+    if (! (strcmp (lang, 'pt') && strcmp (region, 'pt')))
+      warning ('Octave:datetime:ambiguous-format', ...
+               strcat ("datetime: the text was read with the format", ...
+                       " 'dd/MM/yyyy', but 'MM/dd/yyyy' would read it just", ...
+                       " as well; give 'InputFormat' to say which is", ...
+                       " meant."));
+    endif
   else
     fmt = 'MM/dd/uuuu';
     ## The message names 'MM/dd/yyyy' rather than the 'uuuu' actually used: it
