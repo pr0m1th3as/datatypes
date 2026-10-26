@@ -2771,7 +2771,7 @@
 %! d([4, 5]) = [1; 2];
 %!test
 %! c = dictionary (string ({'a', 'b'}), {1, 'two'});
-%! assert_equal (c{string ('a')}, 1);
+%! assert_equal (c{string('a')}, 1);
 %!test
 %! c = dictionary (string ({'a', 'b'}), {1, 'two'});
 %! assert_equal (c(string ('a')), {1});
@@ -2780,27 +2780,27 @@
 %! assert_equal (c(string ({'b', 'a'})), {'two', 1});
 %!error<dictionary.subsref: key not found.> ...
 %! c = dictionary (string ({'a', 'b'}), {1, 'two'});
-%! c{string ('z')};
+%! c{string('z')};
 %!test
 %! c = dictionary (string ({'a', 'b'}), {1, 'two'});
-%! c{string ('c')} = 3;
+%! c{string('c')} = 3;
 %! assert_equal (c(string ('c')), {3});
 %!test
 %! c = dictionary (string ({'a', 'b'}), {1, 'two'});
-%! c{string ('d')} = [];
+%! c{string('d')} = [];
 %! assert_equal (c(string ('d')), {zeros(0, 0)});
 %!error<dictionary.subsasgn: '{}' assignment takes a single key.> ...
 %! c = dictionary (string ({'a', 'b'}), {1, 'two'});
-%! c{string ({'e', 'f'})} = 5;
+%! c{string({'e', 'f'})} = 5;
 %!test
 %! c = dictionary (string ({'a', 'b'}), {1, 'two'});
 %! c(string ('g')) = {[1, 2, 3]};
-%! assert_equal (c{string ('g')}(2), 2);
+%! assert_equal (c{string('g')}(2), 2);
 %!test
 %! c = dictionary (string ({'a', 'b'}), {1, 'two'});
 %! c(string ('g')) = {[1, 2, 3]};
-%! c{string ('g')}(2) = 9;
-%! assert_equal (c{string ('g')}, [1, 9, 3]);
+%! c{string('g')}(2) = 9;
+%! assert_equal (c{string('g')}, [1, 9, 3]);
 %!error<dictionary.subsasgn: unable to use 'double' as value of a dictionary of 'cell' values.> ...
 %! c = dictionary (string ({'a', 'b'}), {1, 'two'});
 %! c(string ('h')) = 7;
@@ -2813,12 +2813,12 @@
 %! assert_equal (keys (c), string ('b'));
 %!test
 %! c = dictionary (string ({'a', 'b'}), {1, 'two'});
-%! c{string ('new')}(3) = 7;
-%! assert_equal (c{string ('new')}, [0, 0, 7]);
+%! c{string('new')}(3) = 7;
+%! assert_equal (c{string('new')}, [0, 0, 7]);
 %!test
 %! c = dictionary (string ({'a', 'b'}), {1, 'two'});
-%! c{string ('new')}.f = 7;
-%! assert_equal (c{string ('new')}, struct ('f', 7));
+%! c{string('new')}.f = 7;
+%! assert_equal (c{string('new')}, struct ('f', 7));
 %!test
 %! c = dictionary (string ({'a', 'b'}), {1, 'two'});
 %! c{:} = 5;
@@ -3139,7 +3139,7 @@
 %! assert_equal (tb5.Var1, [1; 2]);
 %!test
 %! u = dictionary ();
-%! u{string ('a')}(2) = 7;
+%! u{string('a')}(2) = 7;
 %! r = u;
 %! [kt1, vt2] = types (r);
 %! assert_equal ([kt1, vt2], string ({'string', 'cell'}));
@@ -3353,18 +3353,18 @@
 %!assert_equal (keyHash (D) == keyHash (R), false)
 %!assert_equal (keyHash (D) == keyHash (D), true)
 %!assert_equal (keyMatch (D, R), false)
-%!assert_equal (CV{single (2)}, 'two')
+%!assert_equal (CV{single(2)}, 'two')
 %!test
 %! c = CV;
-%! c{single (1)} = 5;
+%! c{single(1)} = 5;
 %! assert_equal (c(single (1)), {5});
 %!test
 %! c = CV;
-%! c{single (2)}(2) = 7;
-%! r = c{single (2)};
+%! c{single(2)}(2) = 7;
+%! r = c{single(2)};
 %! assert_equal (double (r), [116, 7, 111]);
 %!error<dictionary.subsref: key not found.> ...
-%! CV{single (9)};
+%! CV{single(9)};
 
 ## Keys of type 'int8', measured on R2024a
 %!shared D, R, CV
@@ -3461,18 +3461,18 @@
 %!assert_equal (keyHash (D) == keyHash (R), false)
 %!assert_equal (keyHash (D) == keyHash (D), true)
 %!assert_equal (keyMatch (D, R), false)
-%!assert_equal (CV{int8 (2)}, 'two')
+%!assert_equal (CV{int8(2)}, 'two')
 %!test
 %! c = CV;
-%! c{int8 (1)} = 5;
+%! c{int8(1)} = 5;
 %! assert_equal (c(int8 (1)), {5});
 %!test
 %! c = CV;
-%! c{int8 (2)}(2) = 7;
-%! r = c{int8 (2)};
+%! c{int8(2)}(2) = 7;
+%! r = c{int8(2)};
 %! assert_equal (double (r), [116, 7, 111]);
 %!error<dictionary.subsref: key not found.> ...
-%! CV{int8 (9)};
+%! CV{int8(9)};
 
 ## Keys of type 'uint64', measured on R2024a
 %!shared D, R, CV
@@ -3588,18 +3588,18 @@
 %!assert_equal (keyHash (D) == keyHash (R), false)
 %!assert_equal (keyHash (D) == keyHash (D), true)
 %!assert_equal (keyMatch (D, R), false)
-%!assert_equal (CV{intmax ('uint64') - 1}, 'two')
+%!assert_equal (CV{intmax('uint64') - 1}, 'two')
 %!test
 %! c = CV;
-%! c{intmax ('uint64') - 2} = 5;
+%! c{intmax('uint64') - 2} = 5;
 %! assert_equal (c(intmax ('uint64') - 2), {5});
 %!test
 %! c = CV;
-%! c{intmax ('uint64') - 1}(2) = 7;
-%! r = c{intmax ('uint64') - 1};
+%! c{intmax('uint64') - 1}(2) = 7;
+%! r = c{intmax('uint64') - 1};
 %! assert_equal (double (r), [116, 7, 111]);
 %!error<dictionary.subsref: key not found.> ...
-%! CV{uint64 (9)};
+%! CV{uint64(9)};
 
 ## Keys of type 'string', measured on R2024a
 %!shared D, R, CV
@@ -3699,18 +3699,18 @@
 %!assert_equal (keyHash (D) == keyHash (R), false)
 %!assert_equal (keyHash (D) == keyHash (D), true)
 %!assert_equal (keyMatch (D, R), false)
-%!assert_equal (CV{string ('b')}, 'two')
+%!assert_equal (CV{string('b')}, 'two')
 %!test
 %! c = CV;
-%! c{string ('a')} = 5;
+%! c{string('a')} = 5;
 %! assert_equal (c(string ('a')), {5});
 %!test
 %! c = CV;
-%! c{string ('b')}(2) = 7;
-%! r = c{string ('b')};
+%! c{string('b')}(2) = 7;
+%! r = c{string('b')};
 %! assert_equal (double (r), [116, 7, 111]);
 %!error<dictionary.subsref: key not found.> ...
-%! CV{string ('z')};
+%! CV{string('z')};
 
 ## Keys of type 'cell', measured on R2024a
 %!shared D, R, CV
@@ -3934,18 +3934,18 @@
 %!assert_equal (keyHash (D) == keyHash (R), false)
 %!assert_equal (keyHash (D) == keyHash (D), true)
 %!assert_equal (keyMatch (D, R), false)
-%!assert_equal (CV{struct ('a', 2)}, 'two')
+%!assert_equal (CV{struct('a', 2)}, 'two')
 %!test
 %! c = CV;
-%! c{struct ('a', 1)} = 5;
+%! c{struct('a', 1)} = 5;
 %! assert_equal (c(struct ('a', 1)), {5});
 %!test
 %! c = CV;
-%! c{struct ('a', 2)}(2) = 7;
-%! r = c{struct ('a', 2)};
+%! c{struct('a', 2)}(2) = 7;
+%! r = c{struct('a', 2)};
 %! assert_equal (double (r), [116, 7, 111]);
 %!error<dictionary.subsref: key not found.> ...
-%! CV{struct ('a', 9)};
+%! CV{struct('a', 9)};
 
 ## Keys of type 'handle', measured on R2024a
 %!shared D, R, CV
@@ -4223,18 +4223,18 @@
 %!assert_equal (keyHash (D) == keyHash (R), false)
 %!assert_equal (keyHash (D) == keyHash (D), true)
 %!assert_equal (keyMatch (D, R), false)
-%!assert_equal (CV{datetime (2024, 1, 2)}, 'two')
+%!assert_equal (CV{datetime(2024, 1, 2)}, 'two')
 %!test
 %! c = CV;
-%! c{datetime (2024, 1, 1)} = 5;
+%! c{datetime(2024, 1, 1)} = 5;
 %! assert_equal (c(datetime (2024, 1, 1)), {5});
 %!test
 %! c = CV;
-%! c{datetime (2024, 1, 2)}(2) = 7;
-%! r = c{datetime (2024, 1, 2)};
+%! c{datetime(2024, 1, 2)}(2) = 7;
+%! r = c{datetime(2024, 1, 2)};
 %! assert_equal (double (r), [116, 7, 111]);
 %!error<dictionary.subsref: key not found.> ...
-%! CV{datetime (2025, 1, 1)};
+%! CV{datetime(2025, 1, 1)};
 
 ## Keys of type 'zoned', measured on R2024a
 %!shared D, R, CV
@@ -4422,18 +4422,18 @@
 %!assert_equal (keyHash (D) == keyHash (R), false)
 %!assert_equal (keyHash (D) == keyHash (D), true)
 %!assert_equal (keyMatch (D, R), false)
-%!assert_equal (CV{datetime (2024, 1, 2, 'TimeZone', 'UTC')}, 'two')
+%!assert_equal (CV{datetime(2024, 1, 2, 'TimeZone', 'UTC')}, 'two')
 %!test
 %! c = CV;
-%! c{datetime (2024, 1, 1, 'TimeZone', 'UTC')} = 5;
+%! c{datetime(2024, 1, 1, 'TimeZone', 'UTC')} = 5;
 %! assert_equal (c(datetime (2024, 1, 1, 'TimeZone', 'UTC')), {5});
 %!test
 %! c = CV;
-%! c{datetime (2024, 1, 2, 'TimeZone', 'UTC')}(2) = 7;
-%! r = c{datetime (2024, 1, 2, 'TimeZone', 'UTC')};
+%! c{datetime(2024, 1, 2, 'TimeZone', 'UTC')}(2) = 7;
+%! r = c{datetime(2024, 1, 2, 'TimeZone', 'UTC')};
 %! assert_equal (double (r), [116, 7, 111]);
 %!error<dictionary.subsref: key not found.> ...
-%! CV{datetime (2025, 1, 1, 'TimeZone', 'UTC')};
+%! CV{datetime(2025, 1, 1, 'TimeZone', 'UTC')};
 
 ## Keys of type 'duration', measured on R2024a
 %!shared D, R, CV
@@ -4574,18 +4574,18 @@
 %!assert_equal (keyHash (D) == keyHash (R), false)
 %!assert_equal (keyHash (D) == keyHash (D), true)
 %!assert_equal (keyMatch (D, R), false)
-%!assert_equal (CV{hours (2)}, 'two')
+%!assert_equal (CV{hours(2)}, 'two')
 %!test
 %! c = CV;
-%! c{hours (1)} = 5;
+%! c{hours(1)} = 5;
 %! assert_equal (c(hours (1)), {5});
 %!test
 %! c = CV;
-%! c{hours (2)}(2) = 7;
-%! r = c{hours (2)};
+%! c{hours(2)}(2) = 7;
+%! r = c{hours(2)};
 %! assert_equal (double (r), [116, 7, 111]);
 %!error<dictionary.subsref: key not found.> ...
-%! CV{hours (9)};
+%! CV{hours(9)};
 
 ## Keys of type 'calendarDuration', measured on R2024a
 %!shared D, R, CV
@@ -4726,18 +4726,18 @@
 %!assert_equal (keyHash (D) == keyHash (R), false)
 %!assert_equal (keyHash (D) == keyHash (D), true)
 %!assert_equal (keyMatch (D, R), false)
-%!assert_equal (CV{calmonths (2)}, 'two')
+%!assert_equal (CV{calmonths(2)}, 'two')
 %!test
 %! c = CV;
-%! c{calmonths (1)} = 5;
+%! c{calmonths(1)} = 5;
 %! assert_equal (c(calmonths (1)), {5});
 %!test
 %! c = CV;
-%! c{calmonths (2)}(2) = 7;
-%! r = c{calmonths (2)};
+%! c{calmonths(2)}(2) = 7;
+%! r = c{calmonths(2)};
 %! assert_equal (double (r), [116, 7, 111]);
 %!error<dictionary.subsref: key not found.> ...
-%! CV{calmonths (9)};
+%! CV{calmonths(9)};
 
 ## Keys of type 'categorical', measured on R2024a
 %!shared D, R, CV
@@ -4935,18 +4935,18 @@
 %!assert_equal (keyHash (D) == keyHash (R), false)
 %!assert_equal (keyHash (D) == keyHash (D), true)
 %!assert_equal (keyMatch (D, R), false)
-%!assert_equal (CV{categorical ({'b'})}, 'two')
+%!assert_equal (CV{categorical({'b'})}, 'two')
 %!test
 %! c = CV;
-%! c{categorical ({'a'})} = 5;
+%! c{categorical({'a'})} = 5;
 %! assert_equal (c(categorical ({'a'})), {5});
 %!test
 %! c = CV;
-%! c{categorical ({'b'})}(2) = 7;
-%! r = c{categorical ({'b'})};
+%! c{categorical({'b'})}(2) = 7;
+%! r = c{categorical({'b'})};
 %! assert_equal (double (r), [116, 7, 111]);
 %!error<dictionary.subsref: key not found.> ...
-%! CV{categorical ({'z'})};
+%! CV{categorical({'z'})};
 
 ## Keys of type 'ordinal', measured on R2024a
 %!shared D, R, CV
@@ -5097,17 +5097,17 @@
 %!assert_equal (keyHash (D) == keyHash (D), true)
 %!assert_equal (keyMatch (D, R), false)
 %!test
-%! r = CV{categorical ({'mid'}, {'lo', 'mid', 'hi'}, 'Ordinal', true)};
+%! r = CV{categorical({'mid'}, {'lo', 'mid', 'hi'}, 'Ordinal', true)};
 %! assert_equal (r, 'two');
 %!test
 %! c = CV;
-%! c{categorical ({'lo'}, {'lo', 'mid', 'hi'}, 'Ordinal', true)} = 5;
+%! c{categorical({'lo'}, {'lo', 'mid', 'hi'}, 'Ordinal', true)} = 5;
 %! r = c(categorical ({'lo'}, {'lo', 'mid', 'hi'}, 'Ordinal', true));
 %! assert_equal (r, {5});
 %!test
 %! c = CV;
-%! c{categorical ({'mid'}, {'lo', 'mid', 'hi'}, 'Ordinal', true)}(2) = 7;
-%! r = c{categorical ({'mid'}, {'lo', 'mid', 'hi'}, 'Ordinal', true)};
+%! c{categorical({'mid'}, {'lo', 'mid', 'hi'}, 'Ordinal', true)}(2) = 7;
+%! r = c{categorical({'mid'}, {'lo', 'mid', 'hi'}, 'Ordinal', true)};
 %! assert_equal (double (r), [116, 7, 111]);
 
 ## Keys of type 'dictionary', measured on R2024a
@@ -5288,18 +5288,18 @@
 %!assert_equal (keyHash (D) == keyHash (R), false)
 %!assert_equal (keyHash (D) == keyHash (D), true)
 %!assert_equal (keyMatch (D, R), false)
-%!assert_equal (CV{dictionary (3, 4)}, 'two')
+%!assert_equal (CV{dictionary(3, 4)}, 'two')
 %!test
 %! c = CV;
-%! c{dictionary (1, 2)} = 5;
+%! c{dictionary(1, 2)} = 5;
 %! assert_equal (c(dictionary (1, 2)), {5});
 %!test
 %! c = CV;
-%! c{dictionary (3, 4)}(2) = 7;
-%! r = c{dictionary (3, 4)};
+%! c{dictionary(3, 4)}(2) = 7;
+%! r = c{dictionary(3, 4)};
 %! assert_equal (double (r), [116, 7, 111]);
 %!error<dictionary.subsref: key not found.> ...
-%! CV{dictionary (9, 9)};
+%! CV{dictionary(9, 9)};
 
 ## Keys of type 'logical', measured on R2024a
 %!shared D, R, CV
