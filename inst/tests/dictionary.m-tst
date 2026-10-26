@@ -1,0 +1,117 @@
+## Copyright (C) 2026 Andreas Bertsatos <abertsatos@biol.uoa.gr>
+##
+## This file is part of the datatypes package for GNU Octave.
+##
+## This program is free software; you can redistribute it and/or modify it under
+## the terms of the GNU General Public License as published by the Free Software
+## Foundation; either version 3 of the License, or (at your option) any later
+## version.
+##
+## This program is distributed in the hope that it will be useful, but WITHOUT
+## ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+## FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+## details.
+##
+## You should have received a copy of the GNU General Public License along with
+## this program; if not, see <http://www.gnu.org/licenses/>.
+
+## Expected values measured on MATLAB R2024a.
+
+################################################################################
+##                  ** Create and describe 'dictionary' **                    ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'dictionary'       'types'            'isConfigured'     'numEntries'      ##
+## 'numel'            'length'           'size'             'ndims'           ##
+## 'isempty'                                                                  ##
+##                                                                            ##
+################################################################################
+
+%!shared U, C
+%! U = dictionary ();
+%! C = configureDictionary ('string', 'double');
+
+%!assert_equal (class (dictionary ()), 'dictionary')
+%!assert_equal (isConfigured (dictionary ()), false)
+%!error<dictionary: each key must be followed by a value.> dictionary (1)
+%!error<dictionary: each key must be followed by a value.> dictionary (1, 2, 3)
+
+%!test
+%! [kt, vt] = types (U);
+%! assert_equal (class (kt), 'string');
+%! assert_equal (ismissing (kt), true);
+%! assert_equal (class (vt), 'string');
+%! assert_equal (ismissing (vt), true);
+%!test
+%! [kt, vt] = types (C);
+%! assert_equal (kt, string ('string'));
+%! assert_equal (vt, string ('double'));
+%!assert_equal (types (C), string ('string'))
+
+%!assert_equal (isConfigured (U), false)
+%!assert_equal (isConfigured (C), true)
+
+%!assert_equal (numEntries (U), 0)
+%!assert_equal (numEntries (C), 0)
+
+%!assert_equal (numel (U), 1)
+%!assert_equal (numel (C), 1)
+
+%!assert_equal (length (U), 1)
+%!assert_equal (length (C), 1)
+
+%!assert_equal (size (U), [1, 1])
+%!assert_equal (size (C), [1, 1])
+%!assert_equal (size (C, 1), 1)
+%!assert_equal (size (C, 2), 1)
+%!assert_equal (size (C, 3), 1)
+%!assert_equal (size (C, [1, 2]), [1, 1])
+%!assert_equal (size (C, 1, 2), [1, 1])
+%!test
+%! [r, c] = size (C);
+%! assert_equal ([r, c], [1, 1]);
+%!test
+%! [r, c, p] = size (C);
+%! assert_equal ([r, c, p], [1, 1, 1]);
+%!test
+%! [r, c] = size (C, [1, 2]);
+%! assert_equal ([r, c], [1, 1]);
+%!error<dictionary.size: DIM must be positive integers.> size (C, 0)
+%!error<dictionary.size: DIM must be positive integers.> size (C, 1.5)
+%!error<dictionary.size: DIM must be positive integers.> size (C, [])
+%!error<dictionary.size: DIM must be positive integers.> size (C, 'a')
+%!error<dictionary.size: DIM must be positive integers.> size (C, 1, 0)
+%!error<dictionary.size: each dimension must be a scalar.> size (C, 1, [1, 2])
+
+%!assert_equal (ndims (U), 2)
+%!assert_equal (ndims (C), 2)
+
+%!assert_equal (isempty (U), false)
+%!assert_equal (isempty (C), false)
+
+################################################################################
+##                         ** Concatenation **                                ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'horzcat'          'vertcat'          'cat'                                ##
+##                                                                            ##
+################################################################################
+
+%!shared C
+%! C = configureDictionary ('string', 'double');
+
+## The bracket forms raise core's own 'cat: dictionary/horzcat method failed'
+## wrapper, which is not ours to test, so call the methods directly.
+%!error<dictionary.horzcat: dictionaries cannot be concatenated.> horzcat (C, C)
+%!error<dictionary.horzcat: dictionaries cannot be concatenated.> horzcat (C, 1)
+%!error<dictionary.horzcat: dictionaries cannot be concatenated.> horzcat (1, C)
+%!error<dictionary.horzcat: dictionaries cannot be concatenated.> horzcat (C)
+
+%!error<dictionary.vertcat: dictionaries cannot be concatenated.> vertcat (C, C)
+%!error<dictionary.vertcat: dictionaries cannot be concatenated.> vertcat (C, 1)
+%!error<dictionary.vertcat: dictionaries cannot be concatenated.> vertcat (C)
+
+%!error<dictionary.cat: dictionaries cannot be concatenated.> cat (1, C, C)
+%!error<dictionary.cat: dictionaries cannot be concatenated.> cat (3, C)

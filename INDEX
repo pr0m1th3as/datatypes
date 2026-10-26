@@ -61,6 +61,10 @@ timeseries objects
  tsdata.qualmetadata
  tsdata.interpolation
  tsdata.event
+dictionary objects
+ dictionary
+ configureDictionary
+ isdictionary
 supplementary classes
  tabular
  missing
