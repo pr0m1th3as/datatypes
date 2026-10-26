@@ -1,74 +1,43 @@
-Summary of important user-visible changes for datatypes 1.5.0:
+Summary of important user-visible changes for datatypes 1.6.0:
 --------------------------------------------------------------
 
- This release adds the `timeseries` and `tscollection` classes, with
- `timeseries2timetable` to carry them onto a timetable, and aligns the
- conversion and joining of table variables with MATLAB.  It breaks code
- that relied on the old conversions; see below.
+ This release adds the `dictionary` class, a map of unique keys to values,
+ with `readdictionary` and `writedictionary` for JSON files, and lets
+ `datetime` detect dates in the language of its 'Locale'.
 
- ** New classes: `timeseries`, samples on a time vector with units, a start
-    date, quality codes and events; `tscollection`, several series sharing
-    one time vector; and their metadata classes `tsdata.timemetadata`,
-    `tsdata.datametadata`, `tsdata.qualmetadata`, `tsdata.interpolation` and
-    `tsdata.event`.
+ ** New class `dictionary`: keys of one type mapped to values of one type,
+    kept in the order they were added.  Every method of MATLAB's: `insert`,
+    `lookup`, `remove`, `entries`, `keys`, `values`, `isKey`, `numEntries`,
+    `types` and `isConfigured`, with indexing by `()` and `{}`, comparison
+    and hashing.  Keys may be numbers, text, dates, durations, categoricals,
+    structures, cell arrays, function handles, `missing` or dictionaries.
 
- ** `timeseries` has every method of MATLAB's but `plot`: selecting and
-    editing samples, dates, the six event queries, `resample` and
-    `synchronize`, nine statistics with quality, missing-data and time
-    weighting, the arithmetic operators sample by sample, `detrend`,
-    `filter` and `idealfilter`.
+ ** New functions `configureDictionary`, `isdictionary` and
+    `readdictionary`.  `readdictionary` reads a JSON file or web address
+    with MATLAB's options, and the `writedictionary` method writes one.
+    Both also read and write a dictionary of tables or timetables as an
+    OpenDocument spreadsheet, one sheet per key.  Remote stores and
+    archives are not supported.
 
- ** `tscollection` has every method of MATLAB's: adding, removing and
-    renaming members, editing samples, dates, `resample`, and concatenation
-    in time and across members.
+ ** `datetime` detects text under a 'Locale' as MATLAB does: the locale's
+    month names, its long forms (`1. Januar 2024`, `5 de marzo de 2024`),
+    dotted dates, and slashed dates in the locale's order, with a time or a
+    two-digit year.
 
- ** `timeseries2timetable` converts series, or the members of a collection,
-    into a timetable, with their units, continuity and events.
+ ** `str = disp (x)` returns the printed text for cell arrays and every
+    class of the package; for a cell array it used to fail.
 
- ** New functions `istimeseries`, `istscollection` and `strings`.
-    `table2array`, `table2cell` and `table2struct` take a timetable.
+ ** `table` and `timetable` refuse a `dictionary`, `timeseries` or
+    `tscollection` variable, which a cell variable holds instead.  A
+    `timeseries` variable used to be accepted and then misbehave.
 
- ** Table display shows integers exactly, both parts of complex numbers and
-    the row times of a nested timetable.  `standardizeMissing` takes
-    `duration` and `datetime` indicators.  Unknown Name-Value options are
-    reported in one wording across the package.
-
- ** The Time Zone Database is updated to release 2026e: Manitoba keeps
-    UTC-5 all year from November 2026.
-
- ** 33 bug fixes, the largest groups in set operations and joins on rows
-    with missing values, nested table variables, and table display.
+ ** Cell display shows function handles, which it showed as `{}`, and the
+    imaginary part of complex numbers.
 
  ** Deliberate deviations from MATLAB are documented in the docstrings of
-    the functions they affect.  The ones most likely to be met: `setabstime`
-    keeps each sample with the date it is given, where MATLAB sorts the
-    dates alone; time weighting gives true time-weighted medians, spreads
-    and extremes, where MATLAB's are right for `mean` and `sum` only;
-    `timeseries2timetable` keeps the events MATLAB drops; `tscollection`
-    member names are unique ignoring case and read exactly.
-
-
-Backwards incompatible improvements:
-
- ** `table2cell` and `table2struct` keep each variable's type, where
-    `categorical`, `datetime`, `duration`, `calendarDuration` and `string`
-    variables gave text.
-
- ** `table2array`, `{}` indexing and `.Variables` join the variables as
-    MATLAB does, and return a cell array where they cannot form one array,
-    where they raised.
-
- ** `{}` assignment copies a one-row value down the rows only when it
-    creates a single new variable, as MATLAB does.
-
- ** Concatenating a `categorical` array takes only text, missing values and
-    empty arrays beside it; `[c; 1]` added a category `'1'`.
-
- ** `sortrows`, `topkrows` and `issortedrows` refuse a `calendarDuration`
-    sort key, as MATLAB does.
-
- ** `ismissing`, `rmmissing` and `anymissing` never count a nested table
-    variable as missing, as MATLAB does.
-
- ** `length` on a table raises an error pointing to `height`, `width` and
-    `size`, as on a timetable.
+    the functions they affect.  The ones most likely to be met: a
+    `dictionary` takes a table of any size as one value and refuses a key
+    type it cannot hash; it reads dates given as text in the time zone of
+    its keys; `readdictionary` and `writedictionary` refuse complex values,
+    on which MATLAB crashes; `datetime` reads a two-digit year in detected
+    text against the pivot year.
