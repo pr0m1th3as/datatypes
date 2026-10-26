@@ -197,3 +197,72 @@ endfunction
 %! configureDictionary ('timetable', 'double')
 %!error<configureDictionary: unsupported key type 'timeseries'.> ...
 %! configureDictionary ('timeseries', 'double')
+
+## Measured on R2024a
+%!error<configureDictionary: unknown type 'foo'.> ...
+%! configureDictionary ('foo', 'double');
+%!error<configureDictionary: unknown type 'foo'.> ...
+%! configureDictionary ('double', 'foo');
+%!error<configureDictionary: KEYTYPE must be a character vector or a string scalar.> ...
+%! configureDictionary (1, 'double');
+%!test
+%! r = configureDictionary ('char', 'char');
+%! [kt1, vt2] = types (r);
+%! assert_equal ([kt1, vt2], string ({'string', 'string'}));
+%! assert_equal (numEntries (r), 0);
+%!test
+%! r = configureDictionary ('cell', 'cell');
+%! [kt1, vt2] = types (r);
+%! assert_equal ([kt1, vt2], string ({'cell', 'cell'}));
+%! assert_equal (numEntries (r), 0);
+%!test
+%! r = configureDictionary ('struct', 'double');
+%! [kt1, vt2] = types (r);
+%! assert_equal ([kt1, vt2], string ({'struct', 'double'}));
+%! assert_equal (numEntries (r), 0);
+%!test
+%! r = configureDictionary ('function_handle', 'double');
+%! [kt1, vt2] = types (r);
+%! assert_equal ([kt1, vt2], string ({'function_handle', 'double'}));
+%! assert_equal (numEntries (r), 0);
+
+## D2: the key type must be hashable, where MATLAB refuses only entries.
+%!error<configureDictionary: unsupported key type 'table'.> ...
+%! configureDictionary ('table', 'double');
+%!test
+%! r = configureDictionary ('double', 'table');
+%! [kt1, vt2] = types (r);
+%! assert_equal ([kt1, vt2], string ({'double', 'table'}));
+%! assert_equal (numEntries (r), 0);
+%!test
+%! r = configureDictionary ('missing', 'missing');
+%! [kt1, vt2] = types (r);
+%! assert_equal ([kt1, vt2], string ({'missing', 'missing'}));
+%! assert_equal (numEntries (r), 0);
+%!test
+%! r = configureDictionary ('dictionary', 'dictionary');
+%! [kt1, vt2] = types (r);
+%! assert_equal ([kt1, vt2], string ({'dictionary', 'dictionary'}));
+%! assert_equal (numEntries (r), 0);
+%!test
+%! r = configureDictionary (string ('double'), string ('double'));
+%! [kt1, vt2] = types (r);
+%! assert_equal ([kt1, vt2], string ({'double', 'double'}));
+%! assert_equal (numEntries (r), 0);
+%!error<configureDictionary: unknown type 'Double'.> ...
+%! configureDictionary ('Double', 'double');
+%!test
+%! r = configureDictionary ('double', 'struct');
+%! [kt1, vt2] = types (r);
+%! assert_equal ([kt1, vt2], string ({'double', 'struct'}));
+%! assert_equal (numEntries (r), 0);
+%!test
+%! r = configureDictionary ('datetime', 'duration');
+%! [kt1, vt2] = types (r);
+%! assert_equal ([kt1, vt2], string ({'datetime', 'duration'}));
+%! assert_equal (numEntries (r), 0);
+%!test
+%! r = configureDictionary ('categorical', 'calendarDuration');
+%! [kt1, vt2] = types (r);
+%! assert_equal ([kt1, vt2], string ({'categorical', 'calendarDuration'}));
+%! assert_equal (numEntries (r), 0);
