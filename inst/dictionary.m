@@ -136,9 +136,17 @@ classdef dictionary
     ## @code{string} (as by @code{str2double}), @code{missing} (@code{NaN})
     ## @item @qcode{'logical'} @tab numbers other than @code{NaN}
     ## @item @qcode{'datetime'} @tab dates as text, read in the time zone of
-    ## the dictionary; a @code{datetime} is moved to that zone
+    ## the dictionary; a @code{datetime} with a time zone is moved to that of
+    ## the dictionary
     ## @item @qcode{'categorical'} @tab @code{string}
     ## @end multitable
+    ##
+    ## A date with a time zone and one without are different keys, so that
+    ## looking up one as the other finds nothing, and @code{keys} cannot join
+    ## a dictionary holding both.  Dates given as text to a dictionary whose
+    ## keys have a time zone are read in that zone, so that they find its
+    ## keys; MATLAB reads them without one, a key that no date with a zone
+    ## matches.
     ##
     ## @seealso{configureDictionary, dictionary.isConfigured, dictionary.keys,
     ## keyHash, keyMatch}
@@ -645,6 +653,119 @@ classdef dictionary
   endmethods
 
 ################################################################################
+##                         ** Compare and hash **                             ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'isequal'          'isequaln'         'keyHash'                            ##
+##                                                                            ##
+################################################################################
+
+  methods (Access = public)
+
+    ## -*- texinfo -*-
+    ## @deftypefn {dictionary} {@var{tf} =} isequal (@var{d1}, @var{d2}, @dots{})
+    ##
+    ## True when dictionaries hold the same entries.
+    ##
+    ## @code{@var{tf} = isequal (@var{d1}, @var{d2}, @dots{})} returns
+    ## @code{true} when every argument is a dictionary with the same keys, in
+    ## any order, each mapped to values that @code{isequal} finds equal, so
+    ## that @code{NaN} values are unequal and values of different classes may
+    ## be equal.  Keys of different classes are different keys.  Two
+    ## unconfigured dictionaries are equal, an unconfigured and a configured
+    ## one are not, and two configured dictionaries with no entries are equal
+    ## whatever their types, as in MATLAB.
+    ##
+    ## @seealso{dictionary.isequaln, keyMatch}
+    ## @end deftypefn
+    function tf = isequal (varargin)
+      if (nargin < 2)
+        error ("dictionary.isequal: invalid number of input arguments.");
+      endif
+      tf = false;
+      for i = 2:nargin
+        if (! (isa (varargin{1}, 'dictionary')
+               && isa (varargin{i}, 'dictionary')
+               && sameEntries (varargin{1}, varargin{i}, false)))
+          return;
+        endif
+      endfor
+      tf = true;
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {dictionary} {@var{tf} =} isequaln (@var{d1}, @var{d2}, @dots{})
+    ##
+    ## True when dictionaries hold the same entries, @code{NaN} values equal.
+    ##
+    ## @code{@var{tf} = isequaln (@var{d1}, @var{d2}, @dots{})} is
+    ## @code{isequal} with values compared by @code{isequaln}, so that
+    ## @code{NaN} and other missing values are equal to themselves.
+    ##
+    ## @seealso{dictionary.isequal, keyMatch}
+    ## @end deftypefn
+    function tf = isequaln (varargin)
+      if (nargin < 2)
+        error ("dictionary.isequaln: invalid number of input arguments.");
+      endif
+      tf = false;
+      for i = 2:nargin
+        if (! (isa (varargin{1}, 'dictionary')
+               && isa (varargin{i}, 'dictionary')
+               && sameEntries (varargin{1}, varargin{i}, true)))
+          return;
+        endif
+      endfor
+      tf = true;
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {dictionary} {@var{key} =} keyHash (@var{d})
+    ## @deftypefnx {dictionary} {@var{key} =} keyHash (@var{d}, @var{base})
+    ##
+    ## Generate a hash code for a dictionary.
+    ##
+    ## @code{@var{key} = keyHash (@var{d})} returns a 64-bit hash code of the
+    ## dictionary @var{d} as a @qcode{uint64} scalar, from its key and value
+    ## types and its entries in the order they were added, so that a
+    ## dictionary can be a key of another.  Unlike @code{isequal}, the code,
+    ## and with it @code{keyMatch}, depends on the order of the entries and on
+    ## the types, as in MATLAB.  A dictionary whose keys or values
+    ## @code{keyHash} cannot hash, such as tables, is refused.
+    ##
+    ## @code{@var{key} = keyHash (@var{d}, @var{base})} also generates a
+    ## 64-bit hash code using @var{base} as the offset basis for the FNV-1a
+    ## hash algorithm.  @var{base} must be a @qcode{uint64} integer type
+    ## scalar.  Use this syntax to cascade @code{keyHash} on multiple objects
+    ## for which a single hash code is required.
+    ##
+    ## Note that unlike MATLAB, this implementation does not use any random
+    ## seed.  As a result, @code{keyHash} will always generate the exact same
+    ## hash key for any particular input across different workers and Octave
+    ## sessions.
+    ##
+    ## @seealso{keyHash, keyMatch, dictionary.isequal}
+    ## @end deftypefn
+    function key = keyHash (this, base = [])
+      if (! isempty (base))
+        if (! (isscalar (base) && isa (base, 'uint64')))
+          error ("dictionary.keyHash: BASE must be a UINT64 scalar.");
+        endif
+        key = __ckeyHash__ ('1x1dictionary', base);
+      else
+        key = __ckeyHash__ ('1x1dictionary');
+      endif
+      key = __ckeyHash__ ({this.keyType_, this.valueType_}, key);
+      for i = 1:numel (this.keys_)
+        key = keyHash (this.keys_{i}, key);
+        key = keyHash (this.values_{i}, key);
+      endfor
+    endfunction
+
+  endmethods
+
+################################################################################
 ##                    ** Indexing and concatenation **                        ##
 ################################################################################
 ##                             Available Methods                              ##
@@ -802,6 +923,35 @@ classdef dictionary
   endmethods
 
   methods (Access = private)
+
+    ## True when OTHER holds the keys of this dictionary, in any order, with
+    ## values equal by isequal or, for NANEQUAL, by isequaln.
+    function tf = sameEntries (this, other, nanEqual)
+      if (isempty (this.keyType_) || isempty (other.keyType_))
+        tf = isempty (this.keyType_) && isempty (other.keyType_);
+        return;
+      endif
+      tf = false;
+      if (numel (this.keys_) != numel (other.keys_))
+        return;
+      endif
+      for i = 1:numel (this.keys_)
+        k = this.keys_{i};
+        e = locate (other.hashes_, other.order_, other.keys_, k, keyHash (k));
+        if (e == 0)
+          return;
+        endif
+        if (nanEqual)
+          same = isequaln (this.values_{i}, other.values_{e});
+        else
+          same = isequal (this.values_{i}, other.values_{e});
+        endif
+        if (! same)
+          return;
+        endif
+      endfor
+      tf = true;
+    endfunction
 
     ## The values of the keys in SUBS, the subscripts of '()' or, for BRACE,
     ## of '{}': one array of the shape of the keys, or the contents of the
@@ -1142,7 +1292,11 @@ function [x, errmsg] = convert (x, type, empty, what)
       endif
     case 'datetime'
       if (ischar (x) || iscellstr (x) || isa (x, 'string'))
-        x = inZone (datetime (x), empty);
+        ## Text is read in the time zone of the dictionary, if any
+        x = datetime (x);
+        if (isa (empty, 'datetime') && ! isempty (empty.TimeZone))
+          x.TimeZone = empty.TimeZone;
+        endif
         return;
       endif
     case 'categorical'
@@ -1155,10 +1309,11 @@ function [x, errmsg] = convert (x, type, empty, what)
                     class (x), what, type, what);
 endfunction
 
-## The datetime X in the time zone of the datetime EMPTY, when both have one;
-## a date without a zone is read in that of EMPTY.
+## The datetime X moved to the time zone of the datetime EMPTY, when both
+## have one; a date without a zone is a different key from any with one.
 function x = inZone (x, empty)
-  if (isa (empty, 'datetime') && ! isempty (empty.TimeZone))
+  if (isa (empty, 'datetime') && ! isempty (empty.TimeZone)
+      && ! isempty (x.TimeZone))
     x.TimeZone = empty.TimeZone;
   endif
 endfunction
@@ -1204,8 +1359,8 @@ endfunction
 function names = publicMethods ()
   names = {'types', 'isConfigured', 'numEntries', 'numel', 'length', ...
            'size', 'ndims', 'isempty', 'keys', 'values', 'isKey', ...
-           'insert', 'lookup', 'remove', 'entries', 'horzcat', 'vertcat', ...
-           'cat'};
+           'insert', 'lookup', 'remove', 'entries', 'isequal', 'isequaln', ...
+           'keyHash', 'horzcat', 'vertcat', 'cat'};
 endfunction
 
 ## The one of OPTIONS that FORMAT names, in any case or by its first letters

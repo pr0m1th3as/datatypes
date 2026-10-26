@@ -515,6 +515,71 @@
 %!                      string ('b'), struct ('y', 2)))
 
 ################################################################################
+##                         ** Compare and hash **                             ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'isequal'          'isequaln'         'keyHash'                            ##
+##                                                                            ##
+################################################################################
+
+%!shared D1, D2, D4, D5, D6
+%! D1 = dictionary (string ({'a'; 'b'}), [1; 2]);
+%! D2 = dictionary (string ({'b'; 'a'}), [2; 1]);
+%! D4 = dictionary (string ({'a'; 'b'}), [1; 2]);
+%! D5 = dictionary (string ({'a'; 'b'}), [1; 3]);
+%! D6 = dictionary (string ({'a'; 'b'}), int8 ([1; 2]));
+
+%!assert_equal (isequal (D1, D2), true)
+%!assert_equal (isequal (D1, D4, D2), true)
+%!assert_equal (isequal (D1, D5), false)
+%!assert_equal (isequal (D1, D6), true)
+%!assert_equal (isequal (D1, 5), false)
+%!assert_equal (isequal (5, D1), false)
+%!assert_equal (isequal (dictionary (string ('a'), 1), ...
+%!                       dictionary (1, 1)), false)
+%!assert_equal (isequal (dictionary (string ('a'), NaN), ...
+%!                       dictionary (string ('a'), NaN)), false)
+%!assert_equal (isequal (dictionary (string ({'a'; 'b'}), {1; 2}), ...
+%!                       dictionary (string ({'b'; 'a'}), {2; 1})), true)
+%!assert_equal (isequal (dictionary (), dictionary ()), true)
+%!assert_equal (isequal (dictionary (), ...
+%!                       configureDictionary ('string', 'double')), false)
+%!assert_equal (isequal (configureDictionary ('string', 'double'), ...
+%!                       configureDictionary ('string', 'int8')), true)
+%!assert_equal (isequal (dictionary (string (cell (0, 0)), []), ...
+%!                       configureDictionary ('string', 'double')), true)
+%!error<dictionary.isequal: invalid number of input arguments.> isequal (D1)
+
+%!assert_equal (isequaln (dictionary (string ('a'), NaN), ...
+%!                        dictionary (string ('a'), NaN)), true)
+%!assert_equal (isequaln (D1, D2), true)
+%!assert_equal (isequaln (D1, D4, D5), false)
+%!error<dictionary.isequaln: invalid number of input arguments.> isequaln (D1)
+
+%!assert_equal (class (keyHash (D1)), 'uint64')
+%!assert_equal (keyHash (D1) == keyHash (D4), true)
+%!assert_equal (keyHash (D1) == keyHash (D2), false)
+%!assert_equal (keyHash (D1) == keyHash (D5), false)
+%!assert_equal (keyHash (D1) == keyHash (D6), false)
+%!assert_equal (keyHash (D1, uint64 (5)) == keyHash (D1), false)
+%!assert_equal (keyMatch (D1, D4), true)
+%!assert_equal (keyMatch (D1, D2), false)
+%!assert_equal (keyMatch (D1, D6), false)
+%!assert_equal (keyMatch (dictionary (string ('a'), NaN), ...
+%!                        dictionary (string ('a'), NaN)), true)
+%!assert_equal (keyMatch (dictionary (), dictionary ()), true)
+%!assert_equal (keyMatch (dictionary (), ...
+%!                        configureDictionary ('string', 'double')), false)
+%!assert_equal (keyMatch (configureDictionary ('string', 'double'), ...
+%!                        configureDictionary ('string', 'int8')), false)
+%!assert_equal (class (keyHash (dictionary (string ('f'), @sin))), 'uint64')
+%!assert_equal (D1.keyHash () == keyHash (D1), true)
+%!error<dictionary.keyHash: BASE must be a UINT64 scalar.> keyHash (D1, 5)
+%!error<keyHash: unsupported input type 'table'.> ...
+%! keyHash (dictionary (string ('t'), table (1)))
+
+################################################################################
 ##                    ** Indexing and concatenation **                        ##
 ################################################################################
 ##                             Available Methods                              ##
@@ -558,6 +623,70 @@
 %! assert_equal (kt, string ('string'));
 %! assert_equal (vt, string ('double'));
 %!assert_equal (keys (D'), string ({'a'; 'b'; 'c'}))
+## Key types
+%!test
+%! d = dictionary (missing, 1);
+%! assert_equal (d(missing), 1);
+%! assert_equal (class (keys (d)), 'missing');
+%!test
+%! d = dictionary ([missing, missing], [1, 2]);
+%! assert_equal (numEntries (d), 1);
+%! assert_equal (values (d), 2);
+%!test
+%! d = configureDictionary ('missing', 'double');
+%! d(missing) = 4;
+%! assert_equal (values (d), 4);
+%!test
+%! d = dictionary (dictionary (1, 2), 5);
+%! assert_equal (d(dictionary (1, 2)), 5);
+%! d(dictionary (1, 2)) = 6;
+%! assert_equal (numEntries (d), 1);
+%! assert_equal (values (d), 6);
+%!test
+%! d = dictionary (dictionary (1, 2), 5, dictionary (3, 4), 6);
+%! assert_equal (size (keys (d, 'cell')), [2, 1]);
+%!test
+%! ## Dates with and without a time zone are different keys
+%! z = dictionary (datetime (2024, 1, 1, 'TimeZone', 'UTC'), 1);
+%! assert_equal (isKey (z, datetime (2024, 1, 1)), false);
+%! z(datetime (2024, 1, 2)) = 2;
+%! assert_equal (numEntries (z), 2);
+%!test
+%! u = dictionary (datetime (2024, 1, 1), 1);
+%! assert_equal (isKey (u, datetime (2024, 1, 1, 'TimeZone', 'UTC')), false);
+%!test
+%! ## Text is read in the time zone of the keys, where MATLAB reads it in none
+%! z = dictionary (datetime (2024, 1, 1, 'TimeZone', 'UTC'), 1);
+%! assert_equal (z(string ('2024-01-01')), 1);
+%! z(string ('2024-01-02')) = 2;
+%! k = keys (z);
+%! assert_equal (k.TimeZone, 'UTC');
+%! assert_equal (numEntries (z), 2);
+%!test
+%! z = dictionary (datetime (2024, 1, 1, 'TimeZone', 'UTC'), 1);
+%! ny = datetime (2023, 12, 31, 19, 0, 0, 'TimeZone', 'America/New_York');
+%! z(ny) = 5;
+%! assert_equal (numEntries (z), 1);
+%! assert_equal (values (z), 5);
+%!test
+%! d = dictionary (datetime (2024, 1, 1), 1, ...
+%!                 datetime (2024, 1, 1, 'Format', 'yyyy-MM-dd'), 2);
+%! assert_equal (values (d), 2);
+%!assert_equal (dictionary (single (1), 1)(int8 (1)), 1)
+%!test
+%! d = dictionary (int8 (1), 1);
+%! d(NaN) = 2;
+%! assert_equal (keys (d), int8 ([1; 0]));
+%!test
+%! d = dictionary (seconds (1), 1);
+%! d(seconds (NaN)) = 2;
+%! d(seconds (NaN)) = 3;
+%! assert_equal (numEntries (d), 2);
+%!test
+%! d = dictionary (calmonths (1), 1);
+%! d(calmonths (NaN)) = 2;
+%! d(calmonths (NaN)) = 3;
+%! assert_equal (numEntries (d), 2);
 %!error<dictionary.subsref: key not found.> D(string ('z'))
 %!error<dictionary.subsref: key not found.> D(true)
 %!error<dictionary.subsref: element 2 of the keys not found.> ...
@@ -574,6 +703,15 @@
 %! D{string('a')}
 %!error<dictionary.subsref: key not found.> CV{string('z')}
 %!error<dictionary.subsref: no method named 'foo'.> D.foo
+%!error<dictionary.subsref: unable to use 'double' as key of a dictionary of 'missing' keys.> ...
+%! d = dictionary (missing, 1); d(NaN)
+%!error<dictionary.subsref: unable to use 'double' as key of a dictionary of 'logical' keys.> ...
+%! d = dictionary (true, 1); d(NaN)
+%!error<dictionary.subsref: key not found.> ...
+%! d = dictionary (dictionary (1, 2), 5); d(dictionary (1, 3))
+%!error<dictionary.keys: cannot join keys of type 'datetime'; use the 'cell' format.> ...
+%! z = dictionary (datetime (2024, 1, 1, 'TimeZone', 'UTC'), 1);
+%! z(datetime (2024, 1, 2)) = 2; keys (z)
 
 %!test
 %! d = D;

@@ -164,13 +164,24 @@
 ################################################################################
 ##                             Available Methods                              ##
 ##                                                                            ##
-## 'size'                                                                     ##
+## 'size'             'keyHash'                                               ##
 ##                                                                            ##
 ################################################################################
 
 ## size: asking for more outputs than the array has dimensions is refused
 %!error<missing.size: nargout does not match the number of requested dimensions.> ...
 %! [r, c, p] = size (repmat (missing, 2, 3));
+
+%!assert_equal (class (keyHash (missing)), 'uint64')
+%!assert_equal (keyHash (missing) == keyHash (missing), true)
+%!assert_equal (keyHash (missing) == keyHash ([missing, missing]), false)
+%!assert_equal (keyHash (missing) == keyHash (NaN), false)
+%!assert_equal (keyHash (missing) == keyHash (string (missing)), false)
+%!assert_equal (keyHash (missing, uint64 (5)) == keyHash (missing), false)
+%!assert_equal (keyMatch (missing, missing), true)
+%!assert_equal (keyMatch (missing, NaN), false)
+%!assert_equal (keyMatch (missing, string (missing)), false)
+%!error<missing.keyHash: BASE must be a UINT64 scalar.> keyHash (missing, 5)
 
 ################################################################################
 ##                        ** Relational Operations **                         ##

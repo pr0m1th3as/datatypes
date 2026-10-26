@@ -154,7 +154,7 @@ classdef missing
 ################################################################################
 ##                             Available Methods                              ##
 ##                                                                            ##
-## 'size'             'ndims'            'numel'                              ##
+## 'size'             'ndims'            'numel'            'keyHash'         ##
 ##                                                                            ##
 ################################################################################
 
@@ -224,6 +224,45 @@ classdef missing
     ## @end deftypefn
     function out = numel (this)
       out = numel (this.data);
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {missing} {@var{key} =} keyHash (@var{M})
+    ## @deftypefnx {missing} {@var{key} =} keyHash (@var{M}, @var{base})
+    ##
+    ## Generate a hash code for a missing array.
+    ##
+    ## @code{@var{key} = keyHash (@var{M})} returns a 64-bit hash code of the
+    ## missing array @var{M} as a @qcode{uint64} scalar.  Every element of a
+    ## missing array is missing, so the code depends on its size alone: two
+    ## missing arrays of the same size are the same key, and @code{keyMatch}
+    ## reports them so.  A missing array is a different key from a missing
+    ## value of another type, such as @code{NaN} or a missing string.
+    ##
+    ## @code{@var{key} = keyHash (@var{M}, @var{base})} also generates a
+    ## 64-bit hash code using @var{base} as the offset basis for the FNV-1a
+    ## hash algorithm.  @var{base} must be a @qcode{uint64} integer type
+    ## scalar.  Use this syntax to cascade @code{keyHash} on multiple objects
+    ## for which a single hash code is required.
+    ##
+    ## Note that unlike MATLAB, this implementation does not use any random
+    ## seed.  As a result, @code{keyHash} will always generate the exact same
+    ## hash key for any particular input across different workers and Octave
+    ## sessions.
+    ##
+    ## @seealso{keyHash, keyMatch, dictionary}
+    ## @end deftypefn
+    function key = keyHash (this, base = [])
+      size_str = sprintf ('%dx', size (this.data))(1:end-1);
+      init_str = [size_str class(this)];
+      if (! isempty (base))
+        if (! (isscalar (base) && isa (base, 'uint64')))
+          error ("missing.keyHash: BASE must be a UINT64 scalar.");
+        endif
+        key = __ckeyHash__ (init_str, base);
+      else
+        key = __ckeyHash__ (init_str);
+      endif
     endfunction
 
   endmethods
