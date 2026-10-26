@@ -528,7 +528,12 @@ classdef (Abstract) tabular
     ## class that heads its row label column, so will a row.  That is what
     ## leaves a table with no variables printing nothing at all while a
     ## timetable with none still shows the times it labels its rows by.
-    function disp (this)
+    function str = disp (this)
+      ## With an output, the text it would print, as Octave's disp gives
+      if (nargout > 0)
+        str = evalc ('disp (this)');
+        return;
+      endif
       if (isempty (this))
         fprintf ("  %dx%d empty %s\n\n", size (this), class (this));
       else

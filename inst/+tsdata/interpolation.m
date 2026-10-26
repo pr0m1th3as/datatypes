@@ -282,7 +282,12 @@ classdef interpolation
       disp (this);
     endfunction
 
-    function disp (this)
+    function str = disp (this)
+      ## With an output, the text it would print, as Octave's disp gives
+      if (nargout > 0)
+        str = evalc ('disp (this)');
+        return;
+      endif
       if (isempty (this.fh))
         fhText = '[]';
       else

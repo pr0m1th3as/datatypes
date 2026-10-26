@@ -248,7 +248,12 @@ classdef event
       disp (this);
     endfunction
 
-    function disp (this)
+    function str = disp (this)
+      ## With an output, the text it would print, as Octave's disp gives
+      if (nargout > 0)
+        str = evalc ('disp (this)');
+        return;
+      endif
       if (! isscalar (this))
         fprintf ("  %s tsdata.event array\n\n", sizestr (this));
         return;

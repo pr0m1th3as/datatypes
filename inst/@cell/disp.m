@@ -16,15 +16,23 @@
 ## this program; if not, see <http://www.gnu.org/licenses/>.
 
 ## -*- texinfo -*-
-## @deftypefn {cell} {} disp (@var{C})
+## @deftypefn  {cell} {} disp (@var{C})
+## @deftypefnx {cell} {@var{str} =} disp (@var{C})
 ##
 ## Customized display of cell arrays.
 ##
 ## This function overloads Octave core @code{disp} with respect to cell arrays
 ## and displays their contents in MATLAB like manner.
 ##
+## @code{@var{str} = disp (@var{C})} returns the text instead of printing it,
+## as Octave core @code{disp} does.
+##
 ## @end deftypefn
-function disp (C)
+function str = disp (C)
+  if (nargout > 0)
+    str = evalc ('disp (C)');
+    return;
+  endif
   __disp__ (C);
 endfunction
 
@@ -97,3 +105,10 @@ endfunction
 %! C = {complex(1, -0)};
 %! want = "  1x1 cell array\n\n    {[1+0i]}    \n\n";
 %! assert_equal (evalc ('disp (C)'), want);
+%!test
+%! C = {1, 'ab'};
+%! assert_equal (disp (C), "  1x2 cell array\n\n    {[1]}    {'ab'}    \n\n");
+%!test
+%! C = {1, 'ab'};
+%! assert_equal (disp (C), evalc ('disp (C)'));
+%!assert_equal (disp (cell (0, 0)), "\n  0x0 empty cell array\n\n")

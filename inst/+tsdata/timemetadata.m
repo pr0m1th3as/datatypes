@@ -493,7 +493,12 @@ classdef timemetadata
       fprintf ("      StartDate: '%s'\n\n", this.StartDate);
     endfunction
 
-    function disp (this)
+    function str = disp (this)
+      ## With an output, the text it would print, as Octave's disp gives
+      if (nargout > 0)
+        str = evalc ('disp (this)');
+        return;
+      endif
       fprintf ("\n  timemetadata with properties:\n\n");
       names = {'Units', 'UserData', 'Format', 'StartDate', 'Length', ...
                'End', 'Increment', 'Start'};

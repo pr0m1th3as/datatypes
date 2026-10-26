@@ -107,7 +107,16 @@ classdef tscollection
       disp (this, true);
     endfunction
 
-    function disp (this, summary)
+    function str = disp (this, summary)
+      ## With an output, the text it would print, as Octave's disp gives
+      if (nargout > 0)
+        if (nargin > 1)
+          str = evalc ('disp (this, summary)');
+        else
+          str = evalc ('disp (this)');
+        endif
+        return;
+      endif
       if (nargin > 1 && summary)
         fprintf ("\nTime Series Collection Object: %s\n\n", this.name_);
         if (isempty (this.time_))

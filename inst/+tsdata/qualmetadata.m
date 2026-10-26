@@ -189,7 +189,12 @@ classdef qualmetadata
       disp (this);
     endfunction
 
-    function disp (this)
+    function str = disp (this)
+      ## With an output, the text it would print, as Octave's disp gives
+      if (nargout > 0)
+        str = evalc ('disp (this)');
+        return;
+      endif
       fprintf ("\n  qualmetadata with properties:\n\n");
       names = {'Code', 'Description', 'UserData'};
       for i = 1:numel (names)
