@@ -42,8 +42,15 @@ classdef dictionary
     ## The key and value types, '' while unconfigured
     keyType_ = ''
     valueType_ = ''
-    ## The hash code of every key, one per entry
+    ## One key and one value per entry, in insertion order, and an empty
+    ## column of each type, which keeps its time zone or categories
+    keys_ = cell (0, 1)
+    values_ = cell (0, 1)
+    keyEmpty_ = []
+    valueEmpty_ = []
+    ## The hash codes of the keys, sorted, and the entry of each
     hashes_ = zeros (0, 1, 'uint64')
+    order_ = zeros (0, 1)
   endproperties
 
 ################################################################################
@@ -60,14 +67,51 @@ classdef dictionary
   methods (Access = public)
 
     ## -*- texinfo -*-
-    ## @deftypefn {dictionary} {@var{d} =} dictionary ()
+    ## @deftypefn  {dictionary} {@var{d} =} dictionary ()
+    ## @deftypefnx {dictionary} {@var{d} =} dictionary (@var{keys}, @var{values})
+    ## @deftypefnx {dictionary} {@var{d} =} dictionary (@var{k1}, @var{v1}, @dots{}, @var{kN}, @var{vN})
     ##
     ## Create a @code{dictionary} object.
     ##
     ## @code{@var{d} = dictionary ()} returns an unconfigured dictionary, with
     ## no entries and no key and value types.
     ##
-    ## @seealso{configureDictionary, dictionary.isConfigured}
+    ## @code{@var{d} = dictionary (@var{keys}, @var{values})} returns a
+    ## dictionary mapping each element of the array @var{keys} to the element
+    ## of @var{values} in the same position, in that order.  The two must be
+    ## of the same size, or @var{values} a single value given to every key; an
+    ## empty @var{keys} gives a configured dictionary with no entries.  A key
+    ## repeated keeps its first position and takes its last value.  The class
+    ## of @var{keys} is the key type and that of @var{values} the value type,
+    ## except that a character array is a string array of its rows.
+    ##
+    ## The key type must be one that @code{keyHash} can hash: a built-in type
+    ## or a class with a @code{keyHash} method; a cell array is a key type of
+    ## its own, each cell one key.  An object of any class that is not an
+    ## array type is one value, a @code{table} or @code{timetable} of any size
+    ## included, where MATLAB accepts only a 1-by-1 one.
+    ##
+    ## @code{@var{d} = dictionary (@var{k1}, @var{v1}, @dots{}, @var{kN},
+    ## @var{vN})} adds each pair of keys and values in turn, the first pair
+    ## setting the key and value types and later pairs converted to them.
+    ## Keys and values are converted as follows; any other class is refused.
+    ##
+    ## @multitable @columnfractions 0.3 0.7
+    ## @headitem Type @tab Converted from
+    ## @item @qcode{'string'} @tab character arrays (by rows), cell arrays of
+    ## character vectors, numbers and logical values (as text),
+    ## @code{datetime}, @code{missing}
+    ## @item numeric @tab other numeric and logical values (rounded and
+    ## saturated for integer types), character arrays (their character codes),
+    ## @code{string} (as by @code{str2double}), @code{missing} (@code{NaN})
+    ## @item @qcode{'logical'} @tab numbers other than @code{NaN}
+    ## @item @qcode{'datetime'} @tab dates as text, read in the time zone of
+    ## the dictionary; a @code{datetime} is moved to that zone
+    ## @item @qcode{'categorical'} @tab @code{string}
+    ## @end multitable
+    ##
+    ## @seealso{configureDictionary, dictionary.isConfigured, dictionary.keys,
+    ## keyHash, keyMatch}
     ## @end deftypefn
     function this = dictionary (varargin)
       if (nargin == 0)
@@ -76,7 +120,12 @@ classdef dictionary
       if (mod (nargin, 2) != 0)
         error ("dictionary: each key must be followed by a value.");
       endif
-      error ("dictionary: entries are not implemented yet.");
+      for i = 1:2:nargin
+        [this, errmsg] = addEntries (this, varargin{i}, varargin{i+1});
+        if (! isempty (errmsg))
+          error ("dictionary: %s", errmsg);
+        endif
+      endfor
     endfunction
 
     ## -*- texinfo -*-
@@ -127,7 +176,7 @@ classdef dictionary
     ## @seealso{dictionary.numel}
     ## @end deftypefn
     function n = numEntries (this)
-      n = numel (this.hashes_);
+      n = numel (this.keys_);
     endfunction
 
     ## -*- texinfo -*-
@@ -228,6 +277,140 @@ classdef dictionary
   endmethods
 
 ################################################################################
+##                          ** Keys and values **                             ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'keys'             'values'           'isKey'                              ##
+##                                                                            ##
+################################################################################
+
+  methods (Access = public)
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {dictionary} {@var{k} =} keys (@var{d})
+    ## @deftypefnx {dictionary} {@var{k} =} keys (@var{d}, @var{format})
+    ##
+    ## Return the keys.
+    ##
+    ## @code{@var{k} = keys (@var{d})} returns the keys of @var{d} as a
+    ## column array of the key type, in the order they were added.  Keys of a
+    ## type that cannot be joined into one array, such as function handles,
+    ## are refused unless there is exactly one.
+    ##
+    ## @code{@var{k} = keys (@var{d}, @var{format})} returns them as above for
+    ## @var{format} @qcode{'uniform'}, the default, and as a column cell
+    ## array, each key in a cell of its own, for @qcode{'cell'}.
+    ##
+    ## @var{d} must be configured.
+    ##
+    ## @seealso{dictionary.values, dictionary.isKey, dictionary.numEntries}
+    ## @end deftypefn
+    function k = keys (this, format = 'uniform')
+      scope = 'dictionary.keys';
+      [format, errmsg] = formatName (format);
+      if (! isempty (errmsg))
+        error ("%s: %s", scope, errmsg);
+      endif
+      if (isempty (this.keyType_))
+        error ("%s: D is not configured.", scope);
+      endif
+      if (strcmp (format, 'cell'))
+        k = this.keys_;
+        return;
+      endif
+      [k, errmsg] = join (this.keys_, this.keyEmpty_, this.keyType_, 'keys');
+      if (! isempty (errmsg))
+        error ("%s: %s", scope, errmsg);
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {dictionary} {@var{v} =} values (@var{d})
+    ## @deftypefnx {dictionary} {@var{v} =} values (@var{d}, @var{format})
+    ##
+    ## Return the values.
+    ##
+    ## @code{@var{v} = values (@var{d})} returns the values of @var{d} as a
+    ## column array of the value type, in the order their keys were added.
+    ## Values that cannot be joined into one array, such as function handles,
+    ## dictionaries or structures with different fields, are refused unless
+    ## there is exactly one.  Tables are joined only when each has one row,
+    ## so that row @var{i} is the value of key @var{i}.
+    ##
+    ## @code{@var{v} = values (@var{d}, @var{format})} returns them as above
+    ## for @var{format} @qcode{'uniform'}, the default, and as a column cell
+    ## array, each value in a cell of its own, for @qcode{'cell'}.
+    ##
+    ## @var{d} must be configured.
+    ##
+    ## @seealso{dictionary.keys, dictionary.numEntries}
+    ## @end deftypefn
+    function v = values (this, format = 'uniform')
+      scope = 'dictionary.values';
+      [format, errmsg] = formatName (format);
+      if (! isempty (errmsg))
+        error ("%s: %s", scope, errmsg);
+      endif
+      if (isempty (this.keyType_))
+        error ("%s: D is not configured.", scope);
+      endif
+      if (strcmp (format, 'cell'))
+        v = this.values_;
+        return;
+      endif
+      [v, errmsg] = join (this.values_, this.valueEmpty_, this.valueType_, ...
+                          'values');
+      if (! isempty (errmsg))
+        error ("%s: %s", scope, errmsg);
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {dictionary} {@var{tf} =} isKey (@var{d}, @var{keys})
+    ##
+    ## True for each of the keys that is in the dictionary.
+    ##
+    ## @code{@var{tf} = isKey (@var{d}, @var{keys})} returns a logical array
+    ## of the size of @var{keys}, true where the element of @var{keys} is a key
+    ## of @var{d}.  The keys are first converted to the key type of @var{d}, as
+    ## @code{dictionary} converts them, so that @code{isKey (@var{d}, 1)} on a
+    ## dictionary of string keys asks for the key @qcode{"1"}; a class that
+    ## cannot be converted is refused.  @var{d} must be configured.
+    ##
+    ## @seealso{dictionary.keys, keyMatch}
+    ## @end deftypefn
+    function tf = isKey (this, keys)
+      scope = 'dictionary.isKey';
+      if (nargin != 2)
+        error ("%s: invalid number of input arguments.", scope);
+      endif
+      if (isempty (this.keyType_))
+        error ("%s: D is not configured.", scope);
+      endif
+      [keys, errmsg] = convert (keys, this.keyType_, this.keyEmpty_, 'key');
+      if (! isempty (errmsg))
+        error ("%s: %s", scope, errmsg);
+      endif
+      if (isArray (keys))
+        tf = false (size (keys));
+      else
+        tf = false;
+      endif
+      for i = 1:numel (tf)
+        k = element (keys, i);
+        try
+          h = keyHash (k);
+        catch err
+          error ("%s: %s", scope, regexprep (err.message, '^keyHash: ', ''));
+        end_try_catch
+        tf(i) = locate (this.hashes_, this.order_, this.keys_, k, h) > 0;
+      endfor
+    endfunction
+
+  endmethods
+
+################################################################################
 ##                         ** Concatenation **                                ##
 ################################################################################
 ##                             Available Methods                              ##
@@ -283,6 +466,84 @@ classdef dictionary
 
   endmethods
 
+  methods (Access = private)
+
+    ## Add the entries of the keys K and the values V, configuring the
+    ## dictionary from them when it has no types yet.
+    function [this, errmsg] = addEntries (this, K, V)
+      if (isempty (this.keyType_))
+        K = asStored (K);
+        V = asStored (V);
+        if (! dictionary.hashable (class (K)))
+          errmsg = sprintf ("unsupported key type '%s'.", class (K));
+          return;
+        endif
+        this.keyType_ = class (K);
+        this.valueType_ = class (V);
+      else
+        [K, errmsg] = convert (K, this.keyType_, this.keyEmpty_, 'key');
+        if (! isempty (errmsg))
+          return;
+        endif
+        [V, errmsg] = convert (V, this.valueType_, this.valueEmpty_, 'value');
+        if (! isempty (errmsg))
+          return;
+        endif
+      endif
+      ksz = arraySize (K);
+      vsz = arraySize (V);
+      if (! (isequal (ksz, vsz) || prod (vsz) == 1))
+        errmsg = "KEYS and VALUES must be the same size, or VALUES a scalar.";
+        return;
+      endif
+      errmsg = '';
+      ## A dictionary with no entries takes its empty columns, which carry a
+      ## time zone or categories, from the first entries added
+      if (isempty (this.keys_))
+        this.keyEmpty_ = emptyOf (K);
+        this.valueEmpty_ = emptyOf (V);
+      endif
+      ## Work on locals, assigned back once
+      keys = this.keys_;
+      vals = this.values_;
+      hashes = this.hashes_;
+      order = this.order_;
+      n = numel (keys);
+      keys(end+1:end+prod (ksz),1) = {[]};
+      vals(end+1:end+prod (ksz),1) = {[]};
+      for i = 1:prod (ksz)
+        k = element (K, i);
+        if (prod (vsz) == 1)
+          v = V;
+        else
+          v = element (V, i);
+        endif
+        try
+          h = keyHash (k);
+        catch err
+          errmsg = regexprep (err.message, '^keyHash: ', '');
+          return;
+        end_try_catch
+        e = locate (hashes, order, keys, k, h);
+        if (e > 0)
+          vals{e} = v;
+        else
+          n += 1;
+          keys{n} = k;
+          vals{n} = v;
+          p = lookup (hashes, h);
+          hashes = [hashes(1:p); h; hashes(p+1:end)];
+          order = [order(1:p); n; order(p+1:end)];
+        endif
+      endfor
+      this.keys_ = keys(1:n);
+      this.values_ = vals(1:n);
+      this.hashes_ = hashes;
+      this.order_ = order;
+    endfunction
+
+  endmethods
+
   methods (Static, Hidden)
 
     ## A configured dictionary with no entries, for configureDictionary,
@@ -291,11 +552,211 @@ classdef dictionary
       d = dictionary ();
       d.keyType_ = keyType;
       d.valueType_ = valueType;
+      d.keyEmpty_ = emptyColumn (keyType);
+      d.valueEmpty_ = emptyColumn (valueType);
+    endfunction
+
+    ## True for a key type keyHash can hash: a built-in type or a class with
+    ## a keyHash method.
+    function tf = hashable (type)
+      tf = (any (strcmp (type, {'double', 'single', 'int8', 'int16', ...
+                                'int32', 'int64', 'uint8', 'uint16', ...
+                                'uint32', 'uint64', 'logical', 'char', ...
+                                'cell', 'struct', 'function_handle'}))
+            || any (strcmp (methods (type), 'keyHash')));
     endfunction
 
   endmethods
 
 endclassdef
+
+## True for an array whose elements are keys or values one by one; any other
+## object is a single key or value.
+function tf = isArray (x)
+  tf = (isnumeric (x) || islogical (x) || ischar (x) || iscell (x)
+        || isstruct (x) || isa (x, 'string') || isa (x, 'datetime')
+        || isa (x, 'duration') || isa (x, 'calendarDuration')
+        || isa (x, 'categorical') || isa (x, 'missing'));
+endfunction
+
+function sz = arraySize (x)
+  if (isArray (x))
+    sz = size (x);
+  else
+    sz = [1, 1];
+  endif
+endfunction
+
+function x = element (x, i)
+  if (isArray (x))
+    x = x(i);
+  endif
+endfunction
+
+## Keys and values as stored: a character array as a string array of its
+## rows, a sparse matrix as a full one.
+function x = asStored (x)
+  if (ischar (x))
+    x = string (x);
+  elseif (issparse (x))
+    x = full (x);
+  endif
+endfunction
+
+## An empty column of the class of X, keeping its time zone or categories
+function e = emptyOf (x)
+  if (istabular (x))
+    e = x(zeros (0, 1), :);
+  elseif (isArray (x))
+    e = x(:);
+    e = e(zeros (0, 1));
+  else
+    e = emptyColumn (class (x));
+  endif
+endfunction
+
+## An empty column of the class TYPE, or [] for a class that has none
+function e = emptyColumn (type)
+  switch (type)
+    case {'double', 'single', 'int8', 'int16', 'int32', 'int64', ...
+          'uint8', 'uint16', 'uint32', 'uint64'}
+      e = zeros (0, 1, type);
+    case 'logical'
+      e = false (0, 1);
+    case 'cell'
+      e = cell (0, 1);
+    case 'struct'
+      e = repmat (struct (), 0, 1);
+    case {'function_handle', 'dictionary'}
+      e = [];
+    otherwise
+      try
+        e = feval (type);
+        if (istabular (e))
+          e = e(zeros (0, 1), :);
+        else
+          e = e(zeros (0, 1));
+        endif
+      catch
+        e = [];
+      end_try_catch
+  endswitch
+endfunction
+
+## X converted to the class TYPE, its empty column EMPTY, as a WHAT ('key' or
+## 'value') of a dictionary.
+function [x, errmsg] = convert (x, type, empty, what)
+  errmsg = '';
+  if (issparse (x))
+    x = full (x);
+  endif
+  if (strcmp (class (x), type))
+    if (isa (x, 'datetime'))
+      x = inZone (x, empty);
+    endif
+    return;
+  endif
+  switch (type)
+    case 'string'
+      if (ischar (x) || iscellstr (x) || isnumeric (x) || islogical (x)
+          || isa (x, 'datetime') || isa (x, 'missing'))
+        x = string (x);
+        return;
+      endif
+    case {'double', 'single', 'int8', 'int16', 'int32', 'int64', ...
+          'uint8', 'uint16', 'uint32', 'uint64'}
+      if (isnumeric (x) || islogical (x))
+        x = cast (x, type);
+        return;
+      elseif (ischar (x))
+        x = cast (double (x), type);
+        return;
+      elseif (isa (x, 'string'))
+        x = cast (reshape (str2double (cellstr (x)), size (x)), type);
+        return;
+      elseif (isa (x, 'missing'))
+        x = cast (NaN (size (x)), type);
+        return;
+      endif
+    case 'logical'
+      if (isnumeric (x) && ! any (isnan (x(:))))
+        x = logical (x);
+        return;
+      endif
+    case 'datetime'
+      if (ischar (x) || iscellstr (x) || isa (x, 'string'))
+        x = inZone (datetime (x), empty);
+        return;
+      endif
+    case 'categorical'
+      if (isa (x, 'string'))
+        x = categorical (x);
+        return;
+      endif
+  endswitch
+  errmsg = sprintf ("unable to use '%s' as %s of a dictionary of '%s' %ss.",
+                    class (x), what, type, what);
+endfunction
+
+## The datetime X in the time zone of the datetime EMPTY, when both have one;
+## a date without a zone is read in that of EMPTY.
+function x = inZone (x, empty)
+  if (isa (empty, 'datetime') && ! isempty (empty.TimeZone))
+    x.TimeZone = empty.TimeZone;
+  endif
+endfunction
+
+## The entry holding the key K, with hash code H, or 0
+function e = locate (hashes, order, keys, k, h)
+  e = 0;
+  p = lookup (hashes, h);
+  while (p > 0 && hashes(p) == h)
+    if (isequaln (keys{order(p)}, k))
+      e = order(p);
+      return;
+    endif
+    p -= 1;
+  endwhile
+endfunction
+
+## The ITEMS, one key or value per cell, joined into a column of the class
+## TYPE, its empty column EMPTY.
+function [x, errmsg] = join (items, empty, type, what)
+  x = [];
+  errmsg = '';
+  if (isempty (items) && strcmp (class (empty), type))
+    x = empty;
+    return;
+  endif
+  ## Tables of several rows would lose which rows belong to which key
+  if (! (istabular (empty) && any (cellfun ('height', items) != 1)))
+    try
+      x = vertcat (empty, items{:});
+      return;
+    catch
+    end_try_catch
+  endif
+  if (isscalar (items))
+    x = items{1};
+    return;
+  endif
+  errmsg = sprintf ("cannot join %s of type '%s'; use the 'cell' format.", ...
+                    what, type);
+endfunction
+
+## FORMAT, a format option of 'keys' and 'values', in lower case
+function [format, errmsg] = formatName (format)
+  errmsg = '';
+  if (! ((ischar (format) && rows (format) <= 1)
+         || (isa (format, 'string') && isscalar (format))))
+    errmsg = "FORMAT must be a character vector or a string scalar.";
+    return;
+  endif
+  format = lower (char (format));
+  if (! any (strcmp (format, {'uniform', 'cell'})))
+    errmsg = sprintf ("invalid format '%s'.", format);
+  endif
+endfunction
 
 ## 'pkg test' reads the BISTs from the file it is testing, so a class
 ## whose suite lives in inst/tests/ reads as carrying none.  This block

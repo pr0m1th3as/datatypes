@@ -52,8 +52,7 @@ function d = configureDictionary (keyType, valueType)
   if (! isempty (errmsg))
     error ("configureDictionary: %s", errmsg);
   endif
-  if (! (any (strcmp (keyType, builtinTypes ()))
-         || any (strcmp (methods (keyType), 'keyHash'))))
+  if (! dictionary.hashable (keyType))
     error ("configureDictionary: unsupported key type '%s'.", keyType);
   endif
   d = dictionary.configured (keyType, valueType);
