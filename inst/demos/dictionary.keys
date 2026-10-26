@@ -1,0 +1,7 @@
+%!demo
+%! ## `keys` returns the keys as a column of the key type, in the order they
+%! ## were added, or each in a cell of its own.
+%!
+%! d = dictionary (datetime (2024, 1, [15, 3, 9]), [120, 95, 101])
+%! keys (d)
+%! keys (d, 'cell')

@@ -24,7 +24,7 @@
 ##                                                                            ##
 ## 'dictionary'       'types'            'isConfigured'     'numEntries'      ##
 ## 'numel'            'length'           'size'             'ndims'           ##
-## 'isempty'                                                                  ##
+## 'isempty'          'dispstrings'                                           ##
 ##                                                                            ##
 ################################################################################
 
@@ -229,6 +229,20 @@
 
 %!assert_equal (isempty (U), false)
 %!assert_equal (isempty (C), false)
+
+%!assert_equal (dispstrings (U), {'dictionary with unset key and value types'})
+%!assert_equal (dispstrings (C), ...
+%!              {'dictionary (string ⟼ double) with no entries'})
+%!assert_equal (dispstrings (dictionary (1, 2)), ...
+%!              {'dictionary (double ⟼ double) with 1 entry'})
+%!assert_equal (dispstrings (dictionary ([1, 2], {3, 4})), ...
+%!              {'dictionary (double ⟼ cell) with 2 entries'})
+%!assert_equal (dispstrings (dictionary (string ('a'), dictionary (1, 2))), ...
+%!              {'dictionary (string ⟼ dictionary) with 1 entry'})
+%!assert_equal (U.dispstrings (), {'dictionary with unset key and value types'})
+
+%!assert_equal (properties (U), cell (0, 1))
+%!assert_equal (properties (C), cell (0, 1))
 
 ################################################################################
 ##                          ** Keys and values **                             ##

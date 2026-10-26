@@ -1,0 +1,7 @@
+%!demo
+%! ## `types` returns the key and value types as string scalars, missing
+%! ## strings while a dictionary is unconfigured.
+%!
+%! d = dictionary (categorical ({'low', 'high'}), [0.1, 0.9])
+%! [keyType, valueType] = types (d)
+%! [keyType, valueType] = types (dictionary ())

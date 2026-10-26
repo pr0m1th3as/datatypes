@@ -1,0 +1,10 @@
+%!demo
+%! ## `entries` returns the keys and values together: a table by default, a
+%! ## structure array, or a cell array of two columns.
+%!
+%! d = dictionary (categorical ({'red', 'green'}), [0.8, 0.3])
+%! entries (d)
+%! s = entries (d, 'struct');
+%! s(2).Key
+%! s(2).Value
+%! entries (d, 'cell')

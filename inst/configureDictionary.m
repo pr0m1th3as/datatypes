@@ -88,6 +88,25 @@ function [name, errmsg] = typeName (x, argname)
   endif
 endfunction
 
+%!demo
+%! ## `configureDictionary` creates a dictionary with key and value types and
+%! ## no entries.  Entries added later are converted to those types.
+%!
+%! d = configureDictionary ('string', 'double')
+%! d({'a', 'b'}) = int8 ([1, 2]);
+%! values (d)
+
+%!demo
+%! ## Without configured types the first entries decide them: here the
+%! ## values are `int8`.  Types named beforehand avoid that, and `'char'`
+%! ## names the `string` type, since text is stored as strings.
+%!
+%! u = dictionary ();
+%! u('a') = int8 (1);
+%! [keyType, valueType] = types (u)
+%! c = configureDictionary ('char', 'datetime');
+%! c('start') = '2024-03-01'
+
 %!test
 %! [kt, vt] = types (configureDictionary ('string', 'double'));
 %! assert_equal (kt, string ('string'));

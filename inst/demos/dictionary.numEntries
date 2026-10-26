@@ -1,0 +1,7 @@
+%!demo
+%! ## `numEntries` counts the entries, where `numel` is always 1.
+%!
+%! d = dictionary (hours ([1, 2, 6]), {'short', 'medium', 'long'})
+%! numEntries (d)
+%! d(hours (2)) = [];
+%! numEntries (d)

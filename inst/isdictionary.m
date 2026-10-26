@@ -31,6 +31,15 @@ function TF = isdictionary (x)
   TF = isa (x, 'dictionary');
 endfunction
 
+%!demo
+%! ## `isdictionary` is true for a dictionary, configured or not, and false
+%! ## for anything else, a cell array holding a dictionary included.
+%!
+%! isdictionary (dictionary ())
+%! isdictionary (dictionary ('a', 1))
+%! isdictionary (struct ('a', 1))
+%! isdictionary ({dictionary()})
+
 %!assert_equal (isdictionary (dictionary ()), true)
 %!assert_equal (isdictionary (configureDictionary ('string', 'double')), true)
 %!assert_equal (isdictionary (struct ()), false)

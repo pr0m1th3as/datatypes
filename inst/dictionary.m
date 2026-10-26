@@ -83,6 +83,48 @@ classdef dictionary
     order_ = zeros (0, 1)
   endproperties
 
+  methods (Hidden)
+
+    function display (this)
+      in_name = inputname (1);
+      if (! isempty (in_name))
+        fprintf ("%s =\n\n", in_name);
+      endif
+      disp (this);
+    endfunction
+
+    function disp (this)
+      n = numel (this.keys_);
+      if (n == 0)
+        fprintf ("  %s.\n\n", summaryLine (this));
+        return;
+      endif
+      fprintf ("  %s:\n\n", summaryLine (this));
+      K = cell (n, 1);
+      V = cell (n, 1);
+      w = zeros (n, 1);
+      for i = 1:n
+        K{i} = itemText (this.keys_{i});
+        V{i} = itemText (this.values_{i});
+        w(i) = textWidth (K{i});
+      endfor
+      for i = 1:n
+        fprintf ("    %s%s ⟼ %s\n", K{i}, blanks (max (w) - w(i)), V{i});
+      endfor
+      fprintf ("\n");
+    endfunction
+
+    ## A dictionary has no properties to list
+    function names = properties (this)
+      if (nargout == 0)
+        fprintf ("\nNo properties for class dictionary.\n\n");
+      else
+        names = cell (0, 1);
+      endif
+    endfunction
+
+  endmethods
+
 ################################################################################
 ##                  ** Create and describe 'dictionary' **                    ##
 ################################################################################
@@ -90,7 +132,7 @@ classdef dictionary
 ##                                                                            ##
 ## 'dictionary'       'types'            'isConfigured'     'numEntries'      ##
 ## 'numel'            'length'           'size'             'ndims'           ##
-## 'isempty'                                                                  ##
+## 'isempty'          'dispstrings'                                           ##
 ##                                                                            ##
 ################################################################################
 
@@ -318,6 +360,24 @@ classdef dictionary
     ## @end deftypefn
     function tf = isempty (this)
       tf = false;
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {dictionary} {@var{cstr} =} dispstrings (@var{d})
+    ##
+    ## Return the line that describes a dictionary.
+    ##
+    ## @code{@var{cstr} = dispstrings (@var{d})} returns a 1-by-1 cell array
+    ## holding the line that describes @var{d} by its key and value types and
+    ## its number of entries, as @qcode{'dictionary (string ⟼ double) with 2
+    ## entries'}, or @qcode{'dictionary with unset key and value types'} while
+    ## it is unconfigured.  A cell array displays a dictionary by this line,
+    ## and so does a dictionary holding dictionaries.
+    ##
+    ## @seealso{dictionary.types, dictionary.numEntries}
+    ## @end deftypefn
+    function cstr = dispstrings (this)
+      cstr = {summaryLine(this)};
     endfunction
 
   endmethods
@@ -924,6 +984,24 @@ classdef dictionary
 
   methods (Access = private)
 
+    ## The line describing the dictionary, by its types and number of entries
+    function t = summaryLine (this)
+      if (isempty (this.keyType_))
+        t = 'dictionary with unset key and value types';
+        return;
+      endif
+      n = numel (this.keys_);
+      if (n == 0)
+        count = 'no entries';
+      elseif (n == 1)
+        count = '1 entry';
+      else
+        count = sprintf ('%d entries', n);
+      endif
+      t = sprintf ('dictionary (%s ⟼ %s) with %s', this.keyType_, ...
+                   this.valueType_, count);
+    endfunction
+
     ## True when OTHER holds the keys of this dictionary, in any order, with
     ## values equal by isequal or, for NANEQUAL, by isequaln.
     function tf = sameEntries (this, other, nanEqual)
@@ -1355,12 +1433,89 @@ function [x, errmsg] = join (items, empty, type, what)
   errmsg = sprintf ("cannot join %s of type '%s'", what, type);
 endfunction
 
+## The text of one key or value X in a dictionary display: the contents of
+## a cell in braces, a handle as written, and anything without a text of its
+## own by its size and class.
+function t = itemText (x)
+  if (iscell (x))
+    t = ['{', cellText(x{1}), '}'];
+  elseif (is_function_handle (x))
+    t = handleText (x);
+  elseif (isnumeric (x) || islogical (x) || hasText (x))
+    t = scalarText (x);
+  else
+    t = sizeClass (x);
+  endif
+endfunction
+
+## The text of the contents X of a cell, as a cell array shows them
+function t = cellText (x)
+  if (ischar (x) && rows (x) == 1)
+    t = oneLine (["'", x, "'"]);
+  elseif (is_function_handle (x))
+    t = handleText (x);
+  elseif (! isempty (x) && isrow (x)
+          && (isnumeric (x) || islogical (x) || hasText (x)))
+    t = cell (1, columns (x));
+    for i = 1:columns (x)
+      t{i} = scalarText (x(i));
+    endfor
+    t = ['[', strjoin(t, ' '), ']'];
+  else
+    t = sizeClass (x);
+  endif
+endfunction
+
+## The text of the scalar X: a number as Octave shows it, a string quoted on
+## one line, and the other classes of this package by 'dispstrings'
+function t = scalarText (x)
+  if (isnumeric (x) || islogical (x))
+    t = strtrim (disp (x));
+  elseif (isa (x, 'string') && ! ismissing (x))
+    t = oneLine (['"', char(x), '"']);
+  else
+    t = dispstrings (x){1};
+  endif
+endfunction
+
+## The text T on one line, its breaks and tabs shown as a string array
+## shows them
+function t = oneLine (t)
+  t = strrep (t, sprintf ("\r\n"), '↵');
+  t = strrep (t, sprintf ("\n"), '↵');
+  t = strrep (t, sprintf ("\t"), '→');
+endfunction
+
+## True for a class whose values 'dispstrings' writes as text
+function tf = hasText (x)
+  tf = (isa (x, 'string') || isa (x, 'datetime') || isa (x, 'duration')
+        || isa (x, 'calendarDuration') || isa (x, 'categorical')
+        || isa (x, 'missing') || isa (x, 'dictionary'));
+endfunction
+
+function t = handleText (f)
+  t = func2str (f);
+  if (t(1) != '@')
+    t = ['@', t];
+  endif
+endfunction
+
+function t = sizeClass (x)
+  t = sprintf ('%dx', size (x));
+  t = sprintf ('%s %s', t(1:end-1), class (x));
+endfunction
+
+## The number of characters in the UTF-8 text T, which has more bytes
+function n = textWidth (t)
+  n = numel (t) - nnz (t >= 128 & t < 192);
+endfunction
+
 ## The methods '.' may call
 function names = publicMethods ()
   names = {'types', 'isConfigured', 'numEntries', 'numel', 'length', ...
            'size', 'ndims', 'isempty', 'keys', 'values', 'isKey', ...
            'insert', 'lookup', 'remove', 'entries', 'isequal', 'isequaln', ...
-           'keyHash', 'horzcat', 'vertcat', 'cat'};
+           'keyHash', 'dispstrings', 'horzcat', 'vertcat', 'cat'};
 endfunction
 
 ## The one of OPTIONS that FORMAT names, in any case or by its first letters

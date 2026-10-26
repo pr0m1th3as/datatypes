@@ -1,0 +1,7 @@
+%!demo
+%! ## `remove` removes the entries of the keys given, ignoring keys not in
+%! ## the dictionary.  A key removed and added again goes after the others.
+%!
+%! d = dictionary (string ({'a', 'b', 'c'}), [1, 2, 3])
+%! d = remove (d, {'b', 'z'})
+%! d('b') = 20

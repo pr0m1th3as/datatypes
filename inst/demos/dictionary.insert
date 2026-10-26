@@ -1,0 +1,8 @@
+%!demo
+%! ## `insert` adds entries as assignment does.  With `'Overwrite', false`
+%! ## the values of keys already present are kept, and only new keys are
+%! ## added.
+%!
+%! stock = dictionary (string ({'pen', 'ink'}), [12, 4])
+%! stock = insert (stock, {'ink', 'tape'}, [9, 7])
+%! stock = insert (stock, {'pen', 'glue'}, [0, 3], 'Overwrite', false)

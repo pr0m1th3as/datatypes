@@ -1,0 +1,8 @@
+%!demo
+%! ## `isKey` answers for each element of an array of keys, after converting
+%! ## them to the key type: a number asks for its text in a dictionary of
+%! ## `string` keys.
+%!
+%! d = dictionary (string ({'1', '2', 'three'}), [1, 2, 3])
+%! isKey (d, {'three', 'four'; '1', 'one'})
+%! isKey (d, 2)

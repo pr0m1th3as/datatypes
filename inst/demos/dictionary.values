@@ -1,0 +1,11 @@
+%!demo
+%! ## `values` returns the values as a column of the value type, in the order
+%! ## of their keys.  Function handles cannot be joined into an array, so a
+%! ## dictionary of them gives its values as a cell array.
+%!
+%! d = dictionary (string ({'x', 'y', 'z'}), [10, 20, 30])
+%! values (d)
+%! f = dictionary ('sin', @sin);
+%! f('cos') = @cos
+%! fns = values (f, 'cell');
+%! fns{2} (0)

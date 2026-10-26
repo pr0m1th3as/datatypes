@@ -1,0 +1,9 @@
+%!demo
+%! ## A dictionary with no entries is configured when it has key and value
+%! ## types; the first entries added configure an unconfigured one.
+%!
+%! u = dictionary ()
+%! isConfigured (u)
+%! u('first') = 1
+%! isConfigured (u)
+%! isConfigured (configureDictionary ('double', 'string'))

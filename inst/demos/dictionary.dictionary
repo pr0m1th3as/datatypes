@@ -1,0 +1,66 @@
+%!demo
+%! ## A dictionary maps unique keys to values, of one key type and one value
+%! ## type.  In Octave both `'a'` and `"a"` are character vectors, which a
+%! ## dictionary stores as strings, one per row.  A cell array is a key type
+%! ## of its own, each cell one key, so text keys are given as a `string`
+%! ## array.
+%!
+%! fruit = dictionary (string ({'apple', 'pear', 'fig'}), [3, 5, 2])
+%! types (fruit)
+%! types (dictionary ('apple', 3))
+%! types (dictionary ({'apple', 'pear'}, [3, 5]))
+
+%!demo
+%! ## A dictionary is a scalar object, whatever it holds: `numel` and `size`
+%! ## describe the object, and `numEntries` counts the entries.
+%!
+%! fruit = dictionary (string ({'apple', 'pear', 'fig'}), [3, 5, 2]);
+%! numel (fruit)
+%! numEntries (fruit)
+
+%!demo
+%! ## Entries keep the order their keys were first added.  Replacing a value
+%! ## keeps the key in place, and a key repeated in the constructor keeps its
+%! ## first position and takes its last value.
+%!
+%! d = dictionary (string ({'b', 'a', 'b'}), [1, 2, 3])
+%! d('b') = 10
+
+%!demo
+%! ## Index with keys to read values, assign to add or replace entries, and
+%! ## assign `[]` to remove them.  Keys are converted to the key type, so a
+%! ## dictionary of `double` keys accepts integers and logical values.
+%!
+%! sq = dictionary ([1, 2, 3], [1, 4, 9])
+%! sq([3, 1])
+%! sq(int8 (4)) = 16;
+%! sq(2) = []
+
+%!demo
+%! ## Several pairs of keys and values can be given at once: the first pair
+%! ## sets the types, and later pairs are converted to them.  Here the dates
+%! ## of a dictionary of `datetime` keys are also given as text.
+%!
+%! marks = dictionary (datetime (2024, 3, 1), 'start', '2024-03-15', 'middle')
+
+%!demo
+%! ## Values of the class `cell` hold anything, one cell per key, and `{}`
+%! ## reaches their contents.
+%!
+%! cfg = dictionary (string ({'size', 'name', 'when'}), ...
+%!                   {[640, 480], 'demo', duration(1, 30, 0)})
+%! cfg{'size'}
+%! cfg{'name'} = 'renamed';
+%! cfg('name')
+
+%!demo
+%! ## A value can be any object, a `table` of any size or another dictionary
+%! ## included, and indexing continues into it.
+%!
+%! shelf = dictionary (string ({'north', 'south'}), ...
+%!                     {table([1; 2], {'pen'; 'ink'}, 'VariableNames', ...
+%!                            {'Qty', 'Item'}), ...
+%!                      table(5, {'tape'}, 'VariableNames', {'Qty', 'Item'})});
+%! shelf{'north'}
+%! nested = dictionary ('inner', dictionary (string ({'x', 'y'}), [1, 2]))
+%! nested('inner')('y')

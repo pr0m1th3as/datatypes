@@ -1,0 +1,7 @@
+%!demo
+%! ## `lookup` returns the values of keys as indexing does, and a key not in
+%! ## the dictionary is an error unless a `'FallbackValue'` is given.
+%!
+%! price = dictionary (string ({'tea', 'coffee'}), [2.5, 3.2])
+%! lookup (price, {'coffee', 'tea'})
+%! lookup (price, {'tea', 'cocoa', 'coffee'}, 'FallbackValue', NaN)
