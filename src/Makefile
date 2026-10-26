@@ -28,7 +28,8 @@ OCTFILES = __datetime__.oct	\
            __xlsx2table__.oct	\
            __ckeyHash__.oct	\
            __nkeyHash__.oct	\
-           __json2dictionary__.oct
+           __json2dictionary__.oct	\
+           __dictionary2json__.oct
 
 .PHONY: all
 all: $(OCTFILES)

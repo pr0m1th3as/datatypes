@@ -743,6 +743,146 @@ classdef dictionary
   endmethods
 
 ################################################################################
+##                               ** Files **                                  ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'writedictionary'                                                          ##
+##                                                                            ##
+################################################################################
+
+  methods (Access = public)
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {dictionary} {} writedictionary (@var{d}, @var{filename})
+    ## @deftypefnx {dictionary} {} writedictionary (@var{d}, @var{filename}, @var{Name}, @var{Value})
+    ##
+    ## Write a dictionary to a JSON or an OpenDocument spreadsheet file.
+    ##
+    ## @code{writedictionary (@var{d}, @var{filename})} writes @var{d} as a
+    ## JSON object to the file @var{filename}, a character vector or a string
+    ## scalar, replacing any file of that name.  Each entry is a member, in
+    ## the order of the keys, written as follows:
+    ##
+    ## @itemize
+    ## @item keys as text: numbers in their shortest form (@qcode{"1.5"}),
+    ## logical values as @qcode{"true"} and @qcode{"false"}, dates and
+    ## durations as they display;
+    ## @item a @code{double} or @code{single} in the fewest digits that read
+    ## back as its value, always with a point (@qcode{1.0}), with an exponent
+    ## only from @math{10^21} up and below @math{10^-6}; integers exactly;
+    ## @item @code{NaN} and @code{Inf} as @qcode{NaN}, @qcode{Infinity} and
+    ## @qcode{-Infinity}, or as @qcode{null} under
+    ## @qcode{'PreserveInfAndNaN'} false; missing strings, @code{NaT} and
+    ## @code{missing} as @qcode{null}; logical values as @qcode{true} and
+    ## @qcode{false};
+    ## @item dates and durations as text, as they display;
+    ## @item a dictionary as an object, nested ones too; the contents of a
+    ## cell as the value they hold, a vector of them as an array, and an empty
+    ## one as @qcode{[]}.
+    ## @end itemize
+    ##
+    ## @code{writedictionary (@var{d}, @var{filename}, @var{Name},
+    ## @var{Value})} specifies options with the following Name-Value paired
+    ## arguments, matched in any case.
+    ##
+    ## @multitable @columnfractions 0.25 0.75
+    ## @headitem @var{Name} @tab @var{Value}
+    ## @item @qcode{'FileType'} @tab @qcode{'auto'} (the default) tells the
+    ## type from the extension, @qcode{.json}, @qcode{.ods} or @qcode{.fods};
+    ## @qcode{'json'} or @qcode{'ods'} sets it.
+    ## @item @qcode{'PrettyPrint'} @tab A logical scalar: true (the default)
+    ## indents by four spaces, one member or element a line; false writes no
+    ## spaces or line breaks.
+    ## @item @qcode{'PreserveInfAndNaN'} @tab A logical scalar: true (the
+    ## default) writes @code{NaN} and @code{Inf}, false writes @qcode{null}.
+    ## @end multitable
+    ##
+    ## Nothing is written when any key or value cannot be.  Values of types
+    ## other than @code{string}, the numeric types, @code{logical},
+    ## @code{datetime}, @code{duration}, @code{missing}, @code{dictionary}
+    ## and @code{cell} are refused, as in MATLAB, and so are matrices in
+    ## cells and complex values, on which MATLAB fails; keys of types other
+    ## than @code{string}, a cell array of text, the numeric types,
+    ## @code{logical}, @code{datetime} and @code{duration} are refused, and so
+    ## are missing string keys.
+    ##
+    ## An OpenDocument spreadsheet, @qcode{FileType} @qcode{'ods'}, holds one
+    ## sheet per entry, named by the key and holding its @code{table} or
+    ## @code{timetable}, written by @code{struct2ods}, so that
+    ## @code{readdictionary} reads it back as it was.  The keys must be text
+    ## and the values tables or timetables, in a cell or not.  Writing ODS is
+    ## an extension of this package; it takes no option but
+    ## @qcode{'FileType'}.
+    ##
+    ## Remote locations, which MATLAB writes to, are not supported.
+    ##
+    ## @seealso{readdictionary, struct2ods}
+    ## @end deftypefn
+    function writedictionary (this, filename, varargin)
+      scope = 'dictionary.writedictionary';
+      if (nargin < 2
+          || ! ((ischar (filename) && rows (filename) <= 1)
+                || (isa (filename, 'string') && isscalar (filename))))
+        error (strcat ("%s: FILENAME must be a character vector or a", ...
+                       " string scalar."), scope);
+      endif
+      filename = char (filename);
+      if (mod (numel (varargin), 2) != 0)
+        error ("%s: name-value arguments must be in pairs.", scope);
+      endif
+      [fileType, pretty, preserve, args] = parsePairedArguments ...
+          ({'FileType', 'PrettyPrint', 'PreserveInfAndNaN'}, ...
+           {[], [], []}, varargin(:));
+      if (! isempty (args))
+        error ("%s: invalid optional paired argument.", scope);
+      endif
+      if (! isempty (regexp (filename, '^(s3|wasbs?|hdfs|https?)://', 'once')))
+        error ("%s: writing to remote locations is not supported.", scope);
+      endif
+      [errmsg, fileType] = fileKind (fileType, filename);
+      if (! isempty (errmsg))
+        error ("%s: %s", scope, errmsg);
+      endif
+      if (strcmp (fileType, 'ods'))
+        if (! isempty (pretty) || ! isempty (preserve))
+          name = 'PrettyPrint';
+          if (isempty (pretty))
+            name = 'PreserveInfAndNaN';
+          endif
+          error ("%s: '%s' does not apply to ODS files.", scope, name);
+        endif
+        errmsg = writeOds (this, filename);
+        if (! isempty (errmsg))
+          error ("%s: %s", scope, errmsg);
+        endif
+        return;
+      endif
+      flags = {pretty, preserve};
+      names = {'PrettyPrint', 'PreserveInfAndNaN'};
+      for i = 1:2
+        if (isempty (flags{i}))
+          flags{i} = true;
+        elseif (! ((islogical (flags{i}) || isnumeric (flags{i}))
+                   && isscalar (flags{i}) && ! isnan (flags{i})))
+          error ("%s: '%s' must be a logical scalar.", scope, names{i});
+        endif
+      endfor
+      ## Every key and value is checked before anything is written
+      [tree, errmsg] = jsonObject (this);
+      if (! isempty (errmsg))
+        error ("%s: %s", scope, errmsg);
+      endif
+      errmsg = __dictionary2json__ (tree, filename, logical (flags{1}), ...
+                                    logical (flags{2}));
+      if (! isempty (errmsg))
+        error ("%s: %s", scope, errmsg);
+      endif
+    endfunction
+
+  endmethods
+
+################################################################################
 ##                         ** Compare and hash **                             ##
 ################################################################################
 ##                             Available Methods                              ##
@@ -895,6 +1035,12 @@ classdef dictionary
             s = s(3:end);
           else
             s = s(2:end);
+          endif
+          ## A method that returns nothing is called for its effect
+          if (strcmp (name, 'writedictionary'))
+            feval (name, this, args{:});
+            varargout = {};
+            return;
           endif
           out = cell (1, max (nargout, 1));
           [out{:}] = feval (name, this, args{:});
@@ -1580,12 +1726,220 @@ function n = textWidth (t)
   n = numel (t) - nnz (t >= 128 & t < 192);
 endfunction
 
+## The file type named by TYPE, or told from the extension of FILENAME
+function [errmsg, type] = fileKind (type, filename)
+  errmsg = '';
+  if (isempty (type))
+    type = 'auto';
+  endif
+  if (! ((ischar (type) && rows (type) == 1)
+         || (isa (type, 'string') && isscalar (type))))
+    errmsg = "'FileType' must be a character vector or a string scalar.";
+    return;
+  endif
+  type = lower (char (type));
+  if (! any (strcmp (type, {'auto', 'json', 'ods'})))
+    errmsg = sprintf ("invalid 'FileType' value '%s'.", char (type));
+    return;
+  endif
+  if (strcmp (type, 'auto'))
+    [~, ~, ext] = fileparts (filename);
+    switch (lower (ext))
+      case '.json'
+        type = 'json';
+      case {'.ods', '.fods'}
+        type = 'ods';
+      otherwise
+        errmsg = strcat ("unable to tell the file type from the", ...
+                         " extension; set 'FileType'.");
+    endswitch
+  endif
+endfunction
+
+## The JSON tree of the dictionary D: an object of its keys and values as
+## __dictionary2json__ writes them, or an error message
+function [tree, errmsg] = jsonObject (d)
+  errmsg = '';
+  tree = struct ('keys', {cell(0, 1)}, 'values', {cell(0, 1)});
+  if (! isConfigured (d) || numEntries (d) == 0)
+    return;
+  endif
+  [kt, vt] = types (d);
+  kt = char (kt);
+  vt = char (vt);
+  if (! any (strcmp (vt, {'string', 'double', 'single', 'int8', 'uint8', ...
+                          'int16', 'uint16', 'int32', 'uint32', 'int64', ...
+                          'uint64', 'logical', 'datetime', 'duration', ...
+                          'missing', 'dictionary', 'cell'})))
+    errmsg = sprintf ("unable to write values of type '%s' to JSON.", vt);
+    return;
+  endif
+  K = keys (d, 'cell');
+  V = values (d, 'cell');
+  for i = 1:numel (K)
+    [K{i}, errmsg] = jsonKey (K{i}, kt);
+    if (! isempty (errmsg))
+      return;
+    endif
+  endfor
+  for i = 1:numel (V)
+    if (strcmp (vt, 'cell'))
+      [V{i}, errmsg] = jsonContent (V{i}{1});
+    else
+      [V{i}, errmsg] = jsonContent (V{i});
+    endif
+    if (! isempty (errmsg))
+      return;
+    endif
+  endfor
+  tree = struct ('keys', {K}, 'values', {V});
+endfunction
+
+## The key K of the key type KT as __dictionary2json__ writes it
+function [k, errmsg] = jsonKey (k, kt)
+  errmsg = '';
+  switch (kt)
+    case 'string'
+      if (ismissing (k))
+        errmsg = "unable to write a missing string key to JSON.";
+        return;
+      endif
+      k = char (k);
+    case 'cell'
+      k = k{1};
+      if (! (ischar (k) && rows (k) <= 1))
+        errmsg = "unable to write keys of type 'cell' to JSON.";
+        return;
+      endif
+    case {'double', 'single', 'int8', 'uint8', 'int16', 'uint16', ...
+          'int32', 'uint32', 'int64', 'uint64', 'logical'}
+      if (iscomplex (k))
+        errmsg = "unable to write complex values to JSON.";
+      endif
+    case {'datetime', 'duration'}
+      k = char (k);
+    otherwise
+      errmsg = sprintf ("unable to write keys of type '%s' to JSON.", kt);
+  endswitch
+endfunction
+
+## The value X, or the contents of a cell value, as __dictionary2json__
+## writes it: text, numbers, logical values, null, arrays and objects
+function [v, errmsg] = jsonContent (x)
+  errmsg = '';
+  v = [];
+  null = repmat (struct (), 0, 0);
+  if (isa (x, 'dictionary'))
+    [v, errmsg] = jsonObject (x);
+    return;
+  endif
+  if (isnumeric (x) && iscomplex (x))
+    errmsg = "unable to write complex values to JSON.";
+    return;
+  endif
+  if (ischar (x))
+    if (rows (x) > 1)
+      errmsg = "unable to write matrices to JSON.";
+      return;
+    endif
+    v = x;
+    return;
+  endif
+  isText = (isa (x, 'string') || isa (x, 'datetime') || isa (x, 'duration')
+            || isa (x, 'missing'));
+  if (! (isnumeric (x) || islogical (x) || iscell (x) || isText))
+    errmsg = sprintf ("unable to write values of type '%s' to JSON.", ...
+                      class (x));
+    return;
+  endif
+  if (isempty (x))
+    v = cell (0, 1);
+    return;
+  endif
+  if (! isvector (x))
+    errmsg = "unable to write matrices to JSON.";
+    return;
+  endif
+  if (isnumeric (x) || islogical (x))
+    v = x;
+    return;
+  endif
+  ## Text and cells, one element at a time
+  n = numel (x);
+  c = cell (n, 1);
+  for i = 1:n
+    if (iscell (x))
+      [c{i}, errmsg] = jsonContent (x{i});
+      if (! isempty (errmsg))
+        return;
+      endif
+    elseif (isa (x, 'missing') || ismissing (x(i)))
+      c{i} = null;
+    else
+      c{i} = char (x(i));
+    endif
+  endfor
+  if (n == 1 && ! iscell (x))
+    v = c{1};
+  else
+    v = c;
+  endif
+endfunction
+
+## Write the dictionary D of tables or timetables to the OpenDocument
+## spreadsheet FILENAME, a sheet per entry named by its key
+function errmsg = writeOds (d, filename)
+  errmsg = '';
+  if (! isConfigured (d) || numEntries (d) == 0)
+    errmsg = "a dictionary with no entries has no sheets to write.";
+    return;
+  endif
+  [kt, vt] = types (d);
+  K = keys (d, 'cell');
+  V = values (d, 'cell');
+  for i = 1:numel (K)
+    if (strcmp (kt, 'cell'))
+      K{i} = K{i}{1};
+    endif
+    if (! ((ischar (K{i}) && rows (K{i}) <= 1)
+           || (isa (K{i}, 'string') && ! ismissing (K{i}))))
+      errmsg = "the keys must be text to name the sheets of an ODS file.";
+      return;
+    endif
+    K{i} = char (K{i});
+    if (strcmp (vt, 'cell'))
+      V{i} = V{i}{1};
+    endif
+    if (! (isa (V{i}, 'table') || isa (V{i}, 'timetable')))
+      errmsg = strcat ("only tables and timetables can be written to", ...
+                       " ODS files.");
+      return;
+    endif
+  endfor
+  ## Fields named after the keys, each key kept as its sheet name
+  f = matlab.lang.makeUniqueStrings (matlab.lang.makeValidName (K));
+  s = struct ();
+  for i = 1:numel (K)
+    t = V{i};
+    if (! strcmp (f{i}, K{i}))
+      if (! any (strcmp (properties (t.Properties.CustomProperties), ...
+                         'ActualSheetName')))
+        t = addprop (t, 'ActualSheetName', 'table');
+      endif
+      t.Properties.CustomProperties.ActualSheetName = K{i};
+    endif
+    s.(f{i}) = t;
+  endfor
+  struct2ods (filename, s);
+endfunction
+
 ## The methods '.' may call
 function names = publicMethods ()
   names = {'types', 'isConfigured', 'numEntries', 'numel', 'length', ...
            'size', 'ndims', 'isempty', 'keys', 'values', 'isKey', ...
            'insert', 'lookup', 'remove', 'entries', 'isequal', 'isequaln', ...
-           'keyHash', 'dispstrings', 'horzcat', 'vertcat', 'cat'};
+           'keyHash', 'dispstrings', 'writedictionary', 'horzcat', ...
+           'vertcat', 'cat'};
 endfunction
 
 ## The one of OPTIONS that FORMAT names, in any case or by its first letters

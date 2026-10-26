@@ -1661,6 +1661,381 @@
 %! assert_equal (values (r, 'cell'), {1});
 
 ################################################################################
+##                               ** Files **                                  ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'writedictionary'                                                          ##
+##                                                                            ##
+################################################################################
+
+## Write D to a temporary file, return its text, and delete the file
+%!function s = wj (d, varargin)
+%!  s = wjx (d, '.json', varargin{:});
+%!endfunction
+%!function s = wjx (d, ext, varargin)
+%!  f = [tempname() ext];
+%!  unwind_protect
+%!    writedictionary (d, f, varargin{:});
+%!    s = fileread (f);
+%!  unwind_protect_cleanup
+%!    if (exist (f, 'file'))
+%!      delete (f);
+%!    endif
+%!  end_unwind_protect
+%!endfunction
+
+## Measured on MATLAB Online R2026b
+%!test
+%! s = wj (dictionary (string ({'a', 'b'}), [1, 2]));
+%! assert_equal (s, ...
+%!               strjoin ({'{', '    "a": 1.0,', '    "b": 2.0', '}'}, "\n"));
+%!test
+%! s = wj (dictionary (string ({'a', 'b'}), [1, 2]), 'PrettyPrint', false);
+%! assert_equal (s, '{"a":1.0,"b":2.0}');
+%!test
+%! s = wj (dictionary (string ({'a', 'b', 'c', 'd'}), [1.5, pi, 0.1, 1e20]), ...
+%!         'PrettyPrint', false);
+%! assert_equal (s, ...
+%!               ['{"a":1.5,"b":3.141592653589793,"c":0.1,', ...
+%!                '"d":100000000000000000000.0}']);
+%!test
+%! s = wj (dictionary (string ({'a', 'b', 'c'}), [-0, 1, -7]), ...
+%!         'PrettyPrint', false);
+%! assert_equal (s, '{"a":-0.0,"b":1.0,"c":-7.0}');
+%!test
+%! s = wj (dictionary (string ({'a', 'b', 'c'}), [NaN, Inf, -Inf]), ...
+%!         'PrettyPrint', false);
+%! assert_equal (s, '{"a":NaN,"b":Infinity,"c":-Infinity}');
+%!test
+%! s = wj (dictionary (string ({'a', 'b', 'c'}), [NaN, Inf, -Inf]), ...
+%!         'PrettyPrint', false, 'PreserveInfAndNaN', false);
+%! assert_equal (s, '{"a":null,"b":null,"c":null}');
+%!test
+%! s = wj (dictionary (string ({'a', 'b'}), [string('x'), string(missing)]), ...
+%!         'PrettyPrint', false);
+%! assert_equal (s, '{"a":"x","b":null}');
+%!test
+%! s = wj (dictionary (string ({'a', 'b'}), [true, false]), 'PrettyPrint', ...
+%!         false);
+%! assert_equal (s, '{"a":true,"b":false}');
+%!test
+%! s = wj (dictionary (string ({'a', 'b'}), int8 ([5, -3])), 'PrettyPrint', ...
+%!         false);
+%! assert_equal (s, '{"a":5,"b":-3}');
+%!test
+%! s = wj (dictionary ('a', intmax ('int64')), 'PrettyPrint', false);
+%! assert_equal (s, '{"a":9223372036854775807}');
+%!test
+%! s = wj (dictionary ('a', intmax ('uint64')), 'PrettyPrint', false);
+%! assert_equal (s, '{"a":18446744073709551615}');
+%!test
+%! s = wj (dictionary (string ({'a', 'b'}), single ([1.5, 0.1])), ...
+%!         'PrettyPrint', false);
+%! assert_equal (s, '{"a":1.5,"b":0.10000000149011612}');
+%!test
+%! s = wj (dictionary (string ({'a', 'b'}), datetime (2024, 1, [1, 2])), ...
+%!         'PrettyPrint', false);
+%! assert_equal (s, '{"a":"01-Jan-2024","b":"02-Jan-2024"}');
+%!test
+%! s = wj (dictionary ('a', datetime (2024, 1, 1, 'TimeZone', 'UTC')), ...
+%!         'PrettyPrint', false);
+%! assert_equal (s, '{"a":"01-Jan-2024"}');
+%!assert_equal (wj (dictionary ('a', NaT), 'PrettyPrint', false), '{"a":null}')
+%!test
+%! s = wj (dictionary (string ({'a', 'b'}), hours ([1, 2])), 'PrettyPrint', ...
+%!         false);
+%! assert_equal (s, '{"a":"1 hr","b":"2 hr"}');
+%!error<dictionary.writedictionary: unable to write values of type 'calendarDuration' to JSON.> ...
+%! wj (dictionary ('a', calmonths (1)), 'PrettyPrint', false);
+%!error<dictionary.writedictionary: unable to write values of type 'categorical' to JSON.> ...
+%! wj (dictionary (string ({'a', 'b'}), categorical (string ({'r', 'g'}))), ...
+%!     'PrettyPrint', false);
+%!test
+%! s = wj (dictionary (string ({'a', 'b', 'c', 'd', 'e'}), ...
+%!                     {1, 'x', [1, 2, 3], {3, 'y'}, []}), 'PrettyPrint', ...
+%!         false);
+%! assert_equal (s, '{"a":1.0,"b":"x","c":[1.0,2.0,3.0],"d":[3.0,"y"],"e":[]}');
+%!error<dictionary.writedictionary: unable to write matrices to JSON.> ...
+%! wj (dictionary ('a', {[1, 2;, 3, 4]}), 'PrettyPrint', false);
+%!test
+%! s = wj (dictionary ('a', {true}), 'PrettyPrint', false);
+%! assert_equal (s, '{"a":true}');
+%!test
+%! s = wj (dictionary ('a', {missing}), 'PrettyPrint', false);
+%! assert_equal (s, '{"a":null}');
+%!assert_equal (wj (dictionary ('a', {NaN}), 'PrettyPrint', false), '{"a":NaN}')
+%!error<dictionary.writedictionary: unable to write values of type 'struct' to JSON.> ...
+%! wj (dictionary ('a', struct ('x', 1, 'y', 's')), 'PrettyPrint', false);
+%!error<dictionary.writedictionary: unable to write values of type 'struct' to JSON.> ...
+%! wj (dictionary ('a', {struct('x', {1, 2})}), 'PrettyPrint', false);
+%!test
+%! s = wj (dictionary ('a', dictionary (string ({'x', 'y'}), [1, 2])), ...
+%!         'PrettyPrint', false);
+%! assert_equal (s, '{"a":{"x":1.0,"y":2.0}}');
+%!test
+%! s = wj (dictionary ('a', dictionary (1, 2)), 'PrettyPrint', false);
+%! assert_equal (s, '{"a":{"1":2.0}}');
+%!test
+%! s = wj (dictionary ('a', {dictionary('x', 1)}), 'PrettyPrint', false);
+%! assert_equal (s, '{"a":{"x":1.0}}');
+%!test
+%! s = wj (dictionary ('a', missing), 'PrettyPrint', false);
+%! assert_equal (s, '{"a":null}');
+%!error<dictionary.writedictionary: unable to write values of type 'function_handle' to JSON.> ...
+%! wj (dictionary ('a', @sin), 'PrettyPrint', false);
+%!error<dictionary.writedictionary: unable to write values of type 'table' to JSON.> ...
+%! wj (dictionary ('a', table (1)), 'PrettyPrint', false);
+%!test
+%! s = wj (dictionary ([1, 2], [3, 4]), 'PrettyPrint', false);
+%! assert_equal (s, '{"1":3.0,"2":4.0}');
+%!test
+%! s = wj (dictionary ([1.5, -2], [3, 4]), 'PrettyPrint', false);
+%! assert_equal (s, '{"1.5":3.0,"-2":4.0}');
+%!test
+%! s = wj (dictionary ([true, false], [3, 4]), 'PrettyPrint', false);
+%! assert_equal (s, '{"true":3.0,"false":4.0}');
+%!test
+%! s = wj (dictionary (int8 ([1, 2]), [3, 4]), 'PrettyPrint', false);
+%! assert_equal (s, '{"1":3.0,"2":4.0}');
+%!test
+%! s = wj (dictionary (datetime (2024, 1, [1, 2]), [3, 4]), 'PrettyPrint', ...
+%!         false);
+%! assert_equal (s, '{"01-Jan-2024":3.0,"02-Jan-2024":4.0}');
+%!test
+%! s = wj (dictionary (hours ([1, 2]), [3, 4]), 'PrettyPrint', false);
+%! assert_equal (s, '{"1 hr":3.0,"2 hr":4.0}');
+%!error<dictionary.writedictionary: unable to write keys of type 'categorical' to JSON.> ...
+%! wj (dictionary (categorical (string ({'r', 'g'})), [3, 4]), ...
+%!     'PrettyPrint', false);
+%!test
+%! s = wj (dictionary ({'a' 'b'}, [3, 4]), 'PrettyPrint', false);
+%! assert_equal (s, '{"a":3.0,"b":4.0}');
+%!error<dictionary.writedictionary: unable to write keys of type 'missing' to JSON.> ...
+%! wj (dictionary (missing, 1), 'PrettyPrint', false);
+%!error<dictionary.writedictionary: unable to write a missing string key to JSON.> ...
+%! wj (dictionary ([string('a'), string(missing)], [1, 2]), 'PrettyPrint', ...
+%!     false);
+%!test
+%! s = wj (dictionary (string ({'', 'a'}), [1, 2]), 'PrettyPrint', false);
+%! assert_equal (s, '{"":1.0,"a":2.0}');
+%!test
+%! s = wj (dictionary ([string('a"b'), string(sprintf ('c\nd')), ...
+%!                      string('é')], [1, 2, 3]), 'PrettyPrint', false);
+%! assert_equal (s, '{"a\"b":1.0,"c\nd":2.0,"é":3.0}');
+%!assert_equal (wj (dictionary, 'PrettyPrint', false), '{}')
+%!test
+%! s = wj (configureDictionary ('string', 'double'), 'PrettyPrint', false);
+%! assert_equal (s, '{}');
+%!test
+%! s = wj (dictionary (string ({'a', 'b'}), {1, {}}));
+%! assert_equal (s, strjoin ({'{', '    "a": 1.0,', '    "b": []', '}'}, "\n"));
+%!test
+%! s = wj (dictionary ('a', dictionary ('b', dictionary ('c', 1))));
+%! assert_equal (s, ...
+%!               strjoin ({'{', '    "a": {', '        "b": {', ...
+%!                         '            "c": 1.0', '        }', '    }', ...
+%!                         '}'}, "\n"));
+%!error<dictionary.writedictionary: unable to tell the file type from the extension; set 'FileType'.> ...
+%! wjx (dictionary (string ({'a', 'b'}), [1, 2]), '.txt');
+%!test
+%! s = wjx (dictionary (string ({'a', 'b'}), [1, 2]), '.txt', 'FileType', ...
+%!          'json');
+%! assert_equal (s, ...
+%!               strjoin ({'{', '    "a": 1.0,', '    "b": 2.0', '}'}, "\n"));
+%!test
+%! s = wj (dictionary (string ({'a', 'b'}), [1, 2]), 'prettyprint', false);
+%! assert_equal (s, '{"a":1.0,"b":2.0}');
+%!error<dictionary.writedictionary: 'PrettyPrint' must be a logical scalar.> ...
+%! wj (dictionary (string ({'a', 'b'}), [1, 2]), 'PrettyPrint', 'yes');
+%!error<dictionary.writedictionary: invalid optional paired argument.> ...
+%! wj (dictionary (string ({'a', 'b'}), [1, 2]), 'Foo', 1);
+%!test
+%! s = wj (dictionary ('a', ...
+%!                     datetime (2024, 1, 1, 10, 0, 0, 'Format', ...
+%!                               'yyyy-MM-dd''T''HH:mm:ss')), 'PrettyPrint', ...
+%!         false);
+%! assert_equal (s, '{"a":"2024-01-01T10:00:00"}');
+%!test
+%! s = wj (dictionary ('a', seconds (90)), 'PrettyPrint', false);
+%! assert_equal (s, '{"a":"90 sec"}');
+%!test
+%! s = wj (dictionary ('a', {{'x', 1, true}}), 'PrettyPrint', false);
+%! assert_equal (s, '{"a":["x",1.0,true]}');
+%!test
+%! s = wj (dictionary ('a', {[1, 2, 3]'}), 'PrettyPrint', false);
+%! assert_equal (s, '{"a":[1.0,2.0,3.0]}');
+%!test
+%! s = wj (dictionary ('a', {string({'x', 'y'})}), 'PrettyPrint', false);
+%! assert_equal (s, '{"a":["x","y"]}');
+%!test
+%! s = wj (dictionary ('a', {{'x' 'y'}}), 'PrettyPrint', false);
+%! assert_equal (s, '{"a":["x","y"]}');
+%!test
+%! s = wj (dictionary ('a', {zeros(1, 0)}), 'PrettyPrint', false);
+%! assert_equal (s, '{"a":[]}');
+%!test
+%! s = wj (dictionary ('a', {int8([1, 2])}), 'PrettyPrint', false);
+%! assert_equal (s, '{"a":[1,2]}');
+%!test
+%! s = wj (dictionary ('a', {datetime(2024, 1, [1, 2])}), 'PrettyPrint', false);
+%! assert_equal (s, '{"a":["01-Jan-2024","02-Jan-2024"]}');
+
+## Complex values are refused wherever they are (R2026b crashes)
+%!error<dictionary.writedictionary: unable to write complex values to JSON.> ...
+%! wj (dictionary ('a', 1+2i));
+%!error<dictionary.writedictionary: unable to write complex values to JSON.> ...
+%! wj (dictionary ('a', {1+2i}));
+%!error<dictionary.writedictionary: unable to write complex values to JSON.> ...
+%! wj (dictionary ('a', {{1, 2i}}));
+%!error<dictionary.writedictionary: unable to write complex values to JSON.> ...
+%! wj (dictionary ('a', dictionary ('b', 3i)));
+%!error<dictionary.writedictionary: unable to write complex values to JSON.> ...
+%! wj (dictionary (1+2i, 1));
+
+## Ours: the number layout beyond what R2026b showed, after RapidJSON
+%!test
+%! d = dictionary (string ({'a', 'b', 'c', 'd', 'e', 'f'}), ...
+%!                 [1e21, 1e-7, 1e-6, 1.5e300, -1e-5, 2^53]);
+%! s = wj (d, 'PrettyPrint', false);
+%! assert_equal (s, ['{"a":1e21,"b":1e-7,"c":0.000001,"d":1.5e300,', ...
+%!                   '"e":-0.00001,"f":9007199254740992.0}']);
+%!test
+%! s = wj (dictionary ('a', intmin ('int64')), 'PrettyPrint', false);
+%! assert_equal (s, '{"a":-9223372036854775808}');
+%!test
+%! s = wj (dictionary ('a', uint8 (255)), 'PrettyPrint', false);
+%! assert_equal (s, '{"a":255}');
+%!test
+%! d = dictionary (string ({'a', 'b'}), seconds ([90, NaN]));
+%! assert_equal (wj (d, 'PrettyPrint', false), '{"a":"90 sec","b":null}');
+%!test
+%! s = wj (dictionary ('a', [char(1), 'b', char(8), char(12), '/']), ...
+%!         'PrettyPrint', false);
+%! assert_equal (s, '{"a":"\u0001b\b\f/"}');
+
+## Ours: arrays and empty objects when indented
+%!test
+%! s = wj (dictionary ('a', {[1, 2]}));
+%! assert_equal (s, strjoin ({'{', '    "a": [', '        1.0,', ...
+%!                            '        2.0', '    ]', '}'}, "\n"));
+%!test
+%! s = wj (dictionary ('a', {{1, {}}}));
+%! assert_equal (s, strjoin ({'{', '    "a": [', '        1.0,', ...
+%!                            '        []', '    ]', '}'}, "\n"));
+%!test
+%! s = wj (dictionary ('a', dictionary ()));
+%! assert_equal (s, strjoin ({'{', '    "a": {}', '}'}, "\n"));
+%!assert_equal (wj (dictionary ()), '{}')
+
+## Ours: keys of NaN, Inf and NaT
+%!test
+%! s = wj (dictionary ([NaN, Inf], [1, 2]), 'PrettyPrint', false);
+%! assert_equal (s, '{"NaN":1.0,"Inf":2.0}');
+%!assert_equal (wj (dictionary (NaT, 1), 'PrettyPrint', false), '{"NaT":1.0}')
+%!test
+%! s = wj (dictionary (single (0.5), 1), 'PrettyPrint', false);
+%! assert_equal (s, '{"0.5":1.0}');
+%!error<dictionary.writedictionary: unable to write keys of type 'cell' to JSON.> ...
+%! wj (dictionary ({1}, 2));
+
+## Ours: the file is replaced, and the method can be called with '.'
+%!test
+%! f = [tempname() '.json'];
+%! unwind_protect
+%!   writedictionary (dictionary (string ({'a', 'b'}), [1, 2]), f);
+%!   d = dictionary ('z', 9);
+%!   d.writedictionary (f, 'PrettyPrint', false);
+%!   assert_equal (fileread (f), '{"z":9.0}');
+%! unwind_protect_cleanup
+%!   delete (f);
+%! end_unwind_protect
+
+## Ours: options and locations
+%!error<dictionary.writedictionary: FILENAME must be a character vector or a string scalar.> ...
+%! writedictionary (dictionary ('a', 1), 5);
+%!error<dictionary.writedictionary: FILENAME must be a character vector or a string scalar.> ...
+%! writedictionary (dictionary ('a', 1));
+%!error<dictionary.writedictionary: name-value arguments must be in pairs.> ...
+%! wj (dictionary ('a', 1), 'PrettyPrint');
+%!error<dictionary.writedictionary: 'PreserveInfAndNaN' must be a logical scalar.> ...
+%! wj (dictionary ('a', 1), 'PreserveInfAndNaN', 'yes');
+%!error<dictionary.writedictionary: invalid 'FileType' value 'xml'.> ...
+%! wj (dictionary ('a', 1), 'FileType', 'xml');
+%!error<dictionary.writedictionary: 'FileType' must be a character vector or a string scalar.> ...
+%! wj (dictionary ('a', 1), 'FileType', 5);
+%!error<dictionary.writedictionary: writing to remote locations is not supported.> ...
+%! writedictionary (dictionary ('a', 1), 's3://bucket/x.json');
+%!error<dictionary.writedictionary: writing to remote locations is not supported.> ...
+%! writedictionary (dictionary ('a', 1), 'https://example.org/x.json');
+
+## Round trips through readdictionary, as on R2026b
+%!test
+%! d0 = dictionary ('a', dictionary (string ({'x', 'y'}), {1, 'x'}));
+%! f = [tempname() '.json'];
+%! unwind_protect
+%!   writedictionary (d0, f);
+%!   assert_equal (isequal (d0, readdictionary (f)), false);
+%! unwind_protect_cleanup
+%!   delete (f);
+%! end_unwind_protect
+%!test
+%! d0 = dictionary (string ({'a', 'b'}), {[1, 2, 3], 's'});
+%! f = [tempname() '.json'];
+%! unwind_protect
+%!   writedictionary (d0, f);
+%!   v = values (readdictionary (f), 'cell');
+%!   assert_equal (v{1}, {{1; 2; 3}});
+%! unwind_protect_cleanup
+%!   delete (f);
+%! end_unwind_protect
+%!test
+%! d0 = dictionary (string ({'a', 'b'}), datetime (2024, 1, [1, 2]));
+%! f = [tempname() '.json'];
+%! unwind_protect
+%!   writedictionary (d0, f);
+%!   d1 = readdictionary (f);
+%!   assert_equal (datenum (values (d1)), datenum (2024, 1, [1; 2]));
+%! unwind_protect_cleanup
+%!   delete (f);
+%! end_unwind_protect
+
+## OpenDocument spreadsheets, an extension of this package
+%!test
+%! d = dictionary (string ({'Sales', 'Q 2024'}), ...
+%!                 {table([1; 2]), timetable(hours ([1; 2]), [3; 4])});
+%! f = [tempname() '.ods'];
+%! unwind_protect
+%!   writedictionary (d, f);
+%!   r = readdictionary (f);
+%!   assert_equal (keys (r), string ({'Sales'; 'Q 2024'}));
+%!   assert_equal (r{string('Sales')}.Var1, [1; 2]);
+%!   assert_equal (class (r{string('Q 2024')}), 'timetable');
+%! unwind_protect_cleanup
+%!   delete (f);
+%! end_unwind_protect
+%!test
+%! d = dictionary ('t', table (1));
+%! f = [tempname() '.fods'];
+%! unwind_protect
+%!   writedictionary (d, f);
+%!   [~, vt] = types (readdictionary (f));
+%!   assert_equal (vt, string ('table'));
+%! unwind_protect_cleanup
+%!   delete (f);
+%! end_unwind_protect
+%!error<dictionary.writedictionary: only tables and timetables can be written to ODS files.> ...
+%! wjx (dictionary ('x', 1), '.ods');
+%!error<dictionary.writedictionary: the keys must be text to name the sheets of an ODS file.> ...
+%! wjx (dictionary (1, table (1)), '.ods');
+%!error<dictionary.writedictionary: a dictionary with no entries has no sheets to write.> ...
+%! wjx (configureDictionary ('string', 'table'), '.ods');
+%!error<dictionary.writedictionary: 'PrettyPrint' does not apply to ODS files.> ...
+%! wjx (dictionary ('x', table (1)), '.ods', 'PrettyPrint', false);
+%!error<dictionary.writedictionary: 'PreserveInfAndNaN' does not apply to ODS files.> ...
+%! wjx (dictionary ('x', table (1)), '.ods', 'PreserveInfAndNaN', false);
+
+################################################################################
 ##                         ** Compare and hash **                             ##
 ################################################################################
 ##                             Available Methods                              ##
