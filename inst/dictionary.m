@@ -339,6 +339,7 @@ classdef dictionary
     ## @code{@var{k} = keys (@var{d}, @var{format})} returns them as above for
     ## @var{format} @qcode{'uniform'}, the default, and as a column cell
     ## array, each key in a cell of its own, for @qcode{'cell'}.
+    ## @var{format} is matched in any case and by its first letters.
     ##
     ## @var{d} must be configured.
     ##
@@ -346,7 +347,7 @@ classdef dictionary
     ## @end deftypefn
     function k = keys (this, format = 'uniform')
       scope = 'dictionary.keys';
-      [format, errmsg] = formatName (format);
+      [format, errmsg] = formatName (format, {'uniform', 'cell'});
       if (! isempty (errmsg))
         error ("%s: %s", scope, errmsg);
       endif
@@ -379,6 +380,7 @@ classdef dictionary
     ## @code{@var{v} = values (@var{d}, @var{format})} returns them as above
     ## for @var{format} @qcode{'uniform'}, the default, and as a column cell
     ## array, each value in a cell of its own, for @qcode{'cell'}.
+    ## @var{format} is matched in any case and by its first letters.
     ##
     ## @var{d} must be configured.
     ##
@@ -386,7 +388,7 @@ classdef dictionary
     ## @end deftypefn
     function v = values (this, format = 'uniform')
       scope = 'dictionary.values';
-      [format, errmsg] = formatName (format);
+      [format, errmsg] = formatName (format, {'uniform', 'cell'});
       if (! isempty (errmsg))
         error ("%s: %s", scope, errmsg);
       endif
@@ -444,6 +446,200 @@ classdef dictionary
         end_try_catch
         tf(i) = locate (this.hashes_, this.order_, this.keys_, k, h) > 0;
       endfor
+    endfunction
+
+  endmethods
+
+################################################################################
+##                             ** Entries **                                  ##
+################################################################################
+##                             Available Methods                              ##
+##                                                                            ##
+## 'insert'           'lookup'           'remove'           'entries'         ##
+##                                                                            ##
+################################################################################
+
+  methods (Access = public)
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {dictionary} {@var{d} =} insert (@var{d}, @var{keys}, @var{values})
+    ## @deftypefnx {dictionary} {@var{d} =} insert (@dots{}, @qcode{'Overwrite'}, @var{tf})
+    ##
+    ## Add entries.
+    ##
+    ## @code{@var{d} = insert (@var{d}, @var{keys}, @var{values})} adds the
+    ## entries of @var{keys} and @var{values} to @var{d}, as
+    ## @code{@var{d}(@var{keys}) = @var{values}} does: @var{values} has the
+    ## size of @var{keys}, or is one value for all, and both are converted to
+    ## the types of @var{d}, which an unconfigured dictionary takes from them.
+    ## A key already present has its value replaced and keeps its position.
+    ##
+    ## @code{@var{d} = insert (@dots{}, @qcode{'Overwrite'}, @var{tf})} with
+    ## @var{tf} false leaves the value of a key already present unchanged, and
+    ## a key repeated in @var{keys} takes its first value; it still adds the
+    ## keys not yet present.  @var{tf} is a logical or numeric scalar, true by
+    ## default.  The option name is matched in any case.
+    ##
+    ## @seealso{dictionary.remove, dictionary.lookup, dictionary.isKey}
+    ## @end deftypefn
+    function this = insert (this, keys, vals, varargin)
+      scope = 'dictionary.insert';
+      if (nargin < 3)
+        error ("%s: invalid number of input arguments.", scope);
+      endif
+      if (mod (numel (varargin), 2) != 0)
+        error ("%s: name-value arguments must be in pairs.", scope);
+      endif
+      [overwrite, rest] = parsePairedArguments ({'Overwrite'}, {true}, ...
+                                                varargin);
+      if (! isempty (rest))
+        error ("%s: invalid optional paired argument.", scope);
+      endif
+      if (! ((islogical (overwrite) || isnumeric (overwrite))
+             && isscalar (overwrite) && ! isnan (overwrite)))
+        error ("%s: 'Overwrite' must be a logical scalar.", scope);
+      endif
+      [this, errmsg] = addEntries (this, keys, vals, logical (overwrite));
+      if (! isempty (errmsg))
+        error ("%s: %s", scope, errmsg);
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {dictionary} {@var{v} =} lookup (@var{d}, @var{keys})
+    ## @deftypefnx {dictionary} {@var{v} =} lookup (@dots{}, @qcode{'FallbackValue'}, @var{fallback})
+    ##
+    ## Return the values of keys.
+    ##
+    ## @code{@var{v} = lookup (@var{d}, @var{keys})} returns the values of
+    ## @var{keys}, an array of keys, in an array of the same shape, as
+    ## @code{@var{d}(@var{keys})} does; a key not in @var{d} is an error.
+    ##
+    ## @code{@var{v} = lookup (@dots{}, @qcode{'FallbackValue'},
+    ## @var{fallback})} returns @var{fallback} for each key not in @var{d}
+    ## instead.  @var{fallback} is a single value, converted to the value type
+    ## of @var{d}, so that a dictionary of @qcode{'cell'} values needs a cell;
+    ## it is checked only when some key is missing.  The option name is
+    ## matched in any case.
+    ##
+    ## @var{d} must be configured.
+    ##
+    ## @seealso{dictionary.isKey, dictionary.insert, dictionary.values}
+    ## @end deftypefn
+    function v = lookup (this, keys, varargin)
+      scope = 'dictionary.lookup';
+      if (nargin < 2)
+        error ("%s: invalid number of input arguments.", scope);
+      endif
+      if (mod (numel (varargin), 2) != 0)
+        error ("%s: name-value arguments must be in pairs.", scope);
+      endif
+      names = varargin(1:2:end);
+      names = names(cellfun (@(x) ischar (x) || isa (x, 'string'), names));
+      given = any (strcmpi (cellfun (@char, names, 'UniformOutput', false), ...
+                            'FallbackValue'));
+      [fallback, rest] = parsePairedArguments ({'FallbackValue'}, {[]}, ...
+                                               varargin);
+      if (! isempty (rest))
+        error ("%s: invalid optional paired argument.", scope);
+      endif
+      if (given)
+        fallback = {fallback};
+      else
+        fallback = {};
+      endif
+      [v, errmsg] = lookupValues (this, {keys}, false, fallback);
+      if (! isempty (errmsg))
+        error ("%s: %s", scope, errmsg);
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn {dictionary} {@var{d} =} remove (@var{d}, @var{keys})
+    ##
+    ## Remove entries.
+    ##
+    ## @code{@var{d} = remove (@var{d}, @var{keys})} removes the entries of
+    ## @var{keys}, an array of keys converted to the key type of @var{d}, as
+    ## @code{@var{d}(@var{keys}) = []} does.  A key not in @var{d} is ignored.
+    ## A key removed and added again goes after the others.  @var{d} must be
+    ## configured.
+    ##
+    ## @seealso{dictionary.insert, dictionary.isKey}
+    ## @end deftypefn
+    function this = remove (this, keys)
+      scope = 'dictionary.remove';
+      if (nargin != 2)
+        error ("%s: invalid number of input arguments.", scope);
+      endif
+      if (isempty (this.keyType_))
+        error ("%s: D is not configured.", scope);
+      endif
+      [this, errmsg] = removeEntries (this, keys);
+      if (! isempty (errmsg))
+        error ("%s: %s", scope, errmsg);
+      endif
+    endfunction
+
+    ## -*- texinfo -*-
+    ## @deftypefn  {dictionary} {@var{e} =} entries (@var{d})
+    ## @deftypefnx {dictionary} {@var{e} =} entries (@var{d}, @var{format})
+    ##
+    ## Return the keys and values together.
+    ##
+    ## @code{@var{e} = entries (@var{d})} returns a table with the variables
+    ## @qcode{Key} and @qcode{Value}, one row per entry in the order the keys
+    ## were added: the columns @code{keys (@var{d})} and @code{values
+    ## (@var{d})} return.  Keys or values that a table cannot hold, function
+    ## handles, dictionaries or values that cannot be joined, are refused.
+    ##
+    ## @code{@var{e} = entries (@var{d}, @var{format})} returns the table above
+    ## for @var{format} @qcode{'table'}, the default; for @qcode{'struct'} a
+    ## column structure array with the fields @qcode{Key} and @qcode{Value},
+    ## one element per entry; and for @qcode{'cell'} a cell array of two
+    ## columns, each key and value in a cell of its own.  @var{format} is
+    ## matched in any case and by its first letters.
+    ##
+    ## @var{d} must be configured.
+    ##
+    ## @seealso{dictionary.keys, dictionary.values}
+    ## @end deftypefn
+    function e = entries (this, format = 'table')
+      scope = 'dictionary.entries';
+      [format, errmsg] = formatName (format, {'table', 'struct', 'cell'});
+      if (! isempty (errmsg))
+        error ("%s: %s", scope, errmsg);
+      endif
+      if (isempty (this.keyType_))
+        error ("%s: D is not configured.", scope);
+      endif
+      switch (format)
+        case 'cell'
+          e = [this.keys_, this.values_];
+        case 'struct'
+          e = struct ('Key', this.keys_, 'Value', this.values_);
+          if (isempty (this.keys_))
+            e = reshape (e, 0, 1);
+          endif
+        case 'table'
+          if (any (strcmp ({this.keyType_, this.valueType_}, ...
+                           'function_handle'))
+              || any (strcmp ({this.keyType_, this.valueType_}, 'dictionary')))
+            error (strcat ("%s: a table cannot hold these entries; use the", ...
+                          " 'cell' or 'struct' format."), scope);
+          endif
+          [k, errmsg] = join (this.keys_, this.keyEmpty_, this.keyType_, ...
+                              'keys');
+          if (isempty (errmsg))
+            [v, errmsg] = join (this.values_, this.valueEmpty_, ...
+                                this.valueType_, 'values');
+          endif
+          if (! isempty (errmsg))
+            error (strcat ("%s: a table cannot hold these entries; use the", ...
+                          " 'cell' or 'struct' format."), scope);
+          endif
+          e = table (k, v, 'VariableNames', {'Key', 'Value'});
+      endswitch
     endfunction
 
   endmethods
@@ -609,8 +805,9 @@ classdef dictionary
 
     ## The values of the keys in SUBS, the subscripts of '()' or, for BRACE,
     ## of '{}': one array of the shape of the keys, or the contents of the
-    ## cells in a cell array.
-    function [out, errmsg] = lookupValues (this, subs, brace)
+    ## cells in a cell array.  FALLBACK, when given as {value}, stands for the
+    ## keys not in the dictionary.
+    function [out, errmsg] = lookupValues (this, subs, brace, fallback = {})
       out = [];
       errmsg = '';
       if (isempty (this.keyType_))
@@ -646,7 +843,7 @@ classdef dictionary
           return;
         end_try_catch
         idx(i) = locate (this.hashes_, this.order_, this.keys_, k, h);
-        if (idx(i) == 0)
+        if (idx(i) == 0 && isempty (fallback))
           if (n == 1)
             errmsg = "key not found.";
           else
@@ -659,8 +856,25 @@ classdef dictionary
         out = cellfun (@(c) c{1}, this.values_(idx)', 'UniformOutput', false);
         return;
       endif
-      [out, errmsg] = join (this.values_(idx), this.valueEmpty_, ...
-                            this.valueType_, 'values');
+      items = cell (n, 1);
+      found = idx > 0;
+      items(found) = this.values_(idx(found));
+      if (! all (found))
+        ## The fallback is read only when a key needs it, as in MATLAB
+        fb = fallback{1};
+        if (! isequal (arraySize (fb), [1, 1]))
+          errmsg = "'FallbackValue' must be a scalar.";
+          return;
+        endif
+        [fb, errmsg] = convert (fb, this.valueType_, this.valueEmpty_, ...
+                                'value');
+        if (! isempty (errmsg))
+          return;
+        endif
+        items(! found) = {fb};
+      endif
+      [out, errmsg] = join (items, this.valueEmpty_, this.valueType_, ...
+                            'values');
       if (! isempty (errmsg))
         errmsg = [errmsg "; look up each key separately."];
       elseif (isArray (out) && ! isequal (size (out), ksz))
@@ -703,8 +917,9 @@ classdef dictionary
     endfunction
 
     ## Add the entries of the keys K and the values V, configuring the
-    ## dictionary from them when it has no types yet.
-    function [this, errmsg] = addEntries (this, K, V)
+    ## dictionary from them when it has no types yet.  Without OVERWRITE a key
+    ## already present, or repeated in K, keeps its first value.
+    function [this, errmsg] = addEntries (this, K, V, overwrite = true)
       if (isempty (this.keyType_))
         K = asStored (K);
         V = asStored (V);
@@ -760,7 +975,9 @@ classdef dictionary
         end_try_catch
         e = locate (hashes, order, keys, k, h);
         if (e > 0)
-          vals{e} = v;
+          if (overwrite)
+            vals{e} = v;
+          endif
         else
           n += 1;
           keys{n} = k;
@@ -892,10 +1109,16 @@ function [x, errmsg] = convert (x, type, empty, what)
   endif
   switch (type)
     case 'string'
-      if (ischar (x) || iscellstr (x) || isnumeric (x) || islogical (x)
+      if (ischar (x) || isnumeric (x) || islogical (x)
           || isa (x, 'datetime') || isa (x, 'missing'))
         x = string (x);
         return;
+      elseif (iscell (x))
+        try
+          x = string (x);
+          return;
+        catch
+        end_try_catch
       endif
     case {'double', 'single', 'int8', 'int16', 'int32', 'int64', ...
           'uint8', 'uint16', 'uint32', 'uint64'}
@@ -981,21 +1204,25 @@ endfunction
 function names = publicMethods ()
   names = {'types', 'isConfigured', 'numEntries', 'numel', 'length', ...
            'size', 'ndims', 'isempty', 'keys', 'values', 'isKey', ...
-           'horzcat', 'vertcat', 'cat'};
+           'insert', 'lookup', 'remove', 'entries', 'horzcat', 'vertcat', ...
+           'cat'};
 endfunction
 
-## FORMAT, a format option of 'keys' and 'values', in lower case
-function [format, errmsg] = formatName (format)
+## The one of OPTIONS that FORMAT names, in any case or by its first letters
+function [format, errmsg] = formatName (format, options)
   errmsg = '';
   if (! ((ischar (format) && rows (format) <= 1)
          || (isa (format, 'string') && isscalar (format))))
     errmsg = "FORMAT must be a character vector or a string scalar.";
     return;
   endif
-  format = lower (char (format));
-  if (! any (strcmp (format, {'uniform', 'cell'})))
+  format = char (format);
+  match = ! isempty (format) & strncmpi (format, options, numel (format));
+  if (nnz (match) != 1)
     errmsg = sprintf ("invalid format '%s'.", format);
+    return;
   endif
+  format = options{match};
 endfunction
 
 ## 'pkg test' reads the BISTs from the file it is testing, so a class
