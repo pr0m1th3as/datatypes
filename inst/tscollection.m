@@ -774,6 +774,9 @@ classdef tscollection
     ## data against times and each of the size of the member's samples.  A
     ## member not named takes @code{NaN}, or 0 for integer data and
     ## @code{false} for logical data.  @qcode{'Time'} is matched in any case.
+    ## A row of data for a column of times is accepted, as the
+    ## @code{timeseries} constructor accepts it; MATLAB refuses it for a
+    ## collection.
     ##
     ## For a collection with no @qcode{TimeInfo.StartDate} @var{time} is
     ## numbers in its units; for one with a start date it may also be dates as
@@ -1012,7 +1015,9 @@ classdef tscollection
     ## interpolation method, as @code{timeseries.resample} evaluates a series:
     ## at a time outside the collection the data is @code{NaN}, and a member
     ## with quality codes gives each new time the code of the nearest sample.
-    ## MATLAB raises there for a member with quality codes.
+    ## MATLAB raises there for a member with quality codes.  @var{time} is
+    ## taken in any order and sorted, as @code{timeseries.resample} takes it;
+    ## MATLAB refuses descending times for a collection.
     ##
     ## @code{@var{tc} = resample (@var{tc}, @var{time}, @var{method})} uses
     ## @var{method}, @qcode{'linear'} or @qcode{'zoh'}, for every member;
