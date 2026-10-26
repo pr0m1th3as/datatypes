@@ -62,8 +62,11 @@ classdef dictionary
   ## @end itemize
   ##
   ## Indexing can continue into a value, as in @code{@var{d}(@var{key}).x}
-  ## or @code{@var{d}@{@var{key}@}(2) = 5}.  @code{end} and @qcode{':'} are
-  ## not supported.
+  ## or @code{@var{d}@{@var{key}@}(2) = 5}; assigning into the contents of
+  ## a new key starts from empty.  @code{end} is not supported.  Octave
+  ## cannot tell @code{@var{d}(:)} from @code{@var{d}(':')}, so @qcode{':'}
+  ## is the key @qcode{":"}, as it is in MATLAB in an assignment; use
+  ## @code{keys} or @code{values} for every entry.
   ##
   ## @seealso{configureDictionary, isdictionary, keyHash, keyMatch}
   ## @end deftp
@@ -179,29 +182,36 @@ classdef dictionary
     ##
     ## The key type must be one that @code{keyHash} can hash: a built-in type
     ## or a class with a @code{keyHash} method; a cell array is a key type of
-    ## its own, each cell one key.  An object of any class that is not an
-    ## array type is one value, a @code{table} or @code{timetable} of any size
-    ## included, where MATLAB accepts only a 1-by-1 one.
+    ## its own, each cell one key.  An array of objects holds one key or value
+    ## per object, but a @code{table} or @code{timetable} of any size is one
+    ## value, where MATLAB accepts only a 1-by-1 one.
     ##
     ## @code{@var{d} = dictionary (@var{k1}, @var{v1}, @dots{}, @var{kN},
     ## @var{vN})} adds each pair of keys and values in turn, the first pair
     ## setting the key and value types and later pairs converted to them.
-    ## Keys and values are converted as follows; any other class is refused.
+    ## Keys and values of another class are converted by the function of the
+    ## type's name, as in MATLAB: @code{string (@var{x})}, @code{double
+    ## (@var{x})}, @code{categorical (@var{x})} and so on, and refused where
+    ## that fails or gives another class.  So @code{5} becomes @qcode{"5"} as
+    ## a string, @qcode{"3.5"} becomes 3.5 as a @code{double} but is refused
+    ## by @code{single} and the integer types, a character array gives its
+    ## character codes as a number, a @code{categorical} its code, and
+    ## @code{missing} gives @code{NaN}, @code{NaT} or an undefined category.
+    ## The exceptions:
     ##
-    ## @multitable @columnfractions 0.3 0.7
-    ## @headitem Type @tab Converted from
-    ## @item @qcode{'string'} @tab character arrays (by rows), cell arrays of
-    ## character vectors, numbers and logical values (as text),
-    ## @code{datetime}, @code{missing}
-    ## @item numeric @tab other numeric and logical values (rounded and
-    ## saturated for integer types), character arrays (their character codes),
-    ## @code{string} (as by @code{str2double}), @code{missing} (@code{NaN})
-    ## @item @qcode{'logical'} @tab numbers other than @code{NaN}
-    ## @item @qcode{'datetime'} @tab dates as text, read in the time zone of
-    ## the dictionary; a @code{datetime} with a time zone is moved to that of
-    ## the dictionary
-    ## @item @qcode{'categorical'} @tab @code{string}
-    ## @end multitable
+    ## @itemize
+    ## @item a @qcode{'cell'} type takes only cell arrays, which are never
+    ## wrapped, as in MATLAB;
+    ## @item a @qcode{'struct'} type takes only structures, where MATLAB turns
+    ## an object into a structure of its private properties;
+    ## @item a @qcode{'table'} type makes a table of the variable
+    ## @qcode{Var1} and refuses character arrays, as in MATLAB;
+    ## @item a @qcode{'logical'} type takes a character as true for a nonzero
+    ## code, as in MATLAB;
+    ## @item a @qcode{'datetime'} type reads dates given as text in the time
+    ## zone of the dictionary, and moves a key with a time zone to that of the
+    ## keys; a value keeps its own.
+    ## @end itemize
     ##
     ## A date with a time zone and one without are different keys, so that
     ## looking up one as the other finds nothing, and @code{keys} cannot join
@@ -907,7 +917,12 @@ classdef dictionary
           endif
           K = s(1).subs{1};
           if (numel (s) > 1)
-            val = subsasgn (subsref (this, s(1)), s(2:end), val);
+            ## Assigning into a value needs it there, as in MATLAB
+            [cur, errmsg] = lookupValues (this, s(1).subs, false);
+            if (! isempty (errmsg))
+              error ("%s: %s", scope, errmsg);
+            endif
+            val = subsasgn (cur, s(2:end), val);
           elseif (isa (val, 'double') && isequal (size (val), [0, 0]))
             if (isempty (this.keyType_))
               error ("%s: D is not configured.", scope);
@@ -938,7 +953,12 @@ classdef dictionary
             error ("%s: '{}' assignment takes a single key.", scope);
           endif
           if (numel (s) > 1)
-            val = subsasgn (subsref (this, s(1)), s(2:end), val);
+            ## The contents of a new key start empty, as in MATLAB
+            cur = [];
+            if (! isempty (this.keyType_) && isKey (this, K))
+              cur = subsref (this, s(1));
+            endif
+            val = subsasgn (cur, s(2:end), val);
           endif
           [this, errmsg] = addEntries (this, K, {val});
         case '.'
@@ -1022,15 +1042,17 @@ classdef dictionary
                    this.valueType_, count);
     endfunction
 
-    ## True when OTHER holds the keys of this dictionary, in any order, with
-    ## values equal by isequal or, for NANEQUAL, by isequaln.
+    ## True when OTHER has the same key type and holds the keys of this
+    ## dictionary, in any order, with values equal by isequal or, for
+    ## NANEQUAL, by isequaln; the value types may differ.
     function tf = sameEntries (this, other, nanEqual)
       if (isempty (this.keyType_) || isempty (other.keyType_))
         tf = isempty (this.keyType_) && isempty (other.keyType_);
         return;
       endif
       tf = false;
-      if (numel (this.keys_) != numel (other.keys_))
+      if (! strcmp (this.keyType_, other.keyType_)
+          || numel (this.keys_) != numel (other.keys_))
         return;
       endif
       for i = 1:numel (this.keys_)
@@ -1071,10 +1093,8 @@ classdef dictionary
         return;
       endif
       K = subs{1};
-      if (ischar (K) && strcmp (K, ':'))
-        errmsg = "':' is not supported; use 'keys' or 'values'.";
-        return;
-      endif
+      ## Octave cannot tell d(:) from d(':'), so ':' is the key ":"
+      colon = ischar (K) && strcmp (K, ':');
       [K, errmsg] = convert (K, this.keyType_, this.keyEmpty_, 'key');
       if (! isempty (errmsg))
         return;
@@ -1092,7 +1112,9 @@ classdef dictionary
         end_try_catch
         idx(i) = locate (this.hashes_, this.order_, this.keys_, k, h);
         if (idx(i) == 0 && isempty (fallback))
-          if (n == 1)
+          if (colon)
+            errmsg = "':' is not supported; use 'keys' or 'values'.";
+          elseif (n == 1)
             errmsg = "key not found.";
           else
             errmsg = sprintf ("element %d of the keys not found.", i);
@@ -1109,14 +1131,14 @@ classdef dictionary
       items(found) = this.values_(idx(found));
       if (! all (found))
         ## The fallback is read only when a key needs it, as in MATLAB
-        fb = fallback{1};
-        if (! isequal (arraySize (fb), [1, 1]))
-          errmsg = "'FallbackValue' must be a scalar.";
+        [fb, errmsg] = convert (fallback{1}, this.valueType_, ...
+                                this.valueEmpty_, 'value');
+        if (! isempty (errmsg))
           return;
         endif
-        [fb, errmsg] = convert (fb, this.valueType_, this.valueEmpty_, ...
-                                'value');
-        if (! isempty (errmsg))
+        ## Checked once converted, so that text is one string or date
+        if (! isequal (arraySize (fb), [1, 1]))
+          errmsg = "'FallbackValue' must be a scalar.";
           return;
         endif
         items(! found) = {fb};
@@ -1274,25 +1296,44 @@ classdef dictionary
 
 endclassdef
 
-## True for an array whose elements are keys or values one by one; any other
-## object is a single key or value.
+## True for an array whose elements are keys or values one by one.  A table
+## is one value whatever its size, and a dictionary or a function handle is
+## always one; an object of another class is one when it is a single object.
 function tf = isArray (x)
-  tf = (isnumeric (x) || islogical (x) || ischar (x) || iscell (x)
-        || isstruct (x) || isa (x, 'string') || isa (x, 'datetime')
-        || isa (x, 'duration') || isa (x, 'calendarDuration')
-        || isa (x, 'categorical') || isa (x, 'missing'));
+  if (istabular (x) || isa (x, 'dictionary') || is_function_handle (x))
+    tf = false;
+  elseif (isForeign (x))
+    tf = builtin ('numel', x) != 1;
+  else
+    tf = true;
+  endif
+endfunction
+
+## True for an object of a class other than the arrays of this package, whose
+## own size and indexing may mean something else, as for 'timeseries'
+function tf = isForeign (x)
+  tf = (isobject (x) && ! (isa (x, 'string') || isa (x, 'datetime')
+                           || isa (x, 'duration')
+                           || isa (x, 'calendarDuration')
+                           || isa (x, 'categorical') || isa (x, 'missing')));
 endfunction
 
 function sz = arraySize (x)
-  if (isArray (x))
-    sz = size (x);
-  else
+  if (! isArray (x))
     sz = [1, 1];
+  elseif (isForeign (x))
+    sz = builtin ('size', x);
+  else
+    sz = size (x);
   endif
 endfunction
 
 function x = element (x, i)
-  if (isArray (x))
+  if (! isArray (x))
+    return;
+  elseif (isForeign (x))
+    x = builtin ('subsref', x, substruct ('()', {i}));
+  else
     x = x(i);
   endif
 endfunction
@@ -1311,7 +1352,7 @@ endfunction
 function e = emptyOf (x)
   if (istabular (x))
     e = x(zeros (0, 1), :);
-  elseif (isArray (x))
+  elseif (isArray (x) && ! isForeign (x))
     e = x(:);
     e = e(zeros (0, 1));
   else
@@ -1348,68 +1389,69 @@ function e = emptyColumn (type)
 endfunction
 
 ## X converted to the class TYPE, its empty column EMPTY, as a WHAT ('key' or
-## 'value') of a dictionary.
+## 'value') of a dictionary: by the function of the type's name, as in
+## MATLAB, except where noted.
 function [x, errmsg] = convert (x, type, empty, what)
   errmsg = '';
   if (issparse (x))
     x = full (x);
   endif
   if (strcmp (class (x), type))
-    if (isa (x, 'datetime'))
+    if (isa (x, 'datetime') && strcmp (what, 'key'))
       x = inZone (x, empty);
     endif
     return;
   endif
+  bad = sprintf ("unable to use '%s' as %s of a dictionary of '%s' %ss.",
+                 class (x), what, type, what);
   switch (type)
-    case 'string'
-      if (ischar (x) || isnumeric (x) || islogical (x)
-          || isa (x, 'datetime') || isa (x, 'missing'))
-        x = string (x);
-        return;
-      elseif (iscell (x))
-        try
-          x = string (x);
-          return;
-        catch
-        end_try_catch
-      endif
-    case {'double', 'single', 'int8', 'int16', 'int32', 'int64', ...
-          'uint8', 'uint16', 'uint32', 'uint64'}
-      if (isnumeric (x) || islogical (x))
-        x = cast (x, type);
-        return;
-      elseif (ischar (x))
-        x = cast (double (x), type);
-        return;
-      elseif (isa (x, 'string'))
-        x = cast (reshape (str2double (cellstr (x)), size (x)), type);
-        return;
-      elseif (isa (x, 'missing'))
-        x = cast (NaN (size (x)), type);
-        return;
-      endif
+    case {'cell', 'struct'}
+      ## A cell is never wrapped, as in MATLAB, and an object never becomes
+      ## a structure of its private properties, as it does in MATLAB
+      errmsg = bad;
+      return;
     case 'logical'
-      if (isnumeric (x) && ! any (isnan (x(:))))
-        x = logical (x);
-        return;
+      ## A character is true for a nonzero code, as in MATLAB
+      if (ischar (x))
+        x = double (x);
       endif
     case 'datetime'
       if (ischar (x) || iscellstr (x) || isa (x, 'string'))
         ## Text is read in the time zone of the dictionary, if any
-        x = datetime (x);
+        try
+          x = datetime (x);
+        catch
+          errmsg = bad;
+          return;
+        end_try_catch
         if (isa (empty, 'datetime') && ! isempty (empty.TimeZone))
           x.TimeZone = empty.TimeZone;
         endif
         return;
       endif
-    case 'categorical'
-      if (isa (x, 'string'))
-        x = categorical (x);
+    case 'table'
+      ## Named as MATLAB names it, not after this function's variable; text
+      ## is refused, as in MATLAB
+      if (ischar (x))
+        errmsg = bad;
         return;
       endif
+      try
+        x = table (x, 'VariableNames', {'Var1'});
+      catch
+        errmsg = bad;
+      end_try_catch
+      return;
   endswitch
-  errmsg = sprintf ("unable to use '%s' as %s of a dictionary of '%s' %ss.",
-                    class (x), what, type, what);
+  try
+    x = feval (type, x);
+  catch
+    errmsg = bad;
+    return;
+  end_try_catch
+  if (! strcmp (class (x), type))
+    errmsg = bad;
+  endif
 endfunction
 
 ## The datetime X moved to the time zone of the datetime EMPTY, when both
