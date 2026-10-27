@@ -61,8 +61,9 @@ classdef eventtable < timetable
   ## renaming back does not restore it.  Moving a variable or converting its
   ## type leaves the property alone.
   ##
-  ## An event table cannot itself carry an event table.  It has no
-  ## @qcode{Events} property, and asking for one raises.
+  ## An event table cannot itself carry an event table.  It inherits the
+  ## @qcode{Events} property of a timetable but cannot read or assign it:
+  ## asking for it, or assigning one, raises.
   ##
   ## An interval event is half-open on the right: an event beginning at
   ## 02:00 and lasting two hours covers 02:00 and 03:00 but not 04:00.  An
@@ -137,24 +138,6 @@ classdef eventtable < timetable
     ##
     ## @end deftp
     EventEndsVariable = []
-
-  endproperties
-
-  properties (Constant, Access = private, Hidden)
-
-    ## An event table is not something that can carry an event table, so the
-    ## property inherited from 'timetable' is shadowed by one that cannot be
-    ## read, written or discovered.  A classdef subclass cannot delete an
-    ## inherited property, and hiding it alone would leave the slot writable:
-    ## a merge body storing an event table here would build a cycle that
-    ## every recursive operation would follow, and nothing would report it at
-    ## the time.  Constant and private together make that state
-    ## unrepresentable rather than merely forbidden.  'isprop' still answers
-    ## true for the name, and the value is never anything but this one.
-    ##
-    ## Nothing inherited from 'timetable' may name this property; the two
-    ## accessors below are the only way in, and both refuse.
-    Events = []
 
   endproperties
 
@@ -406,8 +389,11 @@ classdef eventtable < timetable
     endfunction
 
     ## An event table has no attached event table and never will, so the
-    ## reader answers with nothing rather than reaching the shadowed
-    ## property, which it could not read anyway.
+    ## reader answers with nothing rather than reaching the inherited
+    ## property.  With this one, 'detachEvents', 'carryEvents' and
+    ## 'setEventsOf' below are the only ways to that property, and none of
+    ## them stores anything in it: storing an event table there would build
+    ## a cycle that every recursive operation would follow.
     function out = eventsOf (this)
       out = [];
     endfunction

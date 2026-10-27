@@ -50,6 +50,14 @@ classdef (Abstract) TabularProperties
       error ("%s: subclass must implement displayOrder.", class (this));
     endfunction
 
+    ## Inherited properties that a subclass keeps off its list of properties.
+    ## A classdef subclass can neither delete an inherited property nor
+    ## declare it again, so keeping its name off the list is the only way to
+    ## hide it.  None by default.
+    function names = withheldNames (this)
+      names = {};
+    endfunction
+
   endmethods
 
   methods
@@ -147,9 +155,11 @@ classdef (Abstract) TabularProperties
     ## The declared property names sorted into the display order.  The
     ## declared list is what is sorted, rather than 'displayOrder' being
     ## returned as it stands, so that a property left out of 'displayOrder'
-    ## is still listed instead of disappearing from view.
+    ## is still listed instead of disappearing from view.  Only the names in
+    ## 'withheldNames' are left out.
     function names = orderedNames (this)
       declared = builtin ("properties", this);
+      declared = declared(! ismember (declared, withheldNames (this)));
       order = displayOrder (this);
       shown = order(ismember (order, declared));
       names = [shown(:); declared(! ismember (declared, order))];

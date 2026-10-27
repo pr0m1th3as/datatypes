@@ -38,19 +38,6 @@ classdef EventtableProperties < datatypes.tabular.TimetableProperties
     EventEndsVariable = []
   endproperties
 
-  properties (Constant, Access = private, Hidden)
-
-    ## 'Events' is declared by 'TimetableProperties' and a classdef subclass
-    ## cannot delete an inherited property.  Leaving it out of 'displayOrder'
-    ## is not enough either, since a property omitted from that list is
-    ## deliberately appended rather than dropped, so it is shadowed here by
-    ## one that is not declared in public terms and does not reach the list
-    ## at all.  'subsref' below refuses the name so that asking for it says
-    ## why rather than reporting an access error.
-    Events = []
-
-  endproperties
-
   methods (Access = {?eventtable})
 
     function this = EventtableProperties (s, cpTypes)
@@ -108,6 +95,13 @@ classdef EventtableProperties < datatypes.tabular.TimetableProperties
                'VariableDescriptions', 'VariableUnits', ...
                'VariableContinuity', 'RowTimes', 'StartTime', ...
                'SampleRate', 'TimeStep', 'CustomProperties'};
+    endfunction
+
+    ## 'Events' is declared by 'TimetableProperties', but an event table does
+    ## not carry one: its name is kept off the list of properties, and
+    ## 'subsref' refuses it so that asking for it says why.
+    function names = withheldNames (this)
+      names = {'Events'};
     endfunction
 
   endmethods

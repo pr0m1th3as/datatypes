@@ -158,8 +158,8 @@ classdef timetable < tabular
     ## unchanged: it is never subsetted, filtered, re-timed or reordered along
     ## with them.
     ##
-    ## An @code{eventtable} has no @qcode{Events} property of its own, an
-    ## event table not being something that can itself carry events.
+    ## An @code{eventtable} inherits this property but cannot read or assign
+    ## it, an event table not being something that can itself carry events.
     ##
     ## @end deftp
     Events = []
@@ -330,8 +330,8 @@ classdef timetable < tabular
     endfunction
 
     ## The attached event table, read through an accessor rather than off the
-    ## property.  A subclass may not have the property at all, and an
-    ## 'eventtable' does not: nothing inherited from here may name it.
+    ## property.  An 'eventtable' inherits the property but must never hold
+    ## anything in it, so nothing inherited from here names it directly.
     function out = eventsOf (this)
       out = this.Events;
     endfunction

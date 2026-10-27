@@ -404,8 +404,8 @@
 %! ET = eventtable (datetime (2024, 1, 1));
 %! ET.Properties.Events = eventtable (datetime (2024, 1, 1));
 
-## Test 'Events' is not among the properties of an event table
-%!assert (any (strcmp (properties ('eventtable'), 'Events')), false)
+## Test 'Events' is among the properties of an event table, inherited
+%!assert (any (strcmp (properties ('eventtable'), 'Events')), true)
 
 ## Test 'Events' is among the properties of a timetable
 %!assert (any (strcmp (properties ('timetable'), 'Events')), true)
