@@ -11060,10 +11060,16 @@ function [texts, W] = addtexts (texts, W, t)
 endfunction
 
 ## Whether the class of the object X defines a 'dispstrings' method, hidden
-## or not.
+## or not.  Octave 11 lists the methods in a cell array; an Octave whose meta
+## classes follow MATLAB lists them as an array of 'meta.method' objects.
 function tf = hasdispstrings (x)
   ml = metaclass (x).MethodList;
-  tf = any (cellfun (@(m) strcmp (m.Name, 'dispstrings'), ml));
+  if (iscell (ml))
+    names = cellfun (@(m) m.Name, ml, 'UniformOutput', false);
+  else
+    names = {ml.Name};
+  endif
+  tf = any (strcmp (names, 'dispstrings'));
 endfunction
 
 ## The row pattern for one display column of width W: numbers and the like
