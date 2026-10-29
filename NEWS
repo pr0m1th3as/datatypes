@@ -1,43 +1,20 @@
-Summary of important user-visible changes for datatypes 1.6.0:
+Summary of important user-visible changes for datatypes 1.6.1:
 --------------------------------------------------------------
 
- This release adds the `dictionary` class, a map of unique keys to values,
- with `readdictionary` and `writedictionary` for JSON files, and lets
- `datetime` detect dates in the language of its 'Locale'.
+ This patch release updates the Time Zone Database to release 2026f, for
+ Cuba's change of 1 November 2026, and fixes two classes for an Octave whose
+ classdef follows MATLAB more closely.
 
- ** New class `dictionary`: keys of one type mapped to values of one type,
-    kept in the order they were added.  Every method of MATLAB's: `insert`,
-    `lookup`, `remove`, `entries`, `keys`, `values`, `isKey`, `numEntries`,
-    `types` and `isConfigured`, with indexing by `()` and `{}`, comparison
-    and hashing.  Keys may be numbers, text, dates, durations, categoricals,
-    structures, cell arrays, function handles, `missing` or dictionaries.
+ ** Time Zone Database updated to release 2026f: Cuba stays on UTC-4 instead
+    of falling back on 1 November 2026, and the end of daylight saving in
+    Brazil is corrected for several years between 1932 and 1966.
 
- ** New functions `configureDictionary`, `isdictionary` and
-    `readdictionary`.  `readdictionary` reads a JSON file or web address
-    with MATLAB's options, and the `writedictionary` method writes one.
-    Both also read and write a dictionary of tables or timetables as an
-    OpenDocument spreadsheet, one sheet per key.  Remote stores and
-    archives are not supported.
+ ** `eventtable` inherits the `Events` property of `timetable` instead of
+    declaring it again, which an Octave whose classdef follows MATLAB
+    refuses when it loads the class.  `properties ('eventtable')` now lists
+    `Events`; reading or assigning it still raises.
 
- ** `datetime` detects text under a 'Locale' as MATLAB does: the locale's
-    month names, its long forms (`1. Januar 2024`, `5 de marzo de 2024`),
-    dotted dates, and slashed dates in the locale's order, with a time or a
-    two-digit year.
-
- ** `str = disp (x)` returns the printed text for cell arrays and every
-    class of the package; for a cell array it used to fail.
-
- ** `table` and `timetable` refuse a `dictionary`, `timeseries` or
-    `tscollection` variable, which a cell variable holds instead.  A
-    `timeseries` variable used to be accepted and then misbehave.
-
- ** Cell display shows function handles, which it showed as `{}`, and the
-    imaginary part of complex numbers.
-
- ** Deliberate deviations from MATLAB are documented in the docstrings of
-    the functions they affect.  The ones most likely to be met: a
-    `dictionary` takes a table of any size as one value and refuses a key
-    type it cannot hash; it reads dates given as text in the time zone of
-    its keys; `readdictionary` and `writedictionary` refuse complex values,
-    on which MATLAB crashes; `datetime` reads a two-digit year in detected
-    text against the pivot year.
+ ** Displaying a `table` or `timetable` with a column of objects that have
+    their own display texts, such as `missing`, no longer fails with "C must
+    be a cell array" on an Octave whose meta classes list their methods as
+    an array.
