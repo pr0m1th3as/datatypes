@@ -479,8 +479,9 @@
  renaming back does not restore it.  Moving a variable or converting its
  type leaves the property alone.
 </p>
-<p> An event table cannot itself carry an event table.  It has no
- <code>Events</code> property, and asking for one raises.
+<p> An event table cannot itself carry an event table.  It inherits the
+ <code>Events</code> property of a timetable but cannot read or assign it:
+ asking for it, or assigning one, raises.
 </p>
 <p> An interval event is half-open on the right: an event beginning at
  02:00 and lasting two hours covers 02:00 and 03:00 but not 04:00.  An
@@ -513,7 +514,7 @@
   <a href="timetable.syncevents.html">timetable.syncevents</a>
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/d9d79ec/inst/eventtable.m">eventtable</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/66180fc/inst/eventtable.m">eventtable</a>
 </p>
 </div>
         <p class="lead my-3">The <code>eventtable</code> class contains the following properties:</p>
@@ -743,6 +744,48 @@ Spacing between row times
  timetable has no step either way.  A negative step is as regular as a
  positive one.  Assigning it regenerates the row times from
  <code>StartTime</code>, even when the timetable was irregular.
+</p>
+
+
+            </div>
+          </div>
+        </div>
+
+        <div class="container-xl my-1">
+          <div class="row">
+            <button class="btn btn-light btn-sm w-100 text-start" type="button"
+              data-bs-toggle="collapse" data-bs-target="#eventtable_Events"
+              aria-expanded="false" aria-controls="eventtable_Events">
+              <div class="row align-items-center">
+                <div class="col-4">
+                  <h4 class="d-inline-block mr-4">
+                    <b><code>Events</code></b>
+                  </h4>
+                </div>
+                <div class="col-8">
+Event table attached to this timetable
+                </div>
+              </div>
+          </div>
+          <div class="collapse multi-collapse" id="eventtable_Events">
+            <div class="border-bottom py-2">
+<p> </p>
+<p> Event table attached to this timetable, specified as an
+ <code>eventtable</code>, or empty when no events are attached.  A plain
+ <code>timetable</code> may be assigned and is converted, though no variable
+ of it is guessed to hold the event labels; assigning <code>[]</code> detaches
+ whatever was there.  The event table&rsquo;s row times must be of the same
+ type as this timetable&rsquo;s, so a duration-keyed timetable takes a
+ duration-keyed event table and a datetime-keyed one takes a
+ datetime-keyed event table.  Nothing requires the events to lie within
+ the span of the row times, and events entirely outside it are accepted.
+</p>
+<p> An operation that preserves the rows carries the event table through
+ unchanged: it is never subsetted, filtered, re-timed or reordered along
+ with them.
+</p>
+<p> An <code>eventtable</code> inherits this property but cannot read or assign
+ it, an event table not being something that can itself carry events.
 </p>
 
 
