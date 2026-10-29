@@ -2,7 +2,7 @@
 # name: cache
 # type: cell
 # rows: 3
-# columns: 875
+# columns: 876
 # name: <cell-element>
 # type: sq_string
 # elements: 1
@@ -16200,7 +16200,7 @@ eventtable
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 2941
+# length: 3005
 datatypes: eventtable
 Timetable of events, describing what was happening rather than what was
 measured.
@@ -16238,8 +16238,9 @@ deliberate departure from MATLAB, where the designation is lost and
 renaming back does not restore it. Moving a variable or converting its
 type leaves the property alone.
 
-An event table cannot itself carry an event table. It has no
-Events property, and asking for one raises.
+An event table cannot itself carry an event table. It inherits the
+Events property of a timetable but cannot read or assign it:
+asking for it, or assigning one, raises.
 
 An interval event is half-open on the right: an event beginning at
 02:00 and lasting two hours covers 02:00 and 03:00 but not 04:00. An
@@ -16478,6 +16479,46 @@ length or as an end, not as both.
 # elements: 1
 # length: 43
 Variable holding how long each event lasted
+
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 17
+eventtable.Events
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 928
+timetable: property Events
+Event table attached to this timetable
+
+Event table attached to this timetable, specified as an
+eventtable, or empty when no events are attached. A plain
+timetable may be assigned and is converted, though no variable
+of it is guessed to hold the event labels; assigning [] detaches
+whatever was there. The event table's row times must be of the same
+type as this timetable's, so a duration-keyed timetable takes a
+duration-keyed event table and a datetime-keyed one takes a
+datetime-keyed event table. Nothing requires the events to lie within
+the span of the row times, and events entirely outside it are accepted.
+
+An operation that preserves the rows carries the event table through
+unchanged: it is never subsetted, filtered, re-timed or reordered along
+with them.
+
+An eventtable inherits this property but cannot read or assign
+it, an event table not being something that can itself carry events.
+
+
+# name: <cell-element>
+# type: sq_string
+# elements: 1
+# length: 38
+Event table attached to this timetable
 
 
 
@@ -29859,7 +29900,7 @@ timetable.Events
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 910
+# length: 928
 timetable: property Events
 Event table attached to this timetable
 
@@ -29877,8 +29918,8 @@ An operation that preserves the rows carries the event table through
 unchanged: it is never subsetted, filtered, re-timed or reordered along
 with them.
 
-An eventtable has no Events property of its own, an
-event table not being something that can itself carry events.
+An eventtable inherits this property but cannot read or assign
+it, an event table not being something that can itself carry events.
 
 
 # name: <cell-element>
