@@ -3246,9 +3246,14 @@ classdef (Abstract) tabular
           elseif (ischar (indicator))
             idx_ischar = true;
             ischar_indicator = cellstr (indicator);
-            ## A character vector names one text value for cellstr variables
+            ## A character vector names one text value for cellstr variables,
+            ## blanks kept, since cellstr strips them
             idx_iscstr = true;
-            iscstr_indicator = cellstr (indicator);
+            if (isrow (indicator) || isempty (indicator))
+              iscstr_indicator = {indicator};
+            else
+              iscstr_indicator = cellstr (indicator);
+            endif
             idx_string = true;
             string_indicator = string (indicator);
             idx_categorical = true;
