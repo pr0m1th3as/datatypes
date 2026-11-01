@@ -1258,16 +1258,24 @@ calendarDuration.ismissing
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 307
+# length: 742
 calendarDuration: TF = ismissing (calD)
+calendarDuration: TF = ismissing (calD, indicator)
 Find missing data in a calendarDuration array.
 
 Missing values in calendarDuration arrays are represented by NaN,
 thus TF = ismissing (calD) is equivalent to
 TF = isnan (calD).
 
-Note: ismissing for calendarDuration arrays does not support a
-second Indicator argument.
+TF = ismissing (calD, indicator) marks instead
+the elements of calD equal to the values in indicator, a
+calendarDuration scalar or vector; the standard missing values are
+ignored, unless explicitly stated in indicator. Elements are
+compared as by calendarDuration.eq, component by component. A
+NaN in indicator matches the NaN elements of
+calD, and so does missing. MATLAB accepts no indicator for
+a calendarDuration array, so the indicator argument is an Octave
+extension.
 
 
 # name: <cell-element>
@@ -3590,7 +3598,7 @@ categorical.ismissing
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 789
+# length: 847
 categorical: out = ismissing (C)
 categorical: out = ismissing (C, indicator)
 Find missing elements in categorical array.
@@ -3609,6 +3617,8 @@ indicator must be either a categorical array or a character vector
 or a string vector or a cell vector of character vectors. When the
 indicator contains text representation, the comparison is based on
 lexicographical equality to the category names of C.
+missing as indicator matches the undefined elements of
+C.
 
 
 # name: <cell-element>
@@ -8373,12 +8383,20 @@ datetime.ismissing
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 159
+# length: 471
 datetime: TF = ismissing (T)
 datetime: TF = ismissing (T, indicator)
 Test for missing elements in datetime array.
 
-TF is a logical array of the same size as T.
+TF is a logical array of the same size as T, true
+where an element of T is NaT.
+
+TF = ismissing (T, indicator) marks instead the
+elements of T equal to the values in indicator, a datetime
+scalar or vector; the standard missing values are ignored, unless
+explicitly stated in indicator. A NaT in indicator
+matches the NaT elements of T, and so does
+missing.
 
 
 # name: <cell-element>
@@ -13461,7 +13479,7 @@ duration.ismissing
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 519
+# length: 599
 duration: TF = ismissing (D)
 duration: TF = ismissing (D, indicator)
 Find missing elements in duration array.
@@ -13473,7 +13491,9 @@ standard missing values in the input duration array.
 The optional input indicator can be a scalar or a vector duration
 array, specifying alternative missing values in the input data. When
 specifying indicator values, the standard missing values are
-ignored, unless explicitly stated in the indicator.
+ignored, unless explicitly stated in the indicator. A NaN
+duration in indicator matches the NaN elements of D,
+and so does missing.
 
 
 # name: <cell-element>
@@ -18129,12 +18149,23 @@ missing.ismissing
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 178
-missing: out = ismissing (M)
+# length: 694
+missing: TF = ismissing (M)
+missing: TF = ismissing (A, M)
 Return true for each element in missing array.
 
 TF = ismissing (M) returns a logical array TF
 of the same size as M containing true in every element.
+
+TF = ismissing (A, M), with a missing array
+M as the indicator, marks the standard missing values of A,
+as ismissing (A) does: NaN in double and
+single arrays and empty character vectors in cell arrays of
+character vectors. Integer, logical and char arrays and
+other cell arrays have no standard missing value, and M is refused
+for them. Classes with an ismissing method of their own, such as
+duration, datetime, categorical, string,
+calendarDuration and table, take M in that method.
 
 
 # name: <cell-element>
@@ -20377,7 +20408,7 @@ string.ismissing
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 617
+# length: 719
 string: TF = ismissing (str)
 string: TF = ismissing (str, indicator)
 Find missing elements in string array.
@@ -20392,7 +20423,9 @@ elements in the input string array str, which are lexicographically
 equal to the values in indicator.
 
 indicator must be either a character vector or a string vector
-or a cell vector of character vectors.
+or a cell vector of character vectors. A <missing> element of
+a string indicator matches the <missing> elements of
+str, and so does missing.
 
 The output array TF has the same size as the input array str.
 
@@ -23924,7 +23957,7 @@ table.ismissing
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 2025
+# length: 2361
 table: TF = ismissing (tbl)
 table: TF = ismissing (tbl, indicator)
 table: TF = ismissing (..., 'OutputFormat', outFmt)
@@ -23969,6 +24002,12 @@ numeric or logical variable is not matched, and it is not an error.
 char and cellstr indicators match string variables.
 char and string indicators match categorical
 variables.
+missing, alone or as an element of a cell array
+indicator, matches the standard missing values of every variable,
+in addition to any other values in indicator.
+calendarDuration indicators match calendarDuration
+variables, as calendarDuration.ismissing does; MATLAB accepts no
+calendarDuration indicator, so this is an Octave extension.
 
 The output array TF has the same size as the input table tbl.
 
@@ -31355,7 +31394,7 @@ timetable.ismissing
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 987
+# length: 1074
 timetable: TF = ismissing (tt)
 timetable: TF = ismissing (tt, indicator)
 Find missing values in the variables of a timetable.
@@ -31375,7 +31414,9 @@ about what can be kept rather than about what is missing.
 TF = ismissing (tt, indicator) treats the
 values in indicator as missing instead. When specifying an
 indicator, all default missing values are ignored. If you want to
-keep them, you need to define them in indicator.
+keep them, you need to define them in indicator, which
+missing does for every variable. indicator follows the
+rules of table.ismissing.
 
 See also:
 timetable.anymissing,

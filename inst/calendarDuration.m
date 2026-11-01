@@ -1296,7 +1296,8 @@ classdef calendarDuration
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn {calendarDuration} {@var{TF} =} ismissing (@var{calD})
+    ## @deftypefn  {calendarDuration} {@var{TF} =} ismissing (@var{calD})
+    ## @deftypefnx {calendarDuration} {@var{TF} =} ismissing (@var{calD}, @var{indicator})
     ##
     ## Find missing data in a calendarDuration array.
     ##
@@ -1304,15 +1305,46 @@ classdef calendarDuration
     ## thus @code{@var{TF} = ismissing (@var{calD})} is equivalent to
     ## @code{@var{TF} = isnan (@var{calD})}.
     ##
-    ## Note: @code{ismissing} for calendarDuration arrays does not support a
-    ## second @var{Indicator} argument.
+    ## @code{@var{TF} = ismissing (@var{calD}, @var{indicator})} marks instead
+    ## the elements of @var{calD} equal to the values in @var{indicator}, a
+    ## calendarDuration scalar or vector; the standard missing values are
+    ## ignored, unless explicitly stated in @var{indicator}.  Elements are
+    ## compared as by @code{calendarDuration.eq}, component by component.  A
+    ## @qcode{NaN} in @var{indicator} matches the @qcode{NaN} elements of
+    ## @var{calD}, and so does @code{missing}.  MATLAB accepts no indicator for
+    ## a calendarDuration array, so the @var{indicator} argument is an Octave
+    ## extension.
     ##
     ## @end deftypefn
     function TF = ismissing (this, varargin)
-      if (nargin > 1)
-        error ("calendarDuration.ismissing: Indicators are not supported.");
+      if (nargin > 2)
+        error ("calendarDuration.ismissing: too many input arguments.");
       endif
-      TF = isnan (this.Months);
+      if (isempty (varargin))
+        TF = isnan (this.Months);
+        return;
+      endif
+      indicator = varargin{1};
+      if (isa (indicator, 'missing'))
+        TF = isnan (this.Months);
+        return;
+      endif
+      if (! iscalendarduration (indicator))
+        error (strcat ("calendarDuration.ismissing: INDICATOR must be", ...
+                       " a 'calendarDuration' array."));
+      endif
+      if (! isvector (indicator))
+        error ("calendarDuration.ismissing: INDICATOR must be a vector.");
+      endif
+      TF = false (size (this));
+      for i = 1:numel (indicator)
+        value = subset (indicator, i);
+        if (isnan (value))
+          TF(isnan (this.Months)) = true;
+        else
+          TF(this == value) = true;
+        endif
+      endfor
     endfunction
 
     ## -*- texinfo -*-

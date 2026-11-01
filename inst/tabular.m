@@ -3107,8 +3107,9 @@ classdef (Abstract) tabular
           errmsg = "INDICATOR must be a vector.";
           return
         endif
-        ## NaN values for calendarDuration and duration
-        nan_calendarDuration = nan_duration = false;
+        ## 'missing' marks the standard missing values of every variable
+        idx_missing = false;
+        idx_calendarDuration = false;
         ## Preprocess indicator if it is a cell array
         if (iscell (indicator) && ! iscellstr (indicator))
           ## Elements in indicator vector must be scalars (except char vectors)
@@ -3190,12 +3191,17 @@ classdef (Abstract) tabular
           if (any (idx_numlog))
             numlog_indicator = indicator(idx_numlog);
             idx_numlog = true;
-            ## Check for NaN and apply to duration and calendarDuration arrays
-            fcn = @(x) any (isnan (x(:)));
-            if (any (cellfun (fcn, numlog_indicator)))
-              nan_calendarDuration = nan_duration = true;
-            endif
           endif
+          ## calendarDuration arrays
+          fcn = @(x) isa (x, 'calendarDuration');
+          idx_calDur = cellfun (fcn, indicator);
+          if (any (idx_calDur))
+            calendarDuration_indicator = [indicator{idx_calDur}];
+            idx_calendarDuration = true;
+          endif
+          ## missing
+          fcn = @(x) isa (x, 'missing');
+          idx_missing = any (cellfun (fcn, indicator));
         elseif (iscellstr (indicator))
           ## cell arrays of character vectors and string arrays are searched
           idx_iscstr = true;
@@ -3225,6 +3231,11 @@ classdef (Abstract) tabular
           elseif (isa (indicator, 'duration'))
             idx_duration = true;
             duration_indicator = indicator;
+          elseif (isa (indicator, 'calendarDuration'))
+            idx_calendarDuration = true;
+            calendarDuration_indicator = indicator;
+          elseif (isa (indicator, 'missing'))
+            idx_missing = true;
           elseif (isa (indicator, 'string'))
             idx_string = true;
             string_indicator = indicator;
@@ -3248,11 +3259,12 @@ classdef (Abstract) tabular
           else  # numeric and logical arrays
             idx_numlog = true;
             numlog_indicator = {indicator};
-            ## Check for NaN and apply to duration and calendarDuration arrays
-            if (any (isnan (indicator)))
-              nan_calendarDuration = nan_duration = true;
-            endif
           endif
+        endif
+        ## 'missing' adds each variable's standard missing values, which are
+        ## what the call without an indicator reports
+        if (idx_missing)
+          TF_standard = ismissingResult (this, 'OutputFormat', 'tabular');
         endif
         ## Return false TF vector for any datatypes that are not
         ## represented in the indicator and should be ignored
@@ -3262,8 +3274,8 @@ classdef (Abstract) tabular
           if (isa (tmpVar, 'tabular'))
             varTF = TF_false;
           elseif (isa (tmpVar, 'calendarDuration'))
-            if (nan_calendarDuration)
-              varTF = ismissing (tmpVar);
+            if (idx_calendarDuration)
+              varTF = ismissing (tmpVar, calendarDuration_indicator);
             else
               varTF = TF_false;
             endif
@@ -3280,12 +3292,10 @@ classdef (Abstract) tabular
               varTF = TF_false;
             endif
           elseif (isa (tmpVar, 'duration'))
-            varTF = TF_false;
-            if (nan_duration)
-              varTF = varTF | ismissing (tmpVar);
-            endif
             if (idx_duration)
-              varTF = varTF | ismissing (tmpVar, duration_indicator);
+              varTF = ismissing (tmpVar, duration_indicator);
+            else
+              varTF = TF_false;
             endif
           elseif (isa (tmpVar, 'string'))
             if (idx_string)
@@ -3321,6 +3331,9 @@ classdef (Abstract) tabular
             endif
           endif
           varTF = any (varTF, 2);
+          if (idx_missing)
+            varTF = varTF | TF_standard.VariableValues{i};
+          endif
           this.VariableValues{i} = varTF;
         endfor
       endif

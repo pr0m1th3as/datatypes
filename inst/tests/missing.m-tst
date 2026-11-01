@@ -244,6 +244,24 @@
 %!assert_equal (ismissing ([missing, datetime(2020, 1, 1)]), [true, false])
 %!assert_equal (ismissing ([missing, categorical(1)]), [true, false])
 
+## ismissing: a missing indicator marks the standard missing values
+%!assert_equal (ismissing ([1, NaN, 3], missing), [false, true, false])
+%!assert_equal (ismissing (single ([1, NaN, 3]), missing), [false, true, false])
+%!assert_equal (ismissing ({'a', ''}, missing), [false, true])
+%!assert_equal (ismissing (missing, missing), true)
+%!error <missing.ismissing: a 'missing' indicator does not apply to 'int8' data.> ...
+%! ismissing (int8 ([1, 2, 3]), missing)
+%!error <missing.ismissing: a 'missing' indicator does not apply to 'logical' data.> ...
+%! ismissing ([true, false], missing)
+%!error <missing.ismissing: a 'missing' indicator does not apply to 'char' data.> ...
+%! ismissing ('a b', missing)
+%!error <missing.ismissing: a 'missing' indicator does not apply to 'cell' data.> ...
+%! ismissing ({1, 2}, missing)
+%!error <missing.ismissing: a missing array takes only 'missing' as INDICATOR.> ...
+%! ismissing (missing, 1)
+%!error <missing.ismissing: too many input arguments.> ...
+%! ismissing (missing, missing, missing)
+
 ## cat: a datetime result keeps the real operand's zone and format -- an
 ## unzoned NaT cannot join a zoned array at all (vs MATLAB R2024a)
 %!test

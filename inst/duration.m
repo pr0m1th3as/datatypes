@@ -1307,7 +1307,9 @@ classdef duration
     ## The optional input @var{indicator} can be a scalar or a vector duration
     ## array, specifying alternative missing values in the input data.  When
     ## specifying @var{indicator} values, the standard missing values are
-    ## ignored, unless explicitly stated in the @var{indicator}.
+    ## ignored, unless explicitly stated in the @var{indicator}.  A @qcode{NaN}
+    ## duration in @var{indicator} matches the @qcode{NaN} elements of @var{D},
+    ## and so does @code{missing}.
     ##
     ## @end deftypefn
     function TF = ismissing (this, varargin)
@@ -1317,10 +1319,16 @@ classdef duration
       if (! isempty (varargin))
         indicator = varargin{1};
         TF = false (size (this));
-        if (isvector (indicator))
+        if (isa (indicator, 'missing'))
+          TF = isnan (this.Millis);
+        elseif (isvector (indicator))
           if (isa (indicator, 'duration'))
             for i = 1:length (indicator)
-              TF(this.Millis == indicator.Millis(i)) = true;
+              if (isnan (indicator.Millis(i)))
+                TF(isnan (this.Millis)) = true;
+              else
+                TF(this.Millis == indicator.Millis(i)) = true;
+              endif
             endfor
           else
             error ("duration.ismissing: INDICATOR must be a 'duration' array.");

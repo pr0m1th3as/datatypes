@@ -1410,6 +1410,8 @@ classdef categorical
     ## or a string vector or a cell vector of character vectors.  When the
     ## @var{indicator} contains text representation, the comparison is based on
     ## lexicographical equality to the category names of @var{C}.
+    ## @code{missing} as @var{indicator} matches the undefined elements of
+    ## @var{C}.
     ##
     ## @end deftypefn
     function TF = ismissing (this, varargin)
@@ -1419,7 +1421,9 @@ classdef categorical
       if (! isempty (varargin))
         indicator = varargin{1};
         TF = false (size (this));
-        if (isvector (indicator))
+        if (isa (indicator, 'missing'))
+          TF = this.isMissing;
+        elseif (isvector (indicator))
           if (ischar (indicator))
             if (! isrow (indicator))
               error (strcat ("categorical.ismissing: INDICATOR specified", ...

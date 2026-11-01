@@ -1124,7 +1124,9 @@ classdef string
     ## equal to the values in @var{indicator}.
     ##
     ## @var{indicator} must be either a character vector or a string vector
-    ## or a cell vector of character vectors.
+    ## or a cell vector of character vectors.  A @qcode{<missing>} element of
+    ## a string @var{indicator} matches the @qcode{<missing>} elements of
+    ## @var{str}, and so does @code{missing}.
     ##
     ## The output array @var{TF} has the same size as the input array @var{str}.
     ##
@@ -1136,12 +1138,18 @@ classdef string
       if (! isempty (varargin))
         indicator = varargin{1};
         TF = false (size (this));
-        if (isvector (indicator))
+        if (isa (indicator, 'missing'))
+          TF = this.isMissing;
+        elseif (isvector (indicator))
           if (ischar (indicator))
             TF(this == indicator) = true;
           elseif (isstring (indicator))
             for idx = 1:numel (indicator)
-              TF(this == indicator.strs(idx)) = true;
+              if (indicator.isMissing(idx))
+                TF(this.isMissing) = true;
+              else
+                TF(this == indicator.strs(idx)) = true;
+              endif
             endfor
           elseif (iscellstr (indicator))
             for idx = 1:numel (indicator)

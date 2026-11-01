@@ -331,16 +331,43 @@ classdef missing
     endfunction
 
     ## -*- texinfo -*-
-    ## @deftypefn {missing} {@var{out} =} ismissing (@var{M})
+    ## @deftypefn  {missing} {@var{TF} =} ismissing (@var{M})
+    ## @deftypefnx {missing} {@var{TF} =} ismissing (@var{A}, @var{M})
     ##
     ## Return true for each element in missing array.
     ##
     ## @code{@var{TF} = ismissing (@var{M})} returns a logical array @var{TF}
     ## of the same size as @var{M} containing @qcode{true} in every element.
     ##
+    ## @code{@var{TF} = ismissing (@var{A}, @var{M})}, with a missing array
+    ## @var{M} as the indicator, marks the standard missing values of @var{A},
+    ## as @code{ismissing (@var{A})} does: @qcode{NaN} in @qcode{double} and
+    ## @qcode{single} arrays and empty character vectors in cell arrays of
+    ## character vectors.  Integer, @qcode{logical} and @qcode{char} arrays and
+    ## other cell arrays have no standard missing value, and @var{M} is refused
+    ## for them.  Classes with an @code{ismissing} method of their own, such as
+    ## @code{duration}, @code{datetime}, @code{categorical}, @code{string},
+    ## @code{calendarDuration} and @code{table}, take @var{M} in that method.
+    ##
     ## @end deftypefn
-    function out = ismissing (this)
-      out = true (size (this));
+    function TF = ismissing (this, varargin)
+      if (nargin > 2)
+        error ("missing.ismissing: too many input arguments.");
+      endif
+      if (isempty (varargin) || isa (this, 'missing'))
+        if (! isempty (varargin) && ! isa (varargin{1}, 'missing'))
+          error (strcat ("missing.ismissing: a missing array takes", ...
+                         " only 'missing' as INDICATOR."));
+        endif
+        TF = true (size (this));
+      elseif (isfloat (this))
+        TF = isnan (this);
+      elseif (iscellstr (this))
+        TF = cellfun ('isempty', this);
+      else
+        error (strcat ("missing.ismissing: a 'missing' indicator does", ...
+                       " not apply to '%s' data."), class (this));
+      endif
     endfunction
 
     ## -*- texinfo -*-

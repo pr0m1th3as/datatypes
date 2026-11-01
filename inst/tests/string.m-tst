@@ -538,6 +538,12 @@
 %!test
 %! TF = ismissing ([string({'a', 'b', ''}), missing], string ({'a', 'c'}));
 %! assert_equal (TF, logical ([1, 0, 0, 0]));
+%!test
+%! S = string ({'a', 'b', ''});
+%! S(2) = missing;
+%! assert_equal (ismissing (S, missing), [false, true, false]);
+%! assert_equal (ismissing (S, [missing, string('a')]), [true, true, false]);
+%! assert_equal (ismissing (S, string (missing)), [false, true, false]);
 %!error<string.ismissing: too many input arguments.> ...
 %! ismissing (string, string, string)
 %!error<string.ismissing: INDICATOR must be a text array.> ...

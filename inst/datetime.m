@@ -3082,7 +3082,15 @@ classdef datetime
     ##
     ## Test for missing elements in datetime array.
     ##
-    ## @var{TF} is a logical array of the same size as @var{T}.
+    ## @var{TF} is a logical array of the same size as @var{T}, @qcode{true}
+    ## where an element of @var{T} is @qcode{NaT}.
+    ##
+    ## @code{@var{TF} = ismissing (@var{T}, @var{indicator})} marks instead the
+    ## elements of @var{T} equal to the values in @var{indicator}, a datetime
+    ## scalar or vector; the standard missing values are ignored, unless
+    ## explicitly stated in @var{indicator}.  A @qcode{NaT} in @var{indicator}
+    ## matches the @qcode{NaT} elements of @var{T}, and so does
+    ## @code{missing}.
     ##
     ## @end deftypefn
     function TF = ismissing (this, varargin)
@@ -3092,9 +3100,15 @@ classdef datetime
       if (! isempty (varargin))
         indicator = varargin{1};
         TF = false (size (this));
-        if (isvector (indicator))
+        if (isa (indicator, 'missing'))
+          TF = isnan (this.Year);
+        elseif (isvector (indicator))
           if (isa (indicator, 'datetime'))
             for i = 1:numel (indicator.Year)
+              if (isnan (indicator.Year(i)))
+                TF(isnan (this.Year)) = true;
+                continue;
+              endif
               is_eq = indicator.Year(i)   == this.Year   & ...
                       indicator.Month(i)  == this.Month  & ...
                       indicator.Day(i)    == this.Day    & ...

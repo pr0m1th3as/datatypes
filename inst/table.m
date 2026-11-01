@@ -3173,6 +3173,12 @@ classdef table < tabular
     ## @item @qcode{char} and @qcode{cellstr} indicators match string variables.
     ## @item @qcode{char} and @qcode{string} indicators match categorical
     ## variables.
+    ## @item @code{missing}, alone or as an element of a cell array
+    ## @var{indicator}, matches the standard missing values of every variable,
+    ## in addition to any other values in @var{indicator}.
+    ## @item @qcode{calendarDuration} indicators match calendarDuration
+    ## variables, as @code{calendarDuration.ismissing} does; MATLAB accepts no
+    ## calendarDuration indicator, so this is an Octave extension.
     ## @end itemize
     ##
     ## The output array @var{TF} has the same size as the input table @var{tbl}.
