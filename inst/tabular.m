@@ -3183,14 +3183,16 @@ classdef (Abstract) tabular
             ischar_indicator = [indicator{idx_ischar}];
             idx_ischar = true;
           endif
-          ## numeric and logical arrays
+          ## numeric and logical arrays, each kept in its own class, since
+          ## the class decides which variables it applies to
           fcn = @(x) isnumeric (x) || islogical (x);
           idx_numlog = cellfun (fcn, indicator);
           if (any (idx_numlog))
-            numlog_indicator = [indicator{idx_numlog}];
+            numlog_indicator = indicator(idx_numlog);
             idx_numlog = true;
             ## Check for NaN and apply to duration and calendarDuration arrays
-            if (any (isnan (numlog_indicator)))
+            fcn = @(x) any (isnan (x(:)));
+            if (any (cellfun (fcn, numlog_indicator)))
               nan_calendarDuration = nan_duration = true;
             endif
           endif
@@ -3245,9 +3247,9 @@ classdef (Abstract) tabular
             categorical_indicator = categorical (string_indicator);
           else  # numeric and logical arrays
             idx_numlog = true;
-            numlog_indicator = indicator;
+            numlog_indicator = {indicator};
             ## Check for NaN and apply to duration and calendarDuration arrays
-            if (any (isnan (numlog_indicator)))
+            if (any (isnan (indicator)))
               nan_calendarDuration = nan_duration = true;
             endif
           endif
@@ -3304,10 +3306,18 @@ classdef (Abstract) tabular
               varTF = TF_false;
             endif
           else  # numeric and logical arrays
+            ## An indicator applies to a variable of its own class, and a
+            ## double on either side applies to every numeric and logical
+            ## class; a variable no indicator applies to is not missing
+            varTF = TF_false;
             if (idx_numlog)
-              varTF = __ismissing__ (tmpVar, numlog_indicator);
-            else
-              varTF = TF_false;
+              for j = 1:numel (numlog_indicator)
+                ind = numlog_indicator{j};
+                if (isa (tmpVar, 'double') || isa (ind, 'double') ||
+                    strcmp (class (tmpVar), class (ind)))
+                  varTF = varTF | __ismissing__ (tmpVar, ind);
+                endif
+              endfor
             endif
           endif
           varTF = any (varTF, 2);

@@ -1359,6 +1359,14 @@
 %! Q = timetable ([1; 2; 3; 4], 'RowTimes', hours (0:3)');
 %! assert_equal (size (ismissing (Q)), [4, 1]);
 
+## Test 'ismissing' matches an indicator by the class of each variable
+%!test
+%! TT = timetable (single ([1; 0; 2]), [1; 0; 2], 'RowTimes', ...
+%!                 seconds ([1; 2; 3]));
+%! assert_equal (ismissing (TT, true), logical ([0, 1; 0, 0; 0, 0]));
+%! assert_equal (ismissing (TT, {single(2), int8(0)}), ...
+%!               logical ([0, 0; 0, 1; 1, 1]));
+
 ## Test 'anymissing' reads the same thing 'ismissing' does
 %!test
 %! t0 = datetime (2024, 1, 1);

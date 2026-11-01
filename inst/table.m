@@ -3167,7 +3167,9 @@ classdef table < tabular
     ## @var{tbl}, the following additional data types matches apply.
     ## @itemize
     ## @item @qcode{double} indicators match numeric and logical variables.
-    ## @item @qcode{logical} indicators match numeric and logical variables.
+    ## @item @qcode{single}, integer, and @qcode{logical} indicators match
+    ## variables of their own class and @qcode{double} variables.  Any other
+    ## numeric or logical variable is not matched, and it is not an error.
     ## @item @qcode{char} and @qcode{cellstr} indicators match string variables.
     ## @item @qcode{char} and @qcode{string} indicators match categorical
     ## variables.
