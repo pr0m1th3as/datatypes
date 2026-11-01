@@ -3134,9 +3134,14 @@ classdef (Abstract) tabular
           fcn = @(x) isa (x, 'string');
           ids_categorical = cellfun (fcn, indicator);
           if (any (ids_categorical))
-            new_categories = categorical ([indicator{ids_categorical}]);
-            categorical_indicator = [categorical_indicator, new_categories];
-            idx_categorical = true;
+            ## A <missing> string is no category and never marks <undefined>
+            new_categories = [indicator{ids_categorical}];
+            new_categories = new_categories(! ismissing (new_categories));
+            if (! isempty (new_categories))
+              new_categories = categorical (new_categories);
+              categorical_indicator = [categorical_indicator, new_categories];
+              idx_categorical = true;
+            endif
           endif
           ids_categorical = cellfun ('ischar', indicator);
           if (any (ids_categorical))
@@ -3239,8 +3244,12 @@ classdef (Abstract) tabular
           elseif (isa (indicator, 'string'))
             idx_string = true;
             string_indicator = indicator;
-            idx_categorical = true;
-            categorical_indicator = categorical (indicator);
+            ## A <missing> string is no category and never marks <undefined>
+            categorical_indicator = indicator(! ismissing (indicator));
+            if (! isempty (categorical_indicator))
+              idx_categorical = true;
+              categorical_indicator = categorical (categorical_indicator);
+            endif
           elseif (iscellstr (indicator))
             idx_iscstr = true;
             iscstr_indicator = indicator;

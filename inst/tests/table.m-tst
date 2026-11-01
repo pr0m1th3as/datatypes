@@ -6117,6 +6117,15 @@
 %!               logical ([0, 0, 0, 0, 0; 1, 1, 1, 1, 1]));
 %! assert_equal (ismissing (T, NaT), ...
 %!               logical ([0, 0, 0, 0, 0; 1, 0, 0, 0, 0]));
+%!test  # a <missing> string marks no <undefined> categorical element
+%! T = table (categorical ({'a'; ''}), string ({'a'; 'b'}));
+%! T.Var2(2) = missing;
+%! assert_equal (ismissing (T, string (missing)), logical ([0, 0; 0, 1]));
+%! assert_equal (ismissing (T, {string(missing)}), logical ([0, 0; 0, 1]));
+%! assert_equal (ismissing (T, [string(missing), "a"]), ...
+%!               logical ([1, 1; 0, 1]));
+%! assert_equal (ismissing (T, {string(missing), "a"}), ...
+%!               logical ([1, 1; 0, 1]));
 %!test  # calendarDuration indicators match calendarDuration variables
 %! T = table (seconds ([1; NaN]), caldays ([1; NaN]), [1; NaN]);
 %! assert_equal (ismissing (T, caldays (NaN)), logical ([0, 0, 0; 0, 1, 0]));

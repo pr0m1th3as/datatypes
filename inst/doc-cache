@@ -23957,7 +23957,7 @@ table.ismissing
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 2361
+# length: 2453
 table: TF = ismissing (tbl)
 table: TF = ismissing (tbl, indicator)
 table: TF = ismissing (..., 'OutputFormat', outFmt)
@@ -24001,7 +24001,8 @@ variables of their own class and double variables. Any other
 numeric or logical variable is not matched, and it is not an error.
 char and cellstr indicators match string variables.
 char and string indicators match categorical
-variables.
+variables. A <missing> string is no category, so it does not
+match <undefined> elements; missing does.
 missing, alone or as an element of a cell array
 indicator, matches the standard missing values of every variable,
 in addition to any other values in indicator.
