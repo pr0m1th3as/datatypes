@@ -2394,7 +2394,9 @@ classdef timetable < tabular
     ## about what can be kept rather than about what is missing.
     ##
     ## @code{@var{TF} = ismissing (@var{tt}, @var{indicator})} treats the
-    ## values in @var{indicator} as missing as well.
+    ## values in @var{indicator} as missing instead.  When specifying an
+    ## @var{indicator}, all default missing values are ignored.  If you want to
+    ## keep them, you need to define them in @var{indicator}.
     ##
     ## @seealso{timetable.anymissing, timetable.rmmissing,
     ## timetable.standardizeMissing, timetable}

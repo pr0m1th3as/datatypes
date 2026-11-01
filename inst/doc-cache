@@ -31355,7 +31355,7 @@ timetable.ismissing
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 853
+# length: 987
 timetable: TF = ismissing (tt)
 timetable: TF = ismissing (tt, indicator)
 Find missing values in the variables of a timetable.
@@ -31373,7 +31373,9 @@ anymissing true. rmmissing does drop such a row, being
 about what can be kept rather than about what is missing.
 
 TF = ismissing (tt, indicator) treats the
-values in indicator as missing as well.
+values in indicator as missing instead. When specifying an
+indicator, all default missing values are ignored. If you want to
+keep them, you need to define them in indicator.
 
 See also:
 timetable.anymissing,
