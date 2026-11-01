@@ -6126,6 +6126,18 @@
 %!               logical ([1, 1; 0, 1]));
 %! assert_equal (ismissing (T, {string(missing), "a"}), ...
 %!               logical ([1, 1; 0, 1]));
+%!test  # text indicators on categorical variables
+%! T = table (categorical ({'a'; ''}), {'a'; ''});
+%! assert_equal (ismissing (T, ''), logical ([0, 0; 1, 1]));
+%! assert_equal (ismissing (T(:,1), ' '), [false; true]);
+%! assert_equal (ismissing (T, {''}), logical ([0, 0; 1, 1]));
+%! assert_equal (ismissing (T, {'a', ''}), logical ([1, 1; 1, 1]));
+%! assert_equal (ismissing (T, {'a', 1}), logical ([1, 1; 0, 0]));
+%! assert_equal (ismissing (T, string ('')), logical ([0, 0; 0, 0]));
+%! assert_equal (ismissing (T, {string(''), 1}), logical ([0, 0; 0, 0]));
+%!test  # character vectors in a cell indicator stay apart
+%! T = table (categorical ({'a'; 'b'; 'ab'}));
+%! assert_equal (ismissing (T, {'a', 'b', 1}), [true; true; false]);
 %!test  # calendarDuration indicators match calendarDuration variables
 %! T = table (seconds ([1; NaN]), caldays ([1; NaN]), [1; NaN]);
 %! assert_equal (ismissing (T, caldays (NaN)), logical ([0, 0, 0; 0, 1, 0]));

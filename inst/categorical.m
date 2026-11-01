@@ -1401,17 +1401,28 @@ classdef categorical
     ## corresponding element of @var{C} that does not have a value from one of
     ## the categories in @var{C} and @qcode{false} otherwise.
     ##
-    ## @code{@var{TF} = ismissing (@var{C}, @var{indicator})} also returns a
-    ## logical array @var{TF} containing @qcode{true} for each corresponding
-    ## element of @var{C} that does not have a value from one of the categories
-    ## specified in @var{indicator} and @qcode{false} otherwise.
+    ## @code{@var{TF} = ismissing (@var{C}, @var{indicator})} returns a logical
+    ## array @var{TF} containing @qcode{true} for each corresponding element of
+    ## @var{C} that matches a value in @var{indicator} and @qcode{false}
+    ## otherwise.  The undefined elements of @var{C} are not marked, unless
+    ## @var{indicator} names them.
     ##
-    ## @var{indicator} must be either a categorical array or a character vector
-    ## or a string vector or a cell vector of character vectors.  When the
-    ## @var{indicator} contains text representation, the comparison is based on
-    ## lexicographical equality to the category names of @var{C}.
-    ## @code{missing} as @var{indicator} matches the undefined elements of
-    ## @var{C}.
+    ## @var{indicator} must be a character vector, a cell vector of character
+    ## vectors, a string vector, @code{missing}, or a categorical vector.
+    ## @itemize
+    ## @item Character vectors are read as when constructing a categorical
+    ## array: an empty or blank character vector matches the undefined
+    ## elements of @var{C}, and any other matches the elements of @var{C} in the
+    ## category of that name.
+    ## @item Strings match only the elements of @var{C} in the category of that
+    ## name, so neither @qcode{""} nor @code{<missing>} matches the undefined
+    ## elements.
+    ## @item @code{missing} matches the undefined elements of @var{C}.
+    ## @item A categorical @var{indicator} matches the elements of @var{C} in
+    ## each of its categories, and its undefined elements match the undefined
+    ## elements of @var{C}.  MATLAB accepts no categorical @var{indicator}, so
+    ## this is an Octave extension.
+    ## @end itemize
     ##
     ## @end deftypefn
     function TF = ismissing (this, varargin)
@@ -1423,14 +1434,31 @@ classdef categorical
         TF = false (size (this));
         if (isa (indicator, 'missing'))
           TF = this.isMissing;
+        elseif (ischar (indicator) && isempty (indicator))
+          ## '' names <undefined>, as it does when constructing categorical
+          TF = this.isMissing;
         elseif (isvector (indicator))
           if (ischar (indicator))
             if (! isrow (indicator))
               error (strcat ("categorical.ismissing: INDICATOR specified", ...
                              " as a character vector must be a row vector."));
             endif
-            TF(this == indicator) = true;
-          elseif (isstring (indicator) || iscellstr (indicator))
+            if (all (isspace (indicator)))
+              TF = this.isMissing;
+            else
+              TF(this == indicator) = true;
+            endif
+          elseif (iscellstr (indicator))
+            ## Empty and blank text names <undefined>
+            for i = 1:numel (indicator)
+              if (all (isspace (indicator{i})))
+                TF(this.isMissing) = true;
+              else
+                TF(this == indicator{i}) = true;
+              endif
+            endfor
+          elseif (isstring (indicator))
+            ## A string matches category names only
             for i = 1:numel (indicator)
               TF(this == indicator(i)) = true;
             endfor

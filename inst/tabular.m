@@ -3102,8 +3102,9 @@ classdef (Abstract) tabular
       else
         ## Remove nested cell caused by parsing with paredArgs
         indicator = indicator{1};
-        ## Indicator must be a vector in any case
-        if (! isvector (indicator))
+        ## Indicator must be a vector in any case, or ''
+        if (! (isvector (indicator) || (ischar (indicator) &&
+                                         isempty (indicator))))
           errmsg = "INDICATOR must be a vector.";
           return
         endif
@@ -3121,35 +3122,24 @@ classdef (Abstract) tabular
                            " vectors.");
             return
           endif
-          ## categorical arrays
-          idx_categorical = false;
-          categorical_indicator = [];
+          ## categorical arrays, each kind of indicator kept apart, since
+          ## categorical.ismissing reads text and strings differently
+          categorical_indicator = {};
           fcn = @(x) isa (x, 'categorical');
           ids_categorical = cellfun (fcn, indicator);
           if (any (ids_categorical))
-            new_categories = [indicator{ids_categorical}];
-            categorical_indicator = [categorical_indicator, new_categories];
-            idx_categorical = true;
+            categorical_indicator{end+1} = [indicator{ids_categorical}];
           endif
           fcn = @(x) isa (x, 'string');
           ids_categorical = cellfun (fcn, indicator);
           if (any (ids_categorical))
-            ## A <missing> string is no category and never marks <undefined>
-            new_categories = [indicator{ids_categorical}];
-            new_categories = new_categories(! ismissing (new_categories));
-            if (! isempty (new_categories))
-              new_categories = categorical (new_categories);
-              categorical_indicator = [categorical_indicator, new_categories];
-              idx_categorical = true;
-            endif
+            categorical_indicator{end+1} = [indicator{ids_categorical}];
           endif
           ids_categorical = cellfun ('ischar', indicator);
           if (any (ids_categorical))
-            new_categories = ...
-                categorical (string ([indicator{ids_categorical}]));
-            categorical_indicator = [categorical_indicator, new_categories];
-            idx_categorical = true;
+            categorical_indicator{end+1} = indicator(ids_categorical);
           endif
+          idx_categorical = ! isempty (categorical_indicator);
           ## datetime arrays
           fcn = @(x) isa (x, 'datetime');
           idx_datetime = cellfun (fcn, indicator);
@@ -3208,13 +3198,15 @@ classdef (Abstract) tabular
           fcn = @(x) isa (x, 'missing');
           idx_missing = any (cellfun (fcn, indicator));
         elseif (iscellstr (indicator))
-          ## cell arrays of character vectors and string arrays are searched
+          ## cell arrays of character vectors, string and categorical arrays
+          ## are searched
           idx_iscstr = true;
           iscstr_indicator = indicator;
           idx_string = true;
           string_indicator = indicator;
+          idx_categorical = true;
+          categorical_indicator = {indicator};
           ## all other arrays are ignored
-          idx_categorical = false;
           idx_datetime = false;
           idx_duration = false;
           idx_ischar = false;
@@ -3229,7 +3221,7 @@ classdef (Abstract) tabular
           idx_numlog = false;
           if (isa (indicator, 'categorical'))
             idx_categorical = true;
-            categorical_indicator = indicator;
+            categorical_indicator = {indicator};
           elseif (isa (indicator, 'datetime'))
             idx_datetime = true;
             datetime_indicator = indicator;
@@ -3244,12 +3236,8 @@ classdef (Abstract) tabular
           elseif (isa (indicator, 'string'))
             idx_string = true;
             string_indicator = indicator;
-            ## A <missing> string is no category and never marks <undefined>
-            categorical_indicator = indicator(! ismissing (indicator));
-            if (! isempty (categorical_indicator))
-              idx_categorical = true;
-              categorical_indicator = categorical (categorical_indicator);
-            endif
+            idx_categorical = true;
+            categorical_indicator = {indicator};
           elseif (iscellstr (indicator))
             idx_iscstr = true;
             iscstr_indicator = indicator;
@@ -3264,7 +3252,7 @@ classdef (Abstract) tabular
             idx_string = true;
             string_indicator = string (indicator);
             idx_categorical = true;
-            categorical_indicator = categorical (string_indicator);
+            categorical_indicator = {indicator};
           else  # numeric and logical arrays
             idx_numlog = true;
             numlog_indicator = {indicator};
@@ -3290,7 +3278,10 @@ classdef (Abstract) tabular
             endif
           elseif (isa (tmpVar, 'categorical'))
             if (idx_categorical)
-              varTF = ismissing (tmpVar, categorical_indicator);
+              varTF = false (size (tmpVar));
+              for j = 1:numel (categorical_indicator)
+                varTF |= ismissing (tmpVar, categorical_indicator{j});
+              endfor
             else
               varTF = TF_false;
             endif

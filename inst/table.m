@@ -3171,9 +3171,11 @@ classdef table < tabular
     ## variables of their own class and @qcode{double} variables.  Any other
     ## numeric or logical variable is not matched, and it is not an error.
     ## @item @qcode{char} and @qcode{cellstr} indicators match string variables.
-    ## @item @qcode{char} and @qcode{string} indicators match categorical
-    ## variables.  A @code{<missing>} string is no category, so it does not
-    ## match @code{<undefined>} elements; @code{missing} does.
+    ## @item @qcode{char}, @qcode{cellstr}, and @qcode{string} indicators match
+    ## categorical variables, as @code{categorical.ismissing} reads them: an
+    ## empty or blank character vector matches @code{<undefined>} elements,
+    ## while strings match category names only, so neither @qcode{""} nor
+    ## @code{<missing>} matches @code{<undefined>}; @code{missing} does.
     ## @item @code{missing}, alone or as an element of a cell array
     ## @var{indicator}, matches the standard missing values of every variable,
     ## in addition to any other values in @var{indicator}.

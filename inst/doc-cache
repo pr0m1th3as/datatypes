@@ -3598,7 +3598,7 @@ categorical.ismissing
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 847
+# length: 1281
 categorical: out = ismissing (C)
 categorical: out = ismissing (C, indicator)
 Find missing elements in categorical array.
@@ -3608,17 +3608,27 @@ of the same size as C containing true for each
 corresponding element of C that does not have a value from one of
 the categories in C and false otherwise.
 
-TF = ismissing (C, indicator) also returns a
-logical array TF containing true for each corresponding
-element of C that does not have a value from one of the categories
-specified in indicator and false otherwise.
+TF = ismissing (C, indicator) returns a logical
+array TF containing true for each corresponding element of
+C that matches a value in indicator and false
+otherwise. The undefined elements of C are not marked, unless
+indicator names them.
 
-indicator must be either a categorical array or a character vector
-or a string vector or a cell vector of character vectors. When the
-indicator contains text representation, the comparison is based on
-lexicographical equality to the category names of C.
-missing as indicator matches the undefined elements of
-C.
+indicator must be a character vector, a cell vector of character
+vectors, a string vector, missing, or a categorical vector.
+
+Character vectors are read as when constructing a categorical
+array: an empty or blank character vector matches the undefined
+elements of C, and any other matches the elements of C in the
+category of that name.
+Strings match only the elements of C in the category of that
+name, so neither "" nor <missing> matches the undefined
+elements.
+missing matches the undefined elements of C.
+A categorical indicator matches the elements of C in
+each of its categories, and its undefined elements match the undefined
+elements of C. MATLAB accepts no categorical indicator, so
+this is an Octave extension.
 
 
 # name: <cell-element>
@@ -23957,7 +23967,7 @@ table.ismissing
 # name: <cell-element>
 # type: sq_string
 # elements: 1
-# length: 2453
+# length: 2577
 table: TF = ismissing (tbl)
 table: TF = ismissing (tbl, indicator)
 table: TF = ismissing (..., 'OutputFormat', outFmt)
@@ -24000,9 +24010,11 @@ single, integer, and logical indicators match
 variables of their own class and double variables. Any other
 numeric or logical variable is not matched, and it is not an error.
 char and cellstr indicators match string variables.
-char and string indicators match categorical
-variables. A <missing> string is no category, so it does not
-match <undefined> elements; missing does.
+char, cellstr, and string indicators match
+categorical variables, as categorical.ismissing reads them: an
+empty or blank character vector matches <undefined> elements,
+while strings match category names only, so neither "" nor
+<missing> matches <undefined>; missing does.
 missing, alone or as an element of a cell array
 indicator, matches the standard missing values of every variable,
 in addition to any other values in indicator.
