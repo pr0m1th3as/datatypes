@@ -3124,8 +3124,9 @@ MP = lower (MP);
     ##
     ## @end deftypefn
     function out = reverse (this)
-      fu2n = @(x) typecast (unicode2native (x, 'UTF-32LE'), 'uint32');
-      fn2u = @(x) native2unicode (typecast (x, 'uint8'), 'UTF-32LE');
+      enc = utf32 ();
+      fu2n = @(x) typecast (unicode2native (x, enc), 'uint32');
+      fn2u = @(x) native2unicode (typecast (x, 'uint8'), enc);
       frev = @(x) x(end:-1:1);
       notempty = ! cellfun (@isempty, this.strs);
       out = this;
@@ -5127,17 +5128,28 @@ function c = num2strs (x, ref)
   c = arrayfun (@(v) sprintf (fmt, v), x, "UniformOutput", false);
 endfunction
 
+## Return the name of the UTF-32 encoding in the byte order of this machine, so
+## that typecasting its bytes to uint32 yields the Unicode code points.
+function enc = utf32 ()
+  persistent native = '';
+  if (isempty (native))
+    [~, ~, endian] = computer ();
+    native = ['UTF-32', endian, 'E'];
+  endif
+  enc = native;
+endfunction
+
 ## Convert a character vector to/from a row of Unicode code points (uint32), so
 ## that character positions index whole characters rather than UTF-8 bytes.
 function cp = str2cp (s)
-  cp = typecast (unicode2native (s, 'UTF-32LE'), 'uint32');
+  cp = typecast (unicode2native (s, utf32 ()), 'uint32');
 endfunction
 
 function s = cp2str (cp)
   if (isempty (cp))
     s = '';
   else
-    s = native2unicode (typecast (uint32 (cp), 'uint8'), 'UTF-32LE');
+    s = native2unicode (typecast (uint32 (cp), 'uint8'), utf32 ());
   endif
 endfunction
 
@@ -5338,7 +5350,8 @@ function out = cmp_uint32 (Acode, Bcode)
 endfunction
 
 function out = sign_strings (A, B)
-  fcn = @(x) typecast (unicode2native (x, 'UTF-32LE')(1:4*numel (x)), 'uint32');
+  enc = utf32 ();
+  fcn = @(x) typecast (unicode2native (x, enc), 'uint32');
   Acode = cellfun (fcn, A, "UniformOutput", false);
   Acode(cellfun ('isempty', Acode)) = 0;
   Bcode = cellfun (fcn, B, "UniformOutput", false);
