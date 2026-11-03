@@ -1205,7 +1205,7 @@ endfunction
 %! assert_equal (numEntries (r), 1);
 %! assert_equal (keys (r, 'cell'), {string('a')});
 %! assert_equal (values (r, 'cell'), ...
-%!               {typecast(uint32([3944680146, 2874452364]), 'uint64')});
+%!               {0xAB54A98CEB1F0AD2u64});
 %!test
 %! r = rj (['{"a": NaN, "b": Infinity, "c": -Infinity, ', ...
 %!          '"d": Inf, "e": -Inf}']);
@@ -1900,7 +1900,7 @@ endfunction
 %! assert_equal (keys (r, 'cell'), {string('a'); string('b')});
 %! vc4 = values (r, 'cell');
 %! assert_equal (vc4{1}, ...
-%!               {typecast(uint32([3944680146, 2874452364]), 'uint64')});
+%!               {0xAB54A98CEB1F0AD2u64});
 %! ce5 = vc4{2};
 %! assert_equal (size (ce5), [1, 1]);
 %! assert_equal (class (ce5{1}), 'missing');
@@ -1922,7 +1922,7 @@ endfunction
 %! assert_equal (keys (r, 'cell'), {string('a'); string('b')});
 %! assert_equal (values (r, 'cell'), ...
 %!               {uint64(1); ...
-%!                typecast(uint32([3944680146, 2874452364]), 'uint64')});
+%!                0xAB54A98CEB1F0AD2u64});
 %!test
 %! r = rj ('{"a": 1.5, "b": 12345678901234567890}');
 %! [kt1, vt2] = types (r);
@@ -1931,7 +1931,7 @@ endfunction
 %! assert_equal (keys (r, 'cell'), {string('a'); string('b')});
 %! assert_equal (values (r, 'cell'), ...
 %!               {{1.5}; ...
-%!                {typecast(uint32([3944680146, 2874452364]), 'uint64')}});
+%!                {0xAB54A98CEB1F0AD2u64}});
 %!test
 %! r = rj ('{"a": -12345678901234567890}');
 %! [kt1, vt2] = types (r);
@@ -1946,7 +1946,7 @@ endfunction
 %! assert_equal (numEntries (r), 2);
 %! assert_equal (keys (r, 'cell'), {string('a'); string('b')});
 %! assert_equal (values (r, 'cell'), ...
-%!               {intmin('int64'); typecast(uint32([1, 2097152]), 'int64')});
+%!               {intmin('int64'); 0x20000000000001s64});
 %!test
 %! r = rj ('{"a": 9007199254740993}');
 %! [kt1, vt2] = types (r);
@@ -1954,7 +1954,7 @@ endfunction
 %! assert_equal (numEntries (r), 1);
 %! assert_equal (keys (r, 'cell'), {string('a')});
 %! assert_equal (values (r, 'cell'), ...
-%!               {typecast(uint32([1, 2097152]), 'uint64')});
+%!               {0x20000000000001u64});
 %!test
 %! r = rj ('{"a": 1e2, "b": 100}');
 %! [kt1, vt2] = types (r);
@@ -2210,7 +2210,7 @@ endfunction
 %! assert_equal (numEntries (r), 2);
 %! assert_equal (keys (r, 'cell'), {string('a'); string('b')});
 %! assert_equal (values (r, 'cell'), ...
-%!               {{-1}; {typecast(uint32([0, 2147483648]), 'uint64')}});
+%!               {{-1}; {0x8000000000000000u64}});
 ## Ours: not measured on R2026b.
 %!test
 %! r = rj ('{"a": 18446744073709551615}');
@@ -2480,7 +2480,7 @@ endfunction
 %! assert_equal (size (ce6{4}), [1, 1]);
 %! assert_equal (ce6{5}, true);
 %! assert_equal (ce6{6}, 1);
-%! assert_equal (ce6{7}, typecast (uint32([3944680146, 2874452364]), 'uint64'));
+%! assert_equal (ce6{7}, 0xAB54A98CEB1F0AD2u64);
 ## Ours: not measured on R2026b.
 %!test
 %! r = rj ('{"a": {"x": "2024-01-01"}}', 'ValueType', 'cell');
