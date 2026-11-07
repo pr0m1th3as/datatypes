@@ -3336,7 +3336,7 @@
 %! assert_equal (cellstr (R.hour_Time)', ...
 %!               {'[0 hr, 1 hr)', '[1 hr, 2 hr)', '[25 hr, 26 hr)', ...
 %!                '[26 hr, 27 hr)', '[199 hr, 200 hr]'});
-## Test a bin fine enough to make thousands of them still answers promptly
+## Test a bin fine enough for thousands of categories counts only occupied bins
 %!test
 %! T = timetable ((1:6)', 'RowTimes', hours ([0; 0.5; 1; 25; 26; 200]));
 %! R = groupcounts (T, 'Time', 'minute');
