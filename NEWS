@@ -1,20 +1,39 @@
-Summary of important user-visible changes for datatypes 1.6.1:
+Summary of important user-visible changes for datatypes 1.6.2:
 --------------------------------------------------------------
 
- This patch release updates the Time Zone Database to release 2026f, for
- Cuba's change of 1 November 2026, and fixes two classes for an Octave whose
- classdef follows MATLAB more closely.
+ This patch release makes `ismissing` read its indicators as MATLAB does,
+ and fixes `string` on big-endian machines and for text outside ASCII.
 
- ** Time Zone Database updated to release 2026f: Cuba stays on UTC-4 instead
-    of falling back on 1 November 2026, and the end of daylight saving in
-    Brazil is corrected for several years between 1932 and 1966.
+ ** `ismissing` on a `table` or `timetable` matches a `logical`, `single`
+    or integer indicator only in variables of its own class and in `double`
+    variables; it used to mark every numeric and logical variable, and a
+    cell indicator such as `{int32(1), 2.4}` also marked 2.
 
- ** `eventtable` inherits the `Events` property of `timetable` instead of
-    declaring it again, which an Octave whose classdef follows MATLAB
-    refuses when it loads the class.  `properties ('eventtable')` now lists
-    `Events`; reading or assigning it still raises.
+ ** `missing` as an indicator marks the standard missing values of every
+    class and of every table variable; it used to be refused or ignored.
 
- ** Displaying a `table` or `timetable` with a column of objects that have
-    their own display texts, such as `missing`, no longer fails with "C must
-    be a cell array" on an Octave whose meta classes list their methods as
-    an array.
+ ** `NaN`, `NaT` and `<missing>` indicators now mark the missing elements of
+    `duration`, `datetime` and `string` arrays.
+
+ ** Text indicators on categorical data follow MATLAB: empty or blank text
+    marks `<undefined>`, and in tables a `<missing>` or `""` indicator no
+    longer does.  A blank indicator such as `' '` marks only cellstr
+    elements holding that text, and a cell indicator no longer joins its
+    texts into one.
+
+ ** `calendarDuration.ismissing` takes an indicator, and tables take
+    `calendarDuration` indicators, an Octave extension.
+
+ ** Comparing strings with `<`, `<=`, `>` or `>=` no longer raises an index
+    error when they hold characters outside ASCII.
+
+ ** On big-endian machines, `strip` with no characters given removes
+    whitespace again, strings with characters above U+00FF compare in the
+    right order, and the test suite passes.
+
+
+Backwards incompatible improvements:
+
+ ** A `NaN` indicator in `ismissing` on a table no longer marks `NaN` in
+    `duration` and `calendarDuration` variables, as in MATLAB; use
+    `missing`, or a `NaN` of the variable's own class.
