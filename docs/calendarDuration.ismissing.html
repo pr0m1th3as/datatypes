@@ -356,7 +356,8 @@
                 </ol>
               </nav>
 
-<p class="h5 fs fs-last"><code>calendarDuration: <var>TF</var> = <b>ismissing</b> (<var>calD</var>)</code></p>
+<p class="h5 fs"><code>calendarDuration: <var>TF</var> = <b>ismissing</b> (<var>calD</var>)</code></p>
+<p class="h5 fs fs-last"><code>calendarDuration: <var>TF</var> = <b>ismissing</b> (<var>calD</var>, <var>indicator</var>)</code></p>
 <p> Find missing data in a calendarDuration array.
 </p>
 <div class="ms-5">
@@ -364,11 +365,18 @@
  thus <code><var>TF</var> = ismissing (<var>calD</var>)</code> is equivalent to
  <code><var>TF</var> = isnan (<var>calD</var>)</code>.
 </p>
-<p> Note: <code>ismissing</code> for calendarDuration arrays does not support a
- second <var>Indicator</var> argument.
+<p> <code><var>TF</var> = ismissing (<var>calD</var>, <var>indicator</var>)</code> marks instead
+ the elements of <var>calD</var> equal to the values in <var>indicator</var>, a
+ calendarDuration scalar or vector; the standard missing values are
+ ignored, unless explicitly stated in <var>indicator</var>.  Elements are
+ compared as by <code>calendarDuration.eq</code>, component by component.  A
+ <code>NaN</code> in <var>indicator</var> matches the <code>NaN</code> elements of
+ <var>calD</var>, and so does <code>missing</code>.  MATLAB accepts no indicator for
+ a calendarDuration array, so the <var>indicator</var> argument is an Octave
+ extension.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/66180fc/inst/calendarDuration.m#L1253">calendarDuration</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/ff4f2c5/inst/calendarDuration.m#L1261">calendarDuration</a>
 </p>
 </div>
         <div class="card rounded my-4">

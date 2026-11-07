@@ -446,7 +446,11 @@
  about what can be kept rather than about what is missing.
 </p>
 <p> <code><var>TF</var> = ismissing (<var>tt</var>, <var>indicator</var>)</code> treats the
- values in <var>indicator</var> as missing as well.
+ values in <var>indicator</var> as missing instead.  When specifying an
+ <var>indicator</var>, all default missing values are ignored.  If you want to
+ keep them, you need to define them in <var>indicator</var>, which
+ <code>missing</code> does for every variable.  <var>indicator</var> follows the
+ rules of <code>table.ismissing</code>.
 </p>
 <p> <strong>See also: </strong>
   <a href="timetable.anymissing.html">timetable.anymissing</a>, 
@@ -455,7 +459,7 @@
   <a href="timetable.html">timetable</a>
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/66180fc/inst/timetable.m#L2240">timetable</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/ff4f2c5/inst/timetable.m#L2244">timetable</a>
 </p>
 </div>
         <div class="card rounded my-4">

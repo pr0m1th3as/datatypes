@@ -288,15 +288,26 @@
                 </ol>
               </nav>
 
-<p class="h5 fs fs-last"><code>missing: <var>out</var> = <b>ismissing</b> (<var>M</var>)</code></p>
+<p class="h5 fs"><code>missing: <var>TF</var> = <b>ismissing</b> (<var>M</var>)</code></p>
+<p class="h5 fs fs-last"><code>missing: <var>TF</var> = <b>ismissing</b> (<var>A</var>, <var>M</var>)</code></p>
 <p> Return true for each element in missing array.
 </p>
 <div class="ms-5">
 <p> <code><var>TF</var> = ismissing (<var>M</var>)</code> returns a logical array <var>TF</var>
  of the same size as <var>M</var> containing <code>true</code> in every element.
 </p>
+<p> <code><var>TF</var> = ismissing (<var>A</var>, <var>M</var>)</code>, with a missing array
+ <var>M</var> as the indicator, marks the standard missing values of <var>A</var>,
+ as <code>ismissing (<var>A</var>)</code> does: <code>NaN</code> in <code>double</code> and
+ <code>single</code> arrays and empty character vectors in cell arrays of
+ character vectors.  Integer, <code>logical</code> and <code>char</code> arrays and
+ other cell arrays have no standard missing value, and <var>M</var> is refused
+ for them.  Classes with an <code>ismissing</code> method of their own, such as
+ <code>duration</code>, <code>datetime</code>, <code>categorical</code>, <code>string</code>,
+ <code>calendarDuration</code> and <code>table</code>, take <var>M</var> in that method.
+</p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/66180fc/inst/missing.m#L307">missing</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/ff4f2c5/inst/missing.m#L318">missing</a>
 </p>
 </div>
 

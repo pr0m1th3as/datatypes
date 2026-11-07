@@ -394,12 +394,14 @@
  equal to the values in <var>indicator</var>.
 </p>
 <p> <var>indicator</var> must be either a character vector or a string vector
- or a cell vector of character vectors.
+ or a cell vector of character vectors.  A <code>&lt;missing&gt;</code> element of
+ a string <var>indicator</var> matches the <code>&lt;missing&gt;</code> elements of
+ <var>str</var>, and so does <code>missing</code>.
 </p>
 <p> The output array <var>TF</var> has the same size as the input array <var>str</var>.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/66180fc/inst/string.m#L1053">string</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/ff4f2c5/inst/string.m#L1055">string</a>
 </p>
 </div>
         <div class="card rounded my-4">

@@ -414,18 +414,32 @@
  corresponding element of <var>C</var> that does not have a value from one of
  the categories in <var>C</var> and <code>false</code> otherwise.
 </p>
-<p> <code><var>TF</var> = ismissing (<var>C</var>, <var>indicator</var>)</code> also returns a
- logical array <var>TF</var> containing <code>true</code> for each corresponding
- element of <var>C</var> that does not have a value from one of the categories
- specified in <var>indicator</var> and <code>false</code> otherwise.
+<p> <code><var>TF</var> = ismissing (<var>C</var>, <var>indicator</var>)</code> returns a logical
+ array <var>TF</var> containing <code>true</code> for each corresponding element of
+ <var>C</var> that matches a value in <var>indicator</var> and <code>false</code>
+ otherwise.  The undefined elements of <var>C</var> are not marked, unless
+ <var>indicator</var> names them.
 </p>
-<p> <var>indicator</var> must be either a categorical array or a character vector
- or a string vector or a cell vector of character vectors.  When the
- <var>indicator</var> contains text representation, the comparison is based on
- lexicographical equality to the category names of <var>C</var>.
+<p> <var>indicator</var> must be a character vector, a cell vector of character
+ vectors, a string vector, <code>missing</code>, or a categorical vector.
 </p>
+<ul>
+<li> Character vectors are read as when constructing a categorical
+ array: an empty or blank character vector matches the undefined
+ elements of <var>C</var>, and any other matches the elements of <var>C</var> in the
+ category of that name.
+</li><li> Strings match only the elements of <var>C</var> in the category of that
+ name, so neither <code>&quot;&quot;</code> nor <code>&lt;missing&gt;</code> matches the undefined
+ elements.
+</li><li> <code>missing</code> matches the undefined elements of <var>C</var>.
+</li><li> A categorical <var>indicator</var> matches the elements of <var>C</var> in
+ each of its categories, and its undefined elements match the undefined
+ elements of <var>C</var>.  MATLAB accepts no categorical <var>indicator</var>, so
+ this is an Octave extension.
+</li></ul>
+
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/66180fc/inst/categorical.m#L1343">categorical</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/ff4f2c5/inst/categorical.m#L1356">categorical</a>
 </p>
 </div>
         <div class="card rounded my-4">

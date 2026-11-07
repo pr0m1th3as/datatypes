@@ -448,10 +448,12 @@
 <p> The optional input <var>indicator</var> can be a scalar or a vector duration
  array, specifying alternative missing values in the input data.  When
  specifying <var>indicator</var> values, the standard missing values are
- ignored, unless explicitly stated in the <var>indicator</var>.
+ ignored, unless explicitly stated in the <var>indicator</var>.  A <code>NaN</code>
+ duration in <var>indicator</var> matches the <code>NaN</code> elements of <var>D</var>,
+ and so does <code>missing</code>.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/66180fc/inst/duration.m#L1254">duration</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/ff4f2c5/inst/duration.m#L1256">duration</a>
 </p>
 </div>
         <div class="card rounded my-4">

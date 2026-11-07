@@ -427,10 +427,21 @@
 </p>
 <ul>
 <li> <code>double</code> indicators match numeric and logical variables.
-</li><li> <code>logical</code> indicators match numeric and logical variables.
+</li><li> <code>single</code>, integer, and <code>logical</code> indicators match
+ variables of their own class and <code>double</code> variables.  Any other
+ numeric or logical variable is not matched, and it is not an error.
 </li><li> <code>char</code> and <code>cellstr</code> indicators match string variables.
-</li><li> <code>char</code> and <code>string</code> indicators match categorical
- variables.
+</li><li> <code>char</code>, <code>cellstr</code>, and <code>string</code> indicators match
+ categorical variables, as <code>categorical.ismissing</code> reads them: an
+ empty or blank character vector matches <code>&lt;undefined&gt;</code> elements,
+ while strings match category names only, so neither <code>&quot;&quot;</code> nor
+ <code>&lt;missing&gt;</code> matches <code>&lt;undefined&gt;</code>; <code>missing</code> does.
+</li><li> <code>missing</code>, alone or as an element of a cell array
+ <var>indicator</var>, matches the standard missing values of every variable,
+ in addition to any other values in <var>indicator</var>.
+</li><li> <code>calendarDuration</code> indicators match calendarDuration
+ variables, as <code>calendarDuration.ismissing</code> does; MATLAB accepts no
+ calendarDuration indicator, so this is an Octave extension.
 </li></ul>
 
 <p> The output array <var>TF</var> has the same size as the input table <var>tbl</var>.
@@ -443,7 +454,7 @@
  <var>outFmt</var> as <code>'tabular'</code> returns a table.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/66180fc/inst/table.m#L3075">table</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/ff4f2c5/inst/table.m#L3086">table</a>
 </p>
 </div>
         <div class="card rounded my-4">

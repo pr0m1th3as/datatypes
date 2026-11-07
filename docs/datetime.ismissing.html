@@ -450,10 +450,18 @@
 <p> Test for missing elements in datetime array.
 </p>
 <div class="ms-5">
-<p> <var>TF</var> is a logical array of the same size as <var>T</var>.
+<p> <var>TF</var> is a logical array of the same size as <var>T</var>, <code>true</code>
+ where an element of <var>T</var> is <code>NaT</code>.
+</p>
+<p> <code><var>TF</var> = ismissing (<var>T</var>, <var>indicator</var>)</code> marks instead the
+ elements of <var>T</var> equal to the values in <var>indicator</var>, a datetime
+ scalar or vector; the standard missing values are ignored, unless
+ explicitly stated in <var>indicator</var>.  A <code>NaT</code> in <var>indicator</var>
+ matches the <code>NaT</code> elements of <var>T</var>, and so does
+ <code>missing</code>.
 </p>
 <p><strong>Source Code: </strong>
-  <a href="https://github.com/pr0m1th3as/datatypes/blob/66180fc/inst/datetime.m#L2993">datetime</a>
+  <a href="https://github.com/pr0m1th3as/datatypes/blob/ff4f2c5/inst/datetime.m#L3001">datetime</a>
 </p>
 </div>
 
