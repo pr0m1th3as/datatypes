@@ -83,6 +83,15 @@ call it directly. \n\
   int cols = 0;
   int rows = 1;
 
+  // Skip the optional UTF-8 byte order mark before parsing any fields.
+  char prefix[3];
+  fd.read (prefix, sizeof (prefix));
+  const std::streamoff start =
+    (fd.gcount () == sizeof (prefix)
+     && std::string (prefix, sizeof (prefix)) == "\xEF\xBB\xBF") ? 3 : 0;
+  fd.clear ();
+  fd.seekg (start, ios::beg);
+
   // Get number of columns from parsing the first line
   getline (fd, line);
   for (int c = 0, len = line.length(); c <= len; c++)
@@ -109,7 +118,7 @@ call it directly. \n\
   fd.clear();
 
   // Rewind
-  fd.seekg (0, ios::beg);
+  fd.seekg (start, ios::beg);
   if (! fd.good())
   {
     retval(0) = "cannot read '" + file + "'.";
