@@ -41,7 +41,8 @@
 ## (default @qcode{false}).
 ## @item @qcode{'Delimiter'} @tab Field delimiter for text files: a single
 ## character or one of @qcode{'comma'}, @qcode{'space'}, @qcode{'tab'},
-## @qcode{'semi'}, @qcode{'bar'} (default @qcode{','}).
+## @qcode{'semi'}, @qcode{'bar'}. The default is a comma, except that
+## tab-separated @file{.dat} and @file{.txt} files use a tab.
 ## @item @qcode{'NumHeaderLines'} @tab Number of lines to skip before the header
 ## (default @qcode{0}).
 ## @item @qcode{'TextType'} @tab @qcode{'char'} or @qcode{'string'} for text
@@ -89,6 +90,13 @@ function tbl = readtable (filename, varargin)
     error ("readtable: FILENAME must be a character vector or string scalar.");
   endif
   file = char (filename);
+  [directory, ~, ~] = fileparts (file);
+  if (isempty (directory) && ! isfile (file))
+    path_file = file_in_path (path (), file);
+    if (! isempty (path_file))
+      file = path_file;
+    endif
+  endif
   if (mod (numel (varargin), 2) != 0)
     error ("readtable: name-value arguments must be in pairs.");
   endif
@@ -98,7 +106,7 @@ function tbl = readtable (filename, varargin)
               'NumHeaderLines', 'TextType', 'VariableNamingRule', 'Sheet', ...
               'Range', 'VariableNamesRow', 'RowNamesColumn', ...
               'VariableNamesLine'};
-  dfValues = {'', true, false, ',', 0, 'char', 'modify', [], '', [], 1, []};
+  dfValues = {'', true, false, [], 0, 'char', 'modify', [], '', [], 1, []};
   [fileType, readVarNames, readRowNames, delim, numHeaderLines, textType, ...
    namingRule, sheet, range, varNamesRow, rowNamesCol, varNamesLine, args] = ...
                           parsePairedArguments (optNames, dfValues, ...
@@ -143,6 +151,11 @@ function tbl = readtable (filename, varargin)
   if (strcmpi (fileType, 'text') && (! isempty (sheet) || ! isempty (range)))
     error (strcat ("readtable: 'Sheet' and 'Range' are not supported for", ...
                    " text files."));
+  endif
+
+  if (strcmpi (fileType, 'text') && isnumeric (delim) && isempty (delim) ...
+      && ! any (strcmpi (varargin(1:2:end), 'Delimiter')))
+    delim = default_delimiter (file, ext);
   endif
 
   switch (lower (fileType))
@@ -928,3 +941,87 @@ endfunction
 %! readtable ('x.csv', 'Delimiter', 42)
 %!error <readtable: unsupported 'Delimiter' value 'nope'.> ...
 %! readtable ('x.csv', 'Delimiter', 'nope')
+
+## Recognize a tab-separated header without counting tabs inside quotes.
+function d = default_delimiter (file, ext)
+  d = ',';
+  if (! any (strcmpi (ext, {'.dat', '.txt'})))
+    return;
+  endif
+  fid = fopen (file, 'rt');
+  if (fid < 0)
+    return;
+  endif
+  close_file = onCleanup (@() fclose (fid));
+  header = fgetl (fid);
+  if (ischar (header))
+    header = regexprep (header, '"(?:[^"]|"")*"', '');
+    if (any (header == char (9)) && ! any (header == ','))
+      d = char (9);
+    endif
+  endif
+endfunction
+
+## A bare file name can refer to a file on the load path.
+%!test
+%! directory = tempname ();
+%! mkdir (directory);
+%! [~, basename] = fileparts (directory);
+%! basename = [basename '.csv'];
+%! file = fullfile (directory, basename);
+%! unwind_protect
+%!   fid = fopen (file, 'wt');
+%!   fprintf (fid, 'value\n17\n');
+%!   fclose (fid);
+%!   addpath (directory);
+%!   assert (readtable (basename).value, 17);
+%! unwind_protect_cleanup
+%!   rmpath (directory);
+%!   unlink (file);
+%!   rmdir (directory);
+%! end_unwind_protect
+
+## Detect tabs in a text-file header and respect an explicit delimiter.
+%!test
+%! file = [tempname() '.dat'];
+%! unwind_protect
+%!   fid = fopen (file, 'wt');
+%!   fprintf (fid, 'id\tlabel\n1\t"a, b"\n');
+%!   fclose (fid);
+%!   t = readtable (file);
+%!   assert (t.id, 1);
+%!   assert (t.label, {'a, b'});
+%!   assert (width (readtable (file, 'Delimiter', 'tab')), 2);
+%!   assert (width (readtable (file, 'Delimiter', 'comma')), 1);
+%! unwind_protect_cleanup
+%!   unlink (file);
+%! end_unwind_protect
+
+## A quoted tab is part of a field, not a delimiter.
+%!test
+%! file = [tempname() '.txt'];
+%! unwind_protect
+%!   fid = fopen (file, 'wt');
+%!   fprintf (fid, '"left\tright"\n15\n');
+%!   fclose (fid);
+%!   t = readtable (file, 'VariableNamingRule', 'preserve');
+%!   assert (t.Properties.VariableNames, {sprintf('left\tright')});
+%!   assert (t.Variables, 15);
+%! unwind_protect_cleanup
+%!   unlink (file);
+%! end_unwind_protect
+
+## A UTF-8 signature before a quoted header belongs to the file, not the field.
+%!test
+%! file = [tempname() '.csv'];
+%! unwind_protect
+%!   fid = fopen (file, 'wb');
+%!   fwrite (fid, uint8 ([239, 187, 191]));
+%!   fprintf (fid, '"x, units",y\n12,34\n');
+%!   fclose (fid);
+%!   t = readtable (file, 'VariableNamingRule', 'preserve');
+%!   assert (t.Properties.VariableNames, {'x, units', 'y'});
+%!   assert (t.Variables, [12, 34]);
+%! unwind_protect_cleanup
+%!   unlink (file);
+%! end_unwind_protect
